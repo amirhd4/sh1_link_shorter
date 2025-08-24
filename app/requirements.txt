@@ -4,3 +4,5 @@ sqlalchemy[asyncio]
 asyncpg
 redis[hiredis]
 pydantic-settings
+passlib[bcrypt]
+python-jose[cryptography]
