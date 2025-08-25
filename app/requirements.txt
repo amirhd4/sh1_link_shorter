@@ -6,3 +6,5 @@ redis[hiredis]
 pydantic-settings
 passlib[bcrypt]
 python-jose[cryptography]
+pydantic[email]
+python-multipart

@@ -1,26 +1,27 @@
-from fastapi import FastAPI, Depends, HTTPException, Request
-from fastapi.responses import RedirectResponse
+# app/src/main.py (نسخه نهایی)
+from fastapi import FastAPI
 from contextlib import asynccontextmanager
 import redis.asyncio as redis
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.future import select
-from pydantic_settings import BaseSettings
 
-from .database import engine, Base, get_db
+from .database import engine, Base
 from .routers import auth, links
-
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    app.state.redis = redis.from_url("redis://cache", encoding="utf-8", decode_responses=True)
+
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-    print("✅ Tables created.")
+    print("✅ Tables created. Redis client connected.")
+
     yield
 
-app = FastAPI(lifespan=lifespan)
+    await app.state.redis.close()
+    print("🔌 Redis connection closed.")
 
+
+app = FastAPI(lifespan=lifespan)
 
 app.include_router(auth.router)
 app.include_router(links.router)
