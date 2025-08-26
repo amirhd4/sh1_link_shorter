@@ -8,3 +8,5 @@ passlib[bcrypt]
 python-jose[cryptography]
 pydantic[email]
 python-multipart
+google-api-python-client
+httpx

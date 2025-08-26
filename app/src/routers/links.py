@@ -10,6 +10,8 @@ from .. import models, schemas
 from ..database import get_db
 from ..services import security
 from ..services.kgs import generate_unique_short_key
+from ..services import url_checker
+
 
 router = APIRouter(
     tags=["Links"]
@@ -33,6 +35,12 @@ async def create_short_url(
     یک URL طولانی را به یک لینک کوتاه تبدیل می‌کند.
     این endpoint محافظت شده است و نیاز به توکن احراز هویت دارد.
     """
+    if await url_checker.is_url_malicious(str(url_data.long_url)):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="The provided URL is flagged as malicious and cannot be shortened."
+        )
+
     short_code = await generate_unique_short_key(redis_client)
 
     db_link = models.Link(

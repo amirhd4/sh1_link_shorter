@@ -7,8 +7,10 @@ from .models import Base
 
 class Settings(BaseSettings):
     database_url: str
+    google_api_key: str
     class Config:
         env_file = ".env"
+
 
 settings = Settings()
 
