@@ -9,9 +9,7 @@ from slowapi.errors import RateLimitExceeded
 
 from .database import engine, Base
 from .routers import auth, links
-
-
-limiter = Limiter(key_func=get_remote_address)
+from .rate_limiter import limiter
 
 
 @asynccontextmanager

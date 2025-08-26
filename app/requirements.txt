@@ -11,3 +11,5 @@ python-multipart
 google-api-python-client
 httpx
 slowapi
+qrcode
+Pillow

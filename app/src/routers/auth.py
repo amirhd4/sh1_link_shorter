@@ -6,8 +6,7 @@ from sqlalchemy.future import select
 from .. import schemas, models
 from ..database import get_db
 from ..services import security
-from ..main import limiter
-
+from ..rate_limiter import limiter
 
 router = APIRouter(
     prefix="/auth",
@@ -17,7 +16,7 @@ router = APIRouter(
 
 @router.post("/register", response_model=schemas.UserResponse)
 @limiter.limit("5/minute")
-async def register_user(user_create: schemas.UserCreate, db: AsyncSession = Depends(get_db)):
+async def register_user(request: Request, user_create: schemas.UserCreate, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(models.User).where(models.User.email == user_create.email))
     db_user = result.scalar_one_or_none()
     if db_user:
