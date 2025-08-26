@@ -1,10 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, Request
-from fastapi.responses import RedirectResponse
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi.responses import RedirectResponse, JSONResponse
+
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 import redis.asyncio as redis
 from typing import List
-
 
 from .. import models, schemas
 from ..database import get_db
@@ -57,12 +57,18 @@ async def redirect_to_long_url(
     redis_client: redis.Redis = Depends(get_redis_client)
 ):
     """
-    کاربر را به URL اصلی هدایت می‌کند. این بخش عمومی و بدون نیاز به لاگین است.
+    کاربر را به URL اصلی هدایت می‌کند و تعداد کلیک را افزایش می‌دهد.
     """
     cache_key = f"link:{short_code}"
     long_url = await redis_client.get(cache_key)
 
     if long_url:
+        # حتی اگر از کش می‌خوانیم، باید شمارنده را در دیتابیس آپدیت کنیم
+        # برای بهینه‌سازی، این کار می‌تواند به یک صف پس‌زمینه منتقل شود
+        db_link_update = await db.get(models.Link, {"short_code": short_code}) # روش بهینه برای یافتن
+        if db_link_update:
+            db_link_update.clicks += 1
+            await db.commit()
         return RedirectResponse(url=long_url, status_code=301)
 
     result = await db.execute(select(models.Link).where(models.Link.short_code == short_code))
@@ -71,9 +77,13 @@ async def redirect_to_long_url(
     if db_link is None:
         raise HTTPException(status_code=404, detail="URL not found")
 
+    db_link.clicks += 1
+    await db.commit()
+
     await redis_client.set(cache_key, db_link.long_url)
 
     return RedirectResponse(url=db_link.long_url, status_code=301)
+
 
 
 @router.get("/my-links", response_model=List[schemas.LinkDetails])
@@ -93,3 +103,68 @@ async def get_user_links(
     links = result.scalars().all()
 
     return links
+
+
+@router.delete("/links/{short_code}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_link(
+        short_code: str,
+        current_user: models.User = Depends(security.get_current_user),
+        db: AsyncSession = Depends(get_db)
+):
+    """
+    یک لینک را بر اساس کد کوتاه آن حذف می‌کند.
+    فقط صاحب لینک می‌تواند آن را حذف کند.
+    """
+    # ابتدا لینک را پیدا کن
+    result = await db.execute(
+        select(models.Link).where(models.Link.short_code == short_code)
+    )
+    db_link = result.scalar_one_or_none()
+
+    # بررسی اینکه لینک وجود دارد و متعلق به کاربر فعلی است
+    if db_link is None:
+        raise HTTPException(status_code=404, detail="Link not found")
+
+    if db_link.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized to delete this link")
+
+    # حذف لینک از دیتابیس
+    await db.delete(db_link)
+    await db.commit()
+
+    # نیازی به برگرداندن محتوا نیست، چون حذف شده
+    return None
+
+
+@router.patch("/links/{short_code}", response_model=schemas.LinkDetails)
+async def update_link(
+    short_code: str,
+    link_update: schemas.LinkUpdate,
+    current_user: models.User = Depends(security.get_current_user),
+    db: AsyncSession = Depends(get_db),
+    redis_client: redis.Redis = Depends(get_redis_client)
+):
+    """
+    URL مقصد یک لینک را بروزرسانی می‌کند.
+    فقط صاحب لینک می‌تواند آن را ویرایش کند.
+    """
+    result = await db.execute(
+        select(models.Link).where(models.Link.short_code == short_code)
+    )
+    db_link = result.scalar_one_or_none()
+
+    if db_link is None:
+        raise HTTPException(status_code=404, detail="Link not found")
+
+    if db_link.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized to edit this link")
+
+    # بروزرسانی URL
+    db_link.long_url = str(link_update.long_url)
+    await db.commit()
+    await db.refresh(db_link)
+
+    # **مهم**: کش را پاک کن تا در درخواست بعدی، مقدار جدید خوانده شود
+    await redis_client.delete(f"link:{short_code}")
+
+    return db_link

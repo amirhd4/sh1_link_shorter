@@ -34,6 +34,11 @@ class Token(BaseModel):
 class LinkDetails(BaseModel):
     long_url: HttpUrl
     short_code: str
+    clicks: int
 
     class Config:
         from_attributes = True
+
+
+class LinkUpdate(BaseModel):
+    long_url: HttpUrl

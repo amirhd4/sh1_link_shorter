@@ -20,6 +20,7 @@ class Link(Base):
     id = Column(BigInteger, primary_key=True, index=True)
     long_url = Column(String, index=True, nullable=False)
     short_code = Column(String, unique=True, index=True, nullable=False)
+    clicks = Column(Integer, default=0)
 
     owner_id = Column(Integer, ForeignKey("users.id"))
     owner = relationship("User", back_populates="links")
