@@ -12,6 +12,8 @@ from ..services import security
 from ..services.kgs import generate_unique_short_key
 from ..services import url_checker
 
+from ..main import limiter
+
 
 router = APIRouter(
     tags=["Links"]
@@ -25,6 +27,7 @@ async def get_redis_client(request: Request) -> redis.Redis:
 
 
 @router.post("/shorten", response_model=schemas.URLResponse)
+@limiter.limit("30/minute")
 async def create_short_url(
     url_data: schemas.URLCreate,
     db: AsyncSession = Depends(get_db),
