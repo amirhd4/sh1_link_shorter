@@ -3,6 +3,8 @@ from fastapi.responses import RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 import redis.asyncio as redis
+from typing import List
+
 
 from .. import models, schemas
 from ..database import get_db
@@ -72,3 +74,22 @@ async def redirect_to_long_url(
     await redis_client.set(cache_key, db_link.long_url)
 
     return RedirectResponse(url=db_link.long_url, status_code=301)
+
+
+@router.get("/my-links", response_model=List[schemas.LinkDetails])
+async def get_user_links(
+        current_user: models.User = Depends(security.get_current_user),
+        db: AsyncSession = Depends(get_db)
+):
+    """
+    لیست تمام لینک‌هایی که توسط کاربر فعلی ساخته شده را برمی‌گرداند.
+    """
+    result = await db.execute(
+        select(models.Link)
+        .where(models.Link.owner_id == current_user.id)
+        .order_by(models.Link.id.desc())
+    )
+
+    links = result.scalars().all()
+
+    return links

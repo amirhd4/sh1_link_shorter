@@ -29,3 +29,11 @@ class UserResponse(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str
+
+
+class LinkDetails(BaseModel):
+    long_url: HttpUrl
+    short_code: str
+
+    class Config:
+        from_attributes = True
