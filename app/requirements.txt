@@ -4,8 +4,8 @@ sqlalchemy[asyncio]
 asyncpg
 redis[hiredis]
 pydantic-settings
-passlib[bcrypt]
-python-jose[cryptography]
+passlib[bcrypt]==5.3.1
+python-jose[cryptography]==3.3.0
 pydantic[email]
 python-multipart
 google-api-python-client
@@ -13,3 +13,4 @@ httpx
 slowapi
 qrcode
 Pillow
+bcrypt==4.1.2

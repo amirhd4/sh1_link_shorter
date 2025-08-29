@@ -1,0 +1,81 @@
+import React from 'react';
+import { Box, Typography, Grid, Card, CardContent, CardActions, Button, CardHeader, List, ListItem, ListItemIcon, ListItemText } from '@mui/material';
+import CheckIcon from '@mui/icons-material/Check';
+
+const tiers = [
+    {
+        title: 'رایگان',
+        price: '0',
+        description: [
+            '50 لینک در ماه',
+            'تحلیل‌های پایه',
+            'پشتیبانی از طریق ایمیل',
+        ],
+        buttonText: 'پلن فعلی شما',
+        buttonVariant: 'outlined',
+    },
+    {
+        title: 'حرفه‌ای',
+        price: '29', // قیمت به تومان یا دلار
+        description: [
+            '1000 لینک در ماه',
+            'تحلیل‌های پیشرفته',
+            'دامنه سفارشی',
+            'پشتیبانی اولویت‌دار',
+        ],
+        buttonText: 'ارتقا دهید',
+        buttonVariant: 'contained',
+    },
+];
+
+export default function PricingPage() {
+    return (
+        <Box>
+            <Typography variant="h3" align="center" gutterBottom>
+                پلن مناسب خود را انتخاب کنید
+            </Typography>
+            <Typography variant="h6" align="center" color="text.secondary" component="p">
+                با ابزارهای قدرتمند ما، لینک‌های خود را به سطح بالاتری ببرید.
+            </Typography>
+            <Grid container spacing={5} alignItems="flex-end" sx={{ mt: 4 }}>
+                {tiers.map((tier) => (
+                    <Grid item key={tier.title} xs={12} sm={tier.title === 'Enterprise' ? 12 : 6} md={6}>
+                        <Card>
+                            <CardHeader
+                                title={tier.title}
+                                titleTypographyProps={{ align: 'center' }}
+                                subheaderTypographyProps={{ align: 'center' }}
+                                sx={{ bgcolor: 'grey.200' }}
+                            />
+                            <CardContent>
+                                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'baseline', mb: 2 }}>
+                                    <Typography component="h2" variant="h3" color="text.primary">
+                                        ${tier.price}
+                                    </Typography>
+                                    <Typography variant="h6" color="text.secondary">
+                                        /ماه
+                                    </Typography>
+                                </Box>
+                                <List>
+                                    {tier.description.map((line) => (
+                                        <ListItem disableGutters key={line}>
+                                            <ListItemIcon>
+                                                <CheckIcon />
+                                            </ListItemIcon>
+                                            <ListItemText primary={line} />
+                                        </ListItem>
+                                    ))}
+                                </List>
+                            </CardContent>
+                            <CardActions>
+                                <Button fullWidth variant={tier.buttonVariant}>
+                                    {tier.buttonText}
+                                </Button>
+                            </CardActions>
+                        </Card>
+                    </Grid>
+                ))}
+            </Grid>
+        </Box>
+    );
+}
