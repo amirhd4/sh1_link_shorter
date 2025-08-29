@@ -2,14 +2,16 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 import redis.asyncio as redis
 from fastapi.responses import JSONResponse
+from sqlalchemy.future import select
 
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 
-from .database import engine, Base
-from .routers import auth, links
+from .database import engine, Base, async_session_factory
+from .routers import auth, links, admin
 from .rate_limiter import limiter
+from .models import Plan
 
 
 @asynccontextmanager
