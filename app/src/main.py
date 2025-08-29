@@ -46,7 +46,7 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.include_router(auth.router)
 app.include_router(links.router)
-
+app.include_router(admin.router)
 
 @app.get("/")
 def read_root():

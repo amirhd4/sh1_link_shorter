@@ -28,19 +28,42 @@ async def get_redis_client(request: Request) -> redis.Redis:
     return request.app.state.redis
 
 
-@router.post("/shorten", response_model=schemas.URLResponse)
+
+
 @limiter.limit("30/minute")
+@router.post("/shorten", response_model=schemas.URLResponse)
 async def create_short_url(
-    request: Request,
-    url_data: schemas.URLCreate,
-    db: AsyncSession = Depends(get_db),
-    redis_client: redis.Redis = Depends(get_redis_client),
-    current_user: models.User = Depends(security.get_current_user) # <--- قفل امنیتی
+        request: Request,
+        url_data: schemas.URLCreate,
+        db: AsyncSession = Depends(get_db),
+        redis_client: redis.Redis = Depends(get_redis_client),
+        current_user: models.User = Depends(security.get_current_user)
 ):
     """
-    یک URL طولانی را به یک لینک کوتاه تبدیل می‌کند.
-    این endpoint محافظت شده است و نیاز به توکن احراز هویت دارد.
+        یک URL طولانی را به یک لینک کوتاه تبدیل می‌کند.
+        این endpoint محافظت شده است و نیاز به توکن احراز هویت دارد.
     """
+    if not current_user.plan:
+        raise HTTPException(status_code=403, detail="No active plan found for user.")
+
+    if current_user.subscription_end_date is None or current_user.subscription_end_date < date.today():
+        raise HTTPException(status_code=403, detail="Your subscription has expired.")
+
+    thirty_days_ago = date.today() - timedelta(days=30)
+    link_count_result = await db.execute(
+        select(func.count(models.Link.id))
+        .where(models.Link.owner_id == current_user.id)
+    )
+    total_links_result = await db.execute(
+        select(func.count(models.Link.id)).where(models.Link.owner_id == current_user.id))
+    total_links = total_links_result.scalar()
+
+    if total_links >= current_user.plan.link_limit_per_month:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"You have reached your monthly limit of {current_user.plan.link_limit_per_month} links."
+        )
+
     if await url_checker.is_url_malicious(str(url_data.long_url)):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

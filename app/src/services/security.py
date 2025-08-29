@@ -66,3 +66,12 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession
     if user is None:
         raise credentials_exception
     return user
+
+
+def get_current_admin_user(current_user: models.User = Depends(get_current_user)) -> models.User:
+    if current_user.role != models.UserRole.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="The user does not have administrative privileges"
+        )
+    return current_user
