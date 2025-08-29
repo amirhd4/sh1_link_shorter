@@ -19,6 +19,19 @@ async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
+    async with async_session_factory() as session:
+        free_plan_result = await session.execute(select(Plan).where(Plan.name == "Free"))
+        if not free_plan_result.scalar_one_or_none():
+            session.add(Plan(name="Free", link_limit_per_month=50, duration_days=30))
+            print("✨ 'Free' plan created.")
+
+        pro_plan_result = await session.execute(select(Plan).where(Plan.name == "Pro"))
+        if not pro_plan_result.scalar_one_or_none():
+            session.add(Plan(name="Pro", link_limit_per_month=1000, duration_days=30))
+            print("💎 'Pro' plan created.")
+
+        await session.commit()
+
     print("✅ Tables created. Redis client connected. Rate limiter is active.")
     yield
 
