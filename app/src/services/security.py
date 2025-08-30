@@ -8,6 +8,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.orm import selectinload
 
 from .. import models
 from ..database import get_db
@@ -42,6 +43,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
 class TokenData(BaseModel):
     email: Optional[str] = None
 
+
 async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)) -> models.User:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -57,7 +59,12 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession
     except JWTError:
         raise credentials_exception
 
-    result = await db.execute(select(models.User).where(models.User.email == token_data.email))
+    query = (
+        select(models.User)
+        .options(selectinload(models.User.plan))
+        .where(models.User.email == token_data.email)
+    )
+    result = await db.execute(query)
     user = result.scalar_one_or_none()
 
     if user is None:

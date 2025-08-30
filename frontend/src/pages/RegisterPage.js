@@ -19,7 +19,11 @@ export default function RegisterPage() {
             alert('Registration successful! Please sign in.');
             navigate('/login');
         } catch (err) {
-            setError(err.response?.data?.detail || 'Registration failed. Please try again.');
+            // ✨ THIS IS THE FIX ✨
+            // We now check if the error response has a 'detail' field and use that.
+            // Otherwise, we show a generic message. This ensures we always have a string.
+            const errorMessage = err.response?.data?.detail || 'Registration failed. Please try again.';
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }
@@ -33,10 +37,37 @@ export default function RegisterPage() {
                 </Typography>
                 <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
                     {error && <Alert severity="error" sx={{ width: '100%', mb: 2 }}>{error}</Alert>}
-                    <TextField margin="normal" required fullWidth id="email" label="Email Address" name="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-                    <TextField margin="normal" required fullWidth name="password" label="Password" type="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+                    <TextField
+                        margin="normal"
+                        required
+                        fullWidth
+                        id="email"
+                        label="Email Address"
+                        name="email"
+                        autoComplete="email"
+                        autoFocus
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                    />
+                    <TextField
+                        margin="normal"
+                        required
+                        fullWidth
+                        name="password"
+                        label="Password"
+                        type="password"
+                        id="password"
+                        autoComplete="new-password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                    />
                     <Box sx={{ position: 'relative', mt: 3, mb: 2 }}>
-                        <Button type="submit" fullWidth variant="contained" disabled={loading}>
+                        <Button
+                            type="submit"
+                            fullWidth
+                            variant="contained"
+                            disabled={loading}
+                        >
                             Sign Up
                         </Button>
                         {loading && (

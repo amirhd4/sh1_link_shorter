@@ -1,5 +1,19 @@
 from pydantic import BaseModel, HttpUrl, EmailStr
 from typing import Optional
+from datetime import date
+
+from . import models
+
+
+class PlanResponse(BaseModel):
+    id: int
+    name: str
+    price: int
+    link_limit_per_month: int
+    duration_days: int
+
+    class Config:
+        from_attributes = True
 
 
 class UserUpdate(BaseModel):
@@ -14,10 +28,12 @@ class UserResponse(BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     phone_number: Optional[str] = None
+    role: models.UserRole
+    plan: Optional[PlanResponse] = None
+    subscription_end_date: Optional[date] = None
 
     class Config:
         from_attributes = True
-
 class URLCreate(BaseModel):
     long_url: HttpUrl
 
@@ -51,14 +67,3 @@ class LinkDetails(BaseModel):
 
 class LinkUpdate(BaseModel):
     long_url: HttpUrl
-
-
-class PlanResponse(BaseModel):
-    id: int
-    name: str
-    price: int
-    link_limit_per_month: int
-    duration_days: int
-
-    class Config:
-        from_attributes = True

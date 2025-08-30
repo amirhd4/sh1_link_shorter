@@ -4,6 +4,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from datetime import datetime, timedelta, timezone
+from sqlalchemy.orm import selectinload
 
 from .. import schemas, models
 from ..database import get_db
@@ -60,9 +61,16 @@ async def register_user(
     # 4. Save the new user to the database
     db.add(new_user)
     await db.commit()
-    await db.refresh(new_user)
 
-    return new_user
+    query = (
+        select(models.User)
+        .options(selectinload(models.User.plan))
+        .where(models.User.id == new_user.id)
+    )
+    result = await db.execute(query)
+    complete_new_user = result.scalar_one()
+
+    return complete_new_user
 
 @router.post("/token", response_model=schemas.Token)
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):

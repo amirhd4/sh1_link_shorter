@@ -25,7 +25,7 @@ import AnalyticsIcon from '@mui/icons-material/Analytics';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import LiveClock from './LiveClock'; // Import the new clock component
+import LiveClock from './LiveClock';
 
 const drawerWidth = 240;
 
@@ -66,19 +66,19 @@ export default function DashboardLayout({ children }) {
             <AppBar
                 position="fixed"
                 sx={{
-                    zIndex: (theme) => theme.zIndex.drawer + 1
+                    // ✨ FIX: The AppBar's width is calculated to NOT cover the Drawer
+                    width: `calc(100% - ${drawerWidth}px)`,
+                    // ✨ FIX: A margin-right is added to push the AppBar away from the right edge
+                    mr: `${drawerWidth}px`,
                 }}
             >
                 <Toolbar>
                     <Typography variant="h6" noWrap component="div">
                         پلتفرم مدیریت لینک
                     </Typography>
-
-                    {/* This Box will grow to fill the space, pushing the clock and user menu apart */}
                     <Box sx={{ flexGrow: 1, px: 2 }}>
                        <LiveClock />
                     </Box>
-
                     {user && (
                         <div>
                             <IconButton onClick={handleMenu} sx={{ p: 0 }}>
@@ -88,9 +88,9 @@ export default function DashboardLayout({ children }) {
                             </IconButton>
                             <Menu
                                 anchorEl={anchorEl}
-                                anchorOrigin={{ vertical: 'top', horizontal: 'left', }}
+                                anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
                                 keepMounted
-                                transformOrigin={{ vertical: 'top', horizontal: 'left', }}
+                                transformOrigin={{ vertical: 'top', horizontal: 'left' }}
                                 open={Boolean(anchorEl)}
                                 onClose={handleClose}
                             >
@@ -109,7 +109,7 @@ export default function DashboardLayout({ children }) {
 
             <Drawer
                 variant="permanent"
-                anchor="right"
+                anchor="right" // ✨ FIX: Ensures the Drawer is on the right for RTL
                 sx={{
                     width: drawerWidth,
                     flexShrink: 0,
@@ -119,7 +119,7 @@ export default function DashboardLayout({ children }) {
                     },
                 }}
             >
-                <Toolbar />
+                <Toolbar /> {/* Spacer to push content below AppBar */}
                 <Box sx={{ overflow: 'auto' }}>
                     <List>
                         {navItems.map((item) => (
@@ -163,10 +163,10 @@ export default function DashboardLayout({ children }) {
                 sx={{
                     flexGrow: 1,
                     p: 3,
-                    width: `calc(100% - ${drawerWidth}px)`
+                    bgcolor: 'background.default'
                 }}
             >
-                <Toolbar />
+                <Toolbar /> {/* Spacer to push main content below AppBar */}
                 {children}
             </Box>
         </Box>

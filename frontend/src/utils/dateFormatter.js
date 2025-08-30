@@ -1,7 +1,10 @@
-import moment from 'jalali-moment';
+import moment from 'moment-jalaali';
 
 export const toPersianDate = (gregorianDate) => {
-    if (!gregorianDate) return 'نامشخص';
-    // This correctly parses the date in the user's local timezone
-    return moment(gregorianDate).locale('fa').format('YYYY/MM/DD');
+    if (!gregorianDate) {
+        return 'نامشخص';
+    }
+    console.log(gregorianDate);
+
+    return moment(gregorianDate).locale('fa').format('jYYYY/jMM/jDD');
 };
