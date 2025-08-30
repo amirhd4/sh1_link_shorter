@@ -30,11 +30,10 @@ async def create_payment(
     if not plan:
         raise HTTPException(status_code=404, detail="Plan not found")
 
-    amount = 30000
 
     gateway = ZarinpalGateway()
     payment_url, authority = await gateway.create_payment_link(
-        amount=amount,
+        amount=plan.price,
         description=f"Purchase Pro Plan for {current_user.email}",
         user_email=current_user.email
     )
@@ -45,7 +44,7 @@ async def create_payment(
     new_transaction = models.Transaction(
         user_id=current_user.id,
         plan_id=plan.id,
-        amount=amount,
+        amount=plan.price,
         authority=authority,
         status=models.TransactionStatus.PENDING
     )

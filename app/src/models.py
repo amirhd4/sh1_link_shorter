@@ -18,6 +18,7 @@ class Plan(Base):
     name = Column(String, unique=True, nullable=False)
     link_limit_per_month = Column(Integer, default=50)
     duration_days = Column(Integer, default=30)
+    price = Column(Integer, nullable=False, default=0)
 
 
 class User(Base):

@@ -51,3 +51,14 @@ class LinkDetails(BaseModel):
 
 class LinkUpdate(BaseModel):
     long_url: HttpUrl
+
+
+class PlanResponse(BaseModel):
+    id: int
+    name: str
+    price: int
+    link_limit_per_month: int
+    duration_days: int
+
+    class Config:
+        from_attributes = True

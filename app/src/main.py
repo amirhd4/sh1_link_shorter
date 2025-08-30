@@ -1,18 +1,13 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 import redis.asyncio as redis
-from fastapi.responses import JSONResponse
 from sqlalchemy.future import select
-
-from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 
 from .database import engine, Base, async_session_factory
-from .routers import auth, links, admin, payment
+from .routers import auth, links, admin, payment, stats, plans
 from .rate_limiter import limiter
 from .models import Plan
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -24,12 +19,12 @@ async def lifespan(app: FastAPI):
     async with async_session_factory() as session:
         free_plan_result = await session.execute(select(Plan).where(Plan.name == "Free"))
         if not free_plan_result.scalar_one_or_none():
-            session.add(Plan(name="Free", link_limit_per_month=50, duration_days=30))
+            session.add(Plan(name="Free", link_limit_per_month=50, duration_days=9999, price=0))
             print("✨ 'Free' plan created.")
 
         pro_plan_result = await session.execute(select(Plan).where(Plan.name == "Pro"))
         if not pro_plan_result.scalar_one_or_none():
-            session.add(Plan(name="Pro", link_limit_per_month=1000, duration_days=30))
+            session.add(Plan(name="Pro", link_limit_per_month=1000, duration_days=30, price=30000))
             print("💎 'Pro' plan created.")
 
         await session.commit()
@@ -40,17 +35,17 @@ async def lifespan(app: FastAPI):
     await app.state.redis.close()
     print("🔌 Redis connection closed.")
 
-
 app = FastAPI(lifespan=lifespan)
 app.state.limiter = limiter
+from slowapi import _rate_limit_exceeded_handler
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
-
 
 app.include_router(auth.router)
 app.include_router(links.router)
 app.include_router(admin.router)
 app.include_router(payment.router)
-
+app.include_router(stats.router)
+app.include_router(plans.router)
 
 @app.get("/")
 def read_root():

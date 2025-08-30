@@ -1,17 +1,27 @@
-import React from 'react';
-import { Typography, Grid, Paper } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Typography, Grid, Paper, Skeleton } from '@mui/material';
 import StatWidget from '../components/StatWidget';
-import BarChartIcon from '@mui/icons-material/BarChart';
-import PublicIcon from '@mui/icons-material/Public';
-import AdsClickIcon from '@mui/icons-material/AdsClick';
+import api from '../api';
+
+
 
 export default function DashboardPage() {
-    // این داده‌ها در آینده از API خوانده می‌شوند
-    const stats = {
-        totalClicks: 1408,
-        topCountry: 'ایران',
-        topReferrer: 'Twitter',
-    };
+    const [stats, setStats] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const response = await api.get('/stats/dashboard');
+                setStats(response.data);
+            } catch (error) {
+                console.error("Failed to fetch dashboard stats", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchStats();
+    }, []);
 
     return (
         <>
@@ -19,15 +29,11 @@ export default function DashboardPage() {
                 کابین خلبان شما
             </Typography>
             <Grid container spacing={3}>
-                {/* بخش ویجت‌های آمار */}
-                <Grid item xs={12} sm={4}>
-                    <StatWidget title="مجموع کلیک‌ها (۳۰ روز)" value={stats.totalClicks} icon={<BarChartIcon fontSize="large" />} />
+                <Grid item xs={12} sm={6}>
+                    {loading ? <Skeleton variant="rounded" height={100} /> : <StatWidget title="تعداد کل لینک‌ها" value={stats.total_links} />}
                 </Grid>
-                <Grid item xs={12} sm={4}>
-                    <StatWidget title="کشور برتر" value={stats.topCountry} icon={<PublicIcon fontSize="large" />} />
-                </Grid>
-                <Grid item xs={12} sm={4}>
-                    <StatWidget title="منبع ارجاع برتر" value={stats.topReferrer} icon={<AdsClickIcon fontSize="large" />} />
+                <Grid item xs={12} sm={6}>
+                    {loading ? <Skeleton variant="rounded" height={100} /> : <StatWidget title="تعداد کل کلیک‌ها" value={stats.total_clicks} />}
                 </Grid>
 
                 {/* بخش نمودار اصلی */}

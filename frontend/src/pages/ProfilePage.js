@@ -1,8 +1,9 @@
-// frontend/src/pages/ProfilePage.js
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Typography, Paper, Box, CircularProgress, Card, CardContent, TextField, Button, Grid, Alert } from '@mui/material';
 import api from '../api';
+import { toPersianDate } from '../utils/dateFormatter';
+
 
 export default function ProfilePage() {
     const { user, refreshUser } = useAuth();
@@ -53,12 +54,21 @@ export default function ProfilePage() {
                                 </Button>
                                 {loading && <CircularProgress size={24} sx={{ position: 'absolute', top: '50%', left: '50%', mt: '-12px', ml: '-40px' }} />}
                             </Box>
+
                         </Box>
                     </Paper>
                 </Grid>
                 {/* بخش نمایش اطلاعات اشتراک */}
                 <Grid item xs={12} md={6}>
                     {/* این بخش می‌تواند در آینده تکمیل‌تر شود */}
+                    <Card>
+                        <CardContent>
+                            <Typography variant="h6">پلن فعلی: {user.plan?.name || 'N/A'}</Typography>
+                            <Typography color="text.secondary">
+                                اشتراک شما در تاریخ {toPersianDate(user.subscription_end_date)} منقضی می‌شود.
+                            </Typography>
+                        </CardContent>
+                    </Card>
                 </Grid>
             </Grid>
         </>
