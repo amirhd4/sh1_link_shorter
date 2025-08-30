@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button } from '@mui/material';
-import axios from 'axios'; // فرض می‌کنیم یک instance از axios برای API calls داریم
+import axios from 'axios';
+import api from '../api';
 
 const api = axios.create({
     baseURL: 'http://localhost:8000',
@@ -27,19 +28,11 @@ export default function AdminPage() {
     }, []);
 
     const handleAssignProPlan = async (userId) => {
-        const token = getAdminToken();
-        if (!token) {
-            alert('Admin token not found!');
-            return;
-        }
         try {
-            await api.post(
-                `/admin/users/${userId}/assign-plan`,
-                { plan_name: 'Pro' },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
+            // The token is now added automatically by the interceptor
+            await api.post(`/admin/users/${userId}/assign-plan`, { plan_name: 'Pro' });
             alert(`Pro plan assigned to user ${userId} successfully!`);
-            fetchUsers(); // Refresh the list
+            fetchUsers();
         } catch (error) {
             console.error('Failed to assign plan:', error);
             alert('Failed to assign plan.');
