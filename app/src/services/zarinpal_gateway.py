@@ -6,10 +6,18 @@ from ..config import settings
 class ZarinpalGateway(PaymentProvider):
     def __init__(self):
         self.merchant_id = settings.zarinpal_merchant_id
-        self.api_request_url = "https://api.zarinpal.com/pg/v4/payment/request.json"
-        self.api_verify_url = "https://api.zarinpal.com/pg/v4/payment/verify.json"
-        self.api_startpay_url = "https://www.zarinpal.com/pg/StartPay/"
-        self.callback_url = "http://localhost:8000/payments/verify-zarinpal"
+        self.callback_url = f"{settings.backend_url}/payments/verify-zarinpal"
+
+        if settings.zarinpal_sandbox_mode:
+            self.api_request_url = "https://sandbox.zarinpal.com/pg/rest/WebGate/PaymentRequest.json"
+            self.api_verify_url = "https://sandbox.zarinpal.com/pg/rest/WebGate/PaymentVerification.json"
+            self.api_startpay_url = "https://sandbox.zarinpal.com/pg/StartPay/"
+        else:
+            self.merchant_id = settings.zarinpal_merchant_id
+            self.api_request_url = "https://api.zarinpal.com/pg/v4/payment/request.json"
+            self.api_verify_url = "https://api.zarinpal.com/pg/v4/payment/verify.json"
+            self.api_startpay_url = "https://www.zarinpal.com/pg/StartPay/"
+            self.callback_url = "http://localhost:8000/payments/verify-zarinpal"
 
     async def create_payment_link(self, amount: int, description: str, user_email: str) -> (str, str):
         payload = {
