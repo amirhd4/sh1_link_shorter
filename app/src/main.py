@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 import redis.asyncio as redis
 from sqlalchemy.future import select
 from slowapi.errors import RateLimitExceeded
+from fastapi.middleware.cors import CORSMiddleware
 
 from .database import engine, Base, async_session_factory
 from .routers import auth, links, admin, payment, stats, plans
@@ -35,10 +36,22 @@ async def lifespan(app: FastAPI):
     await app.state.redis.close()
     print("🔌 Redis connection closed.")
 
+
 app = FastAPI(lifespan=lifespan)
 app.state.limiter = limiter
 from slowapi import _rate_limit_exceeded_handler
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+origins = [
+    "http://localhost:3000",
+]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True, # اجازه ارسال کوکی‌ها و هدرهای احراز هویت
+    allow_methods=["*"],    # اجازه استفاده از تمام متدهای HTTP (GET, POST, ...)
+    allow_headers=["*"],    # اجازه ارسال تمام هدرها
+)
 
 app.include_router(auth.router)
 app.include_router(links.router)
