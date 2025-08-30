@@ -5,13 +5,15 @@ import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from '@mui/material/styles';
 import { CacheProvider } from '@emotion/react';
 import { theme, cacheRtl } from './theme';
-import reportWebVitals from "./reportWebVitals";
+import { CssBaseline } from '@mui/material';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
+
 root.render(
   <React.StrictMode>
     <CacheProvider value={cacheRtl}>
       <ThemeProvider theme={theme}>
+        <CssBaseline />
         <AuthProvider>
           <App />
         </AuthProvider>
@@ -19,5 +21,3 @@ root.render(
     </CacheProvider>
   </React.StrictMode>
 );
-
-reportWebVitals();

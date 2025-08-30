@@ -63,24 +63,21 @@ export default function DashboardLayout({ children }) {
     return (
         <Box sx={{ display: 'flex' }}>
             <CssBaseline />
+
             <AppBar
                 position="fixed"
                 sx={{
-                    // ✨ FIX: The AppBar's width is calculated to NOT cover the Drawer
                     width: `calc(100% - ${drawerWidth}px)`,
-                    // ✨ FIX: A margin-right is added to push the AppBar away from the right edge
                     mr: `${drawerWidth}px`,
                 }}
             >
                 <Toolbar>
-                    <Typography variant="h6" noWrap component="div">
+                    <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
                         پلتفرم مدیریت لینک
                     </Typography>
-                    <Box sx={{ flexGrow: 1, px: 2 }}>
-                       <LiveClock />
-                    </Box>
+                    <LiveClock />
                     {user && (
-                        <div>
+                        <Box sx={{ ml: 2 }}>
                             <IconButton onClick={handleMenu} sx={{ p: 0 }}>
                                 <Avatar alt={user.email} sx={{ bgcolor: 'secondary.main' }}>
                                     {user.email.charAt(0).toUpperCase()}
@@ -88,7 +85,7 @@ export default function DashboardLayout({ children }) {
                             </IconButton>
                             <Menu
                                 anchorEl={anchorEl}
-                                anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+                                anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
                                 keepMounted
                                 transformOrigin={{ vertical: 'top', horizontal: 'left' }}
                                 open={Boolean(anchorEl)}
@@ -102,33 +99,27 @@ export default function DashboardLayout({ children }) {
                                 </MenuItem>
                                 <MenuItem onClick={handleLogout}>خروج</MenuItem>
                             </Menu>
-                        </div>
+                            {/* The extra '>' character was here. It has been removed. */}
+                        </Box>
                     )}
                 </Toolbar>
             </AppBar>
 
             <Drawer
                 variant="permanent"
-                anchor="right" // ✨ FIX: Ensures the Drawer is on the right for RTL
+                anchor="right"
                 sx={{
                     width: drawerWidth,
                     flexShrink: 0,
-                    '& .MuiDrawer-paper': {
-                        width: drawerWidth,
-                        boxSizing: 'border-box',
-                    },
+                    '& .MuiDrawer-paper': { width: drawerWidth, boxSizing: 'border-box' },
                 }}
             >
-                <Toolbar /> {/* Spacer to push content below AppBar */}
+                <Toolbar />
                 <Box sx={{ overflow: 'auto' }}>
-                    <List>
+                   <List>
                         {navItems.map((item) => (
                             <ListItem key={item.text} disablePadding>
-                                <ListItemButton
-                                    component={RouterLink}
-                                    to={item.path}
-                                    selected={location.pathname === item.path}
-                                >
+                                <ListItemButton component={RouterLink} to={item.path} selected={location.pathname === item.path}>
                                     <ListItemIcon>{item.icon}</ListItemIcon>
                                     <ListItemText primary={item.text} />
                                 </ListItemButton>
@@ -143,11 +134,7 @@ export default function DashboardLayout({ children }) {
                             </Typography>
                             {adminNavItems.map((item) => (
                                 <ListItem key={item.text} disablePadding>
-                                    <ListItemButton
-                                        component={RouterLink}
-                                        to={item.path}
-                                        selected={location.pathname === item.path}
-                                    >
+                                    <ListItemButton component={RouterLink} to={item.path} selected={location.pathname === item.path}>
                                         <ListItemIcon>{item.icon}</ListItemIcon>
                                         <ListItemText primary={item.text} />
                                     </ListItemButton>
@@ -160,13 +147,9 @@ export default function DashboardLayout({ children }) {
 
             <Box
                 component="main"
-                sx={{
-                    flexGrow: 1,
-                    p: 3,
-                    bgcolor: 'background.default'
-                }}
+                sx={{ flexGrow: 1, p: 3 }}
             >
-                <Toolbar /> {/* Spacer to push main content below AppBar */}
+                <Toolbar />
                 {children}
             </Box>
         </Box>
