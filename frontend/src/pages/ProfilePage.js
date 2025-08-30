@@ -9,7 +9,6 @@ export default function ProfilePage() {
         return <CircularProgress />;
     }
 
-    // این بخش باید با API واقعی برای گرفتن تعداد لینک‌ها تکمیل شود
     const linksUsed = 5; // مثال
     const linkLimit = user.plan?.link_limit_per_month || 50;
     const usagePercentage = (linksUsed / linkLimit) * 100;

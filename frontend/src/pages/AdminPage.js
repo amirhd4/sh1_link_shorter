@@ -1,79 +1,138 @@
-import React, { useEffect, useState } from 'react';
-import { Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button } from '@mui/material';
-import axios from 'axios';
+import React, { useState, useEffect, useCallback } from 'react';
+import {
+    Typography, Paper, Table, TableBody, TableCell, TableContainer,
+    TableHead, TableRow, Button, Box, CircularProgress, Alert, Chip,
+    Tooltip, IconButton, Menu, MenuItem
+} from '@mui/material';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import api from '../api';
-
-const api = axios.create({
-    baseURL: 'http://localhost:8000',
-});
+import CreateUserModal from '../components/admin/CreateUserModal';
 
 export default function AdminPage() {
     const [users, setUsers] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+    const [isCreateModalOpen, setCreateModalOpen] = useState(false);
 
-    // این تابع باید توکن ادمین را از جایی (مثلا localStorage) بخواند
-    const getAdminToken = () => localStorage.getItem('accessToken');
+    // State for action menu
+    const [anchorEl, setAnchorEl] = useState(null);
+    const [selectedUser, setSelectedUser] = useState(null);
 
-    const fetchUsers = async () => {
-        // در یک اپ واقعی، یک endpoint برای گرفتن لیست کاربران لازم است
-        // فعلا آن را شبیه‌سازی می‌کنیم
-        // TODO: Add a GET /admin/users endpoint to the backend
-        setUsers([
-            { id: 1, email: 'user1@example.com', plan: { name: 'Free' } },
-            { id: 2, email: 'user2@example.com', plan: { name: 'Free' } },
-        ]);
-    };
+    const fetchUsers = useCallback(async () => {
+        setLoading(true);
+        setError('');
+        try {
+            const response = await api.get('/admin/users');
+            setUsers(response.data);
+        } catch (err) {
+            setError('Failed to fetch users. You might not have admin privileges or the server is down.');
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
 
     useEffect(() => {
         fetchUsers();
-    }, []);
+    }, [fetchUsers]);
 
-    const handleAssignProPlan = async (userId) => {
+    const handleMenuClick = (event, user) => {
+        setAnchorEl(event.currentTarget);
+        setSelectedUser(user);
+    };
+
+    const handleMenuClose = () => {
+        setAnchorEl(null);
+        setSelectedUser(null);
+    };
+
+    const handleAssignPlan = async (planName) => {
+        if (!selectedUser) return;
         try {
-            // The token is now added automatically by the interceptor
-            await api.post(`/admin/users/${userId}/assign-plan`, { plan_name: 'Pro' });
-            alert(`Pro plan assigned to user ${userId} successfully!`);
+            await api.post(`/admin/users/${selectedUser.id}/assign-plan`, { plan_name: planName });
+            alert(`${planName} plan assigned to ${selectedUser.email}`);
             fetchUsers();
-        } catch (error) {
-            console.error('Failed to assign plan:', error);
-            alert('Failed to assign plan.');
+        } catch (err) { alert('Failed to assign plan.'); }
+        handleMenuClose();
+    };
+
+    const handleToggleAdmin = async () => {
+        if (!selectedUser) return;
+        const newRole = selectedUser.role === 'admin' ? 'user' : 'admin';
+        try {
+            await api.patch(`/admin/users/${selectedUser.id}/role`, { role: newRole });
+            alert(`User role updated to ${newRole}`);
+            fetchUsers();
+        } catch (err) { alert('Failed to update role.'); }
+        handleMenuClose();
+    };
+
+    const handleDeleteUser = async () => {
+        if (!selectedUser || !window.confirm(`Are you sure you want to delete user ${selectedUser.email}? THIS CANNOT BE UNDONE.`)) {
+            handleMenuClose();
+            return;
         }
+        try {
+            await api.delete(`/admin/users/${selectedUser.id}`);
+            alert(`User ${selectedUser.email} has been deleted.`);
+            fetchUsers();
+        } catch (err) { alert('Failed to delete user.'); }
+        handleMenuClose();
     };
 
     return (
         <>
-            <Typography variant="h4" gutterBottom>
-                پنل مدیریت
-            </Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                <Typography variant="h4" gutterBottom>User Management</Typography>
+                <Button variant="contained" startIcon={<AddCircleOutlineIcon />} onClick={() => setCreateModalOpen(true)}>
+                    Create User
+                </Button>
+            </Box>
+
+            {/* ... (بخش نمایش خطا و لودینگ) ... */}
+
             <TableContainer component={Paper}>
                 <Table>
-                    <TableHead>
+                    <TableHead sx={{ backgroundColor: 'grey.100' }}>
                         <TableRow>
-                            <TableCell>ID کاربر</TableCell>
-                            <TableCell>ایمیل</TableCell>
-                            <TableCell>پلن فعلی</TableCell>
-                            <TableCell>عملیات</TableCell>
+                            <TableCell>ID</TableCell>
+                            <TableCell>Email</TableCell>
+                            <TableCell>Role</TableCell>
+                            <TableCell>Plan</TableCell>
+                            <TableCell align="center">Actions</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {users.map((user) => (
-                            <TableRow key={user.id}>
+                            <TableRow key={user.id} hover>
                                 <TableCell>{user.id}</TableCell>
                                 <TableCell>{user.email}</TableCell>
+                                <TableCell><Chip label={user.role} color={user.role === 'admin' ? 'secondary' : 'default'} size="small" /></TableCell>
                                 <TableCell>{user.plan?.name || 'N/A'}</TableCell>
-                                <TableCell>
-                                    <Button
-                                        variant="contained"
-                                        onClick={() => handleAssignProPlan(user.id)}
-                                        disabled={user.plan?.name === 'Pro'}
-                                    >
-                                        ارتقا به Pro
-                                    </Button>
+                                <TableCell align="center">
+                                    <IconButton onClick={(e) => handleMenuClick(e, user)}>
+                                        <MoreVertIcon />
+                                    </IconButton>
                                 </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
                 </Table>
             </TableContainer>
+
+            {/* منوی عملیات برای هر کاربر */}
+            <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
+                <MenuItem onClick={() => handleAssignPlan('Pro')}>Assign Pro Plan</MenuItem>
+                <MenuItem onClick={() => handleAssignPlan('Free')}>Assign Free Plan</MenuItem>
+                <MenuItem onClick={handleToggleAdmin}>
+                    {selectedUser?.role === 'admin' ? 'Revoke Admin' : 'Make Admin'}
+                </MenuItem>
+                <MenuItem onClick={handleDeleteUser} sx={{ color: 'error.main' }}>Delete User</MenuItem>
+            </Menu>
+
+            <CreateUserModal open={isCreateModalOpen} onClose={() => setCreateModalOpen(false)} onSuccess={fetchUsers} />
         </>
     );
 }

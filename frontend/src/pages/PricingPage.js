@@ -1,6 +1,9 @@
-import React from 'react';
-import { Box, Typography, Grid, Card, CardContent, CardActions, Button, CardHeader, List, ListItem, ListItemIcon, ListItemText } from '@mui/material';
+import React, { useState } from 'react';
+import { Box, Typography, Grid, Card, CardContent, CardActions, Button, CardHeader, List, ListItem, ListItemIcon, ListItemText, CircularProgress } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
+import api from '../api';
+import { useAuth } from '../context/AuthContext';
+
 
 const tiers = [
     {
@@ -28,7 +31,29 @@ const tiers = [
     },
 ];
 
+
 export default function PricingPage() {
+    const { user } = useAuth();
+    const [loading, setLoading] = useState(false);
+
+    const handleUpgradeClick = async () => {
+        setLoading(true);
+        try {
+            const response = await api.post('/payments/create-zarinpal-link', {
+                plan_name: 'Pro'
+            });
+            const { payment_url } = response.data;
+            if (payment_url) {
+                window.location.href = payment_url;
+            }
+        } catch (error) {
+            console.error("Failed to start payment process:", error);
+            alert("Could not initiate payment. Please try again later.");
+            setLoading(false);
+        }
+    };
+
+
     return (
         <Box>
             <Typography variant="h3" align="center" gutterBottom>
@@ -68,9 +93,28 @@ export default function PricingPage() {
                                 </List>
                             </CardContent>
                             <CardActions>
-                                <Button fullWidth variant={tier.buttonVariant}>
-                                    {tier.buttonText}
-                                </Button>
+                                <Box sx={{ width: '100%', position: 'relative' }}>
+                                    <Button
+                                        fullWidth
+                                        variant={tier.title === 'Pro' ? 'contained' : 'outlined'}
+                                        onClick={tier.title === 'Pro' ? handleUpgradeClick : null}
+                                        disabled={loading || user?.plan?.name === 'Pro'}
+                                    >
+                                        {user?.plan?.name === tier.title ? 'پلن فعلی شما' : tier.buttonText}
+                                    </Button>
+                                    {loading && tier.title === 'Pro' && (
+                                        <CircularProgress
+                                            size={24}
+                                            sx={{
+                                                position: 'absolute',
+                                                top: '50%',
+                                                left: '50%',
+                                                marginTop: '-12px',
+                                                marginLeft: '-12px',
+                                            }}
+                                        />
+                                    )}
+                                </Box>
                             </CardActions>
                         </Card>
                     </Grid>

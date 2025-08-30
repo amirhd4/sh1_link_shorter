@@ -5,6 +5,8 @@ import DashboardPage from './pages/DashboardPage';
 import PricingPage from './pages/PricingPage';
 import AdminPage from './pages/AdminPage';
 // import LoginPage from './pages/LoginPage';
+import PaymentSuccessPage from './pages/PaymentSuccessPage';
+
 
 function App() {
   const isAdmin = true;
@@ -27,7 +29,7 @@ function App() {
                     )
                 }
             />
-
+            <Route path="/payment/success" element={<DashboardLayout><PaymentSuccessPage /></DashboardLayout>} />
             {/* <Route path="/login" element={<LoginPage />} /> */}
         </Routes>
     </Router>

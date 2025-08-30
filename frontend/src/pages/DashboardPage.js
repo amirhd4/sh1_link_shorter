@@ -1,4 +1,3 @@
-// frontend/src/pages/DashboardPage.js
 import React from 'react';
 import { Typography, Grid, Paper } from '@mui/material';
 import StatWidget from '../components/StatWidget';

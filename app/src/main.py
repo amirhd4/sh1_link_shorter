@@ -9,7 +9,7 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 
 from .database import engine, Base, async_session_factory
-from .routers import auth, links, admin
+from .routers import auth, links, admin, payment
 from .rate_limiter import limiter
 from .models import Plan
 
@@ -49,6 +49,8 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.include_router(auth.router)
 app.include_router(links.router)
 app.include_router(admin.router)
+app.include_router(payment.router)
+
 
 @app.get("/")
 def read_root():
