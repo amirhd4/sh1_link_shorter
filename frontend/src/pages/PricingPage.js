@@ -1,169 +1,162 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
-    Typography,
-    Paper,
     Box,
-    CircularProgress,
+    Typography,
+    Grid,
     Card,
     CardContent,
-    TextField,
+    CardActions,
     Button,
-    Grid,
+    CardHeader,
+    List,
+    ListItem,
+    ListItemIcon,
+    ListItemText,
+    Skeleton,
     Alert,
-    LinearProgress,
-    Divider,
-    Chip
+    Container,
+    CircularProgress
 } from '@mui/material';
-import { Link as RouterLink } from 'react-router-dom';
+import CheckIcon from '@mui/icons-material/Check';
 import api from '../api';
-import { toPersianDate } from '../utils/dateFormatter';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
-export default function ProfilePage() {
-    const { user, refreshUser } = useAuth();
-    const [formData, setFormData] = useState({
-        first_name: user?.first_name || '',
-        last_name: user?.last_name || '',
-        phone_number: user?.phone_number || '',
-    });
-    const [stats, setStats] = useState({ total_links: 0 });
-    const [loading, setLoading] = useState(false);
-    const [statsLoading, setStatsLoading] = useState(true);
-    const [successMessage, setSuccessMessage] = useState('');
+export default function PricingPage() {
+    const { user } = useAuth();
+    const navigate = useNavigate();
+    const [tiers, setTiers] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [paymentLoading, setPaymentLoading] = useState(null);
+    const [error, setError] = useState('');
 
-    useEffect(() => {
-        const fetchStats = async () => {
-            setStatsLoading(true);
-            try {
-                const response = await api.get('/stats/dashboard');
-                setStats(response.data);
-            } catch (error) {
-                console.error("Failed to fetch dashboard stats", error);
-            } finally {
-                setStatsLoading(false);
-            }
-        };
-        if (user) {
-            fetchStats();
-        }
-    }, [user]);
-
-    if (!user) {
-        return (
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-                <CircularProgress />
-            </Box>
-        );
-    }
-
-    const handleFormChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
-
-    const handleFormSubmit = async (e) => {
-        e.preventDefault();
+    const fetchPlans = useCallback(async () => {
         setLoading(true);
-        setSuccessMessage('');
         try {
-            await api.patch('/auth/users/me', formData);
-            setSuccessMessage('اطلاعات پروفایل با موفقیت بروزرسانی شد!');
-            await refreshUser();
-        } catch (error) {
-            console.error('Failed to update profile', error);
+            const response = await api.get('/plans/');
+            const formattedTiers = response.data.map(plan => ({
+                title: plan.name === 'Free' ? 'رایگان' : 'حرفه‌ای',
+                price: plan.price,
+                planName: plan.name,
+                description: [
+                    `${plan.link_limit_per_month.toLocaleString('fa-IR')} لینک در ماه`,
+                    `پشتیبانی از دامنه سفارشی ${plan.name === 'Pro' ? '✅' : '❌'}`,
+                    `تحلیل‌های پیشرفته ${plan.name === 'Pro' ? '✅' : '❌'}`,
+                    'پشتیبانی ۲۴/۷ از طریق تیکت',
+                ],
+            }));
+            setTiers(formattedTiers);
+        } catch (err) {
+            setError("خطا در دریافت لیست پلن‌ها. لطفاً بعداً تلاش کنید.");
+            console.error("Failed to fetch plans", err);
         } finally {
             setLoading(false);
         }
+    }, []);
+
+    useEffect(() => {
+        fetchPlans();
+    }, [fetchPlans]);
+
+    const handleUpgradeClick = async (planName) => {
+        if (!user) {
+            navigate('/login');
+            return;
+        }
+        setPaymentLoading(planName);
+        try {
+            const response = await api.post('/payments/create-zarinpal-link', { plan_name: planName });
+            const { payment_url } = response.data;
+            if (payment_url) {
+                window.location.href = payment_url;
+            }
+        } catch (error) {
+            console.error("Failed to start payment process:", error);
+            alert("شروع فرآیند پرداخت با خطا مواجه شد. لطفاً دوباره تلاش کنید.");
+        } finally {
+            setPaymentLoading(null);
+        }
     };
 
-    const linkLimit = user.plan?.link_limit_per_month || 0;
-    const usagePercentage = linkLimit > 0 ? (stats.total_links / linkLimit) * 100 : 0;
-
     return (
-        <>
-            <Typography variant="h4" gutterBottom>
-                پروفایل و مدیریت اشتراک
+        <Container maxWidth="md">
+            <Typography variant="h3" align="center" gutterBottom sx={{ fontWeight: 'bold' }}>
+                پلن مناسب خود را انتخاب کنید
             </Typography>
-            <Grid container spacing={4}>
-                <Grid item xs={12} md={7}>
-                    <Paper sx={{ p: 3, height: '100%' }}>
-                        <Typography variant="h6" gutterBottom>
-                            اطلاعات شخصی
-                        </Typography>
-                        <Box component="form" onSubmit={handleFormSubmit} noValidate>
-                            {successMessage && <Alert severity="success" sx={{ mb: 2 }}>{successMessage}</Alert>}
-                            <Grid container spacing={2}>
-                                <Grid item xs={12} sm={6}>
-                                    <TextField label="نام" name="first_name" defaultValue={formData.first_name} onChange={handleFormChange} fullWidth />
-                                </Grid>
-                                <Grid item xs={12} sm={6}>
-                                    <TextField label="نام خانوادگی" name="last_name" defaultValue={formData.last_name} onChange={handleFormChange} fullWidth />
-                                </Grid>
-                                <Grid item xs={12}>
-                                    <TextField label="شماره تلفن" name="phone_number" defaultValue={formData.phone_number} onChange={handleFormChange} fullWidth />
-                                </Grid>
-                                <Grid item xs={12}>
-                                     <TextField label="آدرس ایمیل" name="email" value={user.email} fullWidth disabled />
-                                </Grid>
-                            </Grid>
-                            <Box sx={{ position: 'relative', mt: 3 }}>
-                                <Button type="submit" variant="contained" disabled={loading}>
-                                    ذخیره تغییرات
-                                </Button>
-                                {loading && (
-                                    <CircularProgress
-                                        size={24}
-                                        sx={{
-                                            position: 'absolute',
-                                            top: '50%',
-                                            left: '50px',
-                                            marginTop: '-12px',
-                                        }}
-                                    />
-                                )}
-                            </Box>
-                        </Box>
-                    </Paper>
-                </Grid>
-                <Grid item xs={12} md={5}>
-                    <Paper sx={{ p: 3, height: '100%' }}>
-                        <Typography variant="h6" gutterBottom>
-                            وضعیت اشتراک
-                        </Typography>
-                        <Card variant="outlined">
-                            <CardContent>
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                                    <Typography variant="h5">
-                                        پلن {user.plan?.name === 'Free' ? 'رایگان' : 'حرفه‌ای'}
-                                    </Typography>
-                                    <Chip label="فعال" color="success" size="small" />
-                                </Box>
-                                <Typography color="text.secondary">
-                                    تاریخ انقضا: {toPersianDate(user.subscription_end_date)}
-                                </Typography>
-                                <Divider sx={{ my: 2 }} />
-                                <Box sx={{ mt: 2 }}>
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                                        <Typography variant="body2">میزان استفاده از لینک‌ها</Typography>
-                                        <Typography variant="body2" color="text.secondary">
-                                            {statsLoading ? '...' : stats.total_links.toLocaleString('fa-IR')} / {linkLimit.toLocaleString('fa-IR')}
+            <Typography variant="h6" align="center" color="text.secondary" component="p" sx={{ mb: 6 }}>
+                با ابزارهای قدرتمند ما، لینک‌های خود را به دارایی‌های استراتژیک تبدیل کنید.
+            </Typography>
+
+            {error && <Alert severity="error" sx={{ mb: 4 }}>{error}</Alert>}
+
+            <Grid container spacing={5} alignItems="stretch">
+                {loading ? (
+                    Array.from(new Array(2)).map((_, index) => (
+                        <Grid item key={index} xs={12} md={6}>
+                            <Card sx={{ height: '100%' }}>
+                                <CardHeader
+                                    title={<Skeleton animation="wave" height={40} width="60%" />}
+                                    sx={{ bgcolor: 'grey.100' }}
+                                />
+                                <CardContent>
+                                    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'baseline', mb: 2 }}>
+                                        <Skeleton animation="wave" height={60} width="50%" />
+                                    </Box>
+                                    <Skeleton animation="wave" height={25} sx={{ mb: 1 }} />
+                                    <Skeleton animation="wave" height={25} sx={{ mb: 1 }} />
+                                    <Skeleton animation="wave" height={25} />
+                                </CardContent>
+                                <CardActions sx={{p: 2}}>
+                                    <Skeleton animation="wave" variant="rounded" height={40} width="100%" />
+                                </CardActions>
+                            </Card>
+                        </Grid>
+                    ))
+                ) : (
+                    tiers.map((tier) => (
+                        <Grid item key={tier.title} xs={12} md={6}>
+                            <Card sx={{ display: 'flex', flexDirection: 'column', height: '100%', border: tier.planName === 'Pro' ? 2 : 0, borderColor: 'primary.main', boxShadow: tier.planName === 'Pro' ? 5 : 1 }}>
+                                <CardHeader
+                                    title={tier.title}
+                                    titleTypographyProps={{ align: 'center', variant: 'h5', fontWeight: 'bold' }}
+                                    sx={{ bgcolor: 'grey.100' }}
+                                />
+                                <CardContent sx={{ flexGrow: 1 }}>
+                                    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'baseline', mb: 2 }}>
+                                        <Typography component="h2" variant="h3" color="text.primary">
+                                            {tier.price.toLocaleString('fa-IR')}
+                                        </Typography>
+                                        <Typography variant="h6" color="text.secondary" sx={{ mr: 1 }}>
+                                            تومان/ماهانه
                                         </Typography>
                                     </Box>
-                                    {statsLoading ? (
-                                        <Skeleton variant="rectangular" height={10} sx={{ borderRadius: 5 }}/>
-                                    ) : (
-                                        <LinearProgress variant="determinate" value={usagePercentage} sx={{ height: 10, borderRadius: 5 }} />
-                                    )}
-                                </Box>
-                                {user.plan?.name === 'Free' && (
-                                    <Button component={RouterLink} to="/pricing" variant="contained" color="primary" sx={{ mt: 3, width: '100%' }}>
-                                        ارتقا به پلن حرفه‌ای
+                                    <List>
+                                        {tier.description.map((line) => (
+                                            <ListItem disableGutters key={line}>
+                                                <ListItemIcon sx={{ minWidth: 32 }}>
+                                                    <CheckIcon color="success" />
+                                                </ListItemIcon>
+                                                <ListItemText primary={line} />
+                                            </ListItem>
+                                        ))}
+                                    </List>
+                                </CardContent>
+                                <CardActions sx={{ p: 2 }}>
+                                    <Button
+                                        fullWidth
+                                        variant={(user?.plan?.name === tier.planName) ? 'outlined' : 'contained'}
+                                        onClick={() => handleUpgradeClick(tier.planName)}
+                                        disabled={paymentLoading !== null || user?.plan?.name === tier.planName || tier.planName === 'Free'}
+                                        size="large"
+                                    >
+                                        {paymentLoading === tier.planName ? <CircularProgress size={26} /> : (user?.plan?.name === tier.planName ? 'پلن فعلی شما' : 'انتخاب و پرداخت')}
                                     </Button>
-                                )}
-                            </CardContent>
-                        </Card>
-                    </Paper>
-                </Grid>
+                                </CardActions>
+                            </Card>
+                        </Grid>
+                    ))
+                )}
             </Grid>
-        </>
+        </Container>
     );
 }
