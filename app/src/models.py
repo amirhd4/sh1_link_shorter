@@ -28,13 +28,16 @@ class User(Base):
     hashed_password = Column(String, nullable=False)
     role = Column(SQLAlchemyEnum(UserRole), default=UserRole.USER, nullable=False)
 
-    # --- فیلدهای مربوط به اشتراک ---
     plan_id = Column(Integer, ForeignKey("plans.id"))
     subscription_start_date = Column(Date, nullable=True)
     subscription_end_date = Column(Date, nullable=True)
 
     plan = relationship("Plan")
     links = relationship("Link", back_populates="owner")
+
+    first_name = Column(String, nullable=True)
+    last_name = Column(String, nullable=True)
+    phone_number = Column(String, nullable=True)
 
 
 class Link(Base):

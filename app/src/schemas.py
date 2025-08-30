@@ -1,5 +1,22 @@
 from pydantic import BaseModel, HttpUrl, EmailStr
+from typing import Optional
 
+
+class UserUpdate(BaseModel):
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    phone_number: Optional[str] = None
+
+
+class UserResponse(BaseModel):
+    id: int
+    email: EmailStr
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    phone_number: Optional[str] = None
+
+    class Config:
+        from_attributes = True
 
 class URLCreate(BaseModel):
     long_url: HttpUrl
@@ -16,14 +33,6 @@ class URLResponse(BaseModel):
 class UserCreate(BaseModel):
     email: EmailStr
     password: str
-
-
-class UserResponse(BaseModel):
-    id: int
-    email: EmailStr
-
-    class Config:
-        from_attributes = True
 
 
 class Token(BaseModel):

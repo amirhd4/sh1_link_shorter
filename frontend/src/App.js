@@ -1,39 +1,32 @@
+// frontend/src/App.js
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import DashboardLayout from './components/DashboardLayout';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import ProtectedRoute from './components/ProtectedRoute';
 import DashboardPage from './pages/DashboardPage';
 import PricingPage from './pages/PricingPage';
 import AdminPage from './pages/AdminPage';
-// import LoginPage from './pages/LoginPage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
 import PaymentSuccessPage from './pages/PaymentSuccessPage';
+import PaymentFailurePage from './pages/PaymentFailurePage';
+import ProfilePage from './pages/ProfilePage';
 
-
-function App() {
-  const isAdmin = true;
-
+export default function App() {
   return (
     <Router>
         <Routes>
-            {/* مسیرهای داخل داشبورد */}
-            <Route path="/" element={<DashboardLayout><DashboardPage /></DashboardLayout>} />
-            <Route path="/pricing" element={<DashboardLayout><PricingPage /></DashboardLayout>} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
 
-            {/* مسیر محافظت شده برای ادمین */}
-            <Route
-                path="/admin"
-                element={
-                    isAdmin ? (
-                        <DashboardLayout><AdminPage /></DashboardLayout>
-                    ) : (
-                        <Navigate to="/" />
-                    )
-                }
-            />
-            <Route path="/payment/success" element={<DashboardLayout><PaymentSuccessPage /></DashboardLayout>} />
-            {/* <Route path="/login" element={<LoginPage />} /> */}
+            <Route element={<ProtectedRoute />}>
+                <Route path="/" element={<DashboardPage />} />
+                <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/pricing" element={<PricingPage />} />
+                <Route path="/admin" element={<AdminPage />} />
+                <Route path="/payment/success" element={<PaymentSuccessPage />} />
+                <Route path="/payment/failure" element={<PaymentFailurePage />} />
+            </Route>
         </Routes>
     </Router>
   );
 }
-
-export default App;

@@ -1,9 +1,10 @@
-import React from 'react';
-import { Box, Drawer, AppBar, Toolbar, Typography, List, ListItem, ListItemButton, ListItemIcon, ListItemText, CssBaseline } from '@mui/material';
+import React, { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { Box, Drawer, AppBar, Toolbar, Typography, List, ListItem, ListItemButton, ListItemIcon, ListItemText, CssBaseline, IconButton, Avatar, Menu, MenuItem } from '@mui/material';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import LinkIcon from '@mui/icons-material/Link';
-import AnalyticsIcon from '@mui/icons-material/Analytics';
-import SettingsIcon from '@mui/icons-material/Settings';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 
 const drawerWidth = 240;
 
@@ -15,17 +16,50 @@ const navItems = [
 ];
 
 export default function DashboardLayout({ children }) {
+    const { user, logout } = useAuth();
+    const navigate = useNavigate();
+    const [anchorEl, setAnchorEl] = useState(null);
+
+    const handleMenu = (event) => setAnchorEl(event.currentTarget);
+    const handleClose = () => setAnchorEl(null);
+
+    const handleLogout = () => {
+        logout();
+        navigate('/login');
+    };
+
     return (
         <Box sx={{ display: 'flex' }}>
             <CssBaseline />
             <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
                 <Toolbar>
-                    <Typography variant="h6" noWrap component="div">
-                        پلتفرم مدیریت لینک
+                    <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
+                        Link Management Platform
                     </Typography>
+                    {user && (
+                        <div>
+                            <IconButton onClick={handleMenu} sx={{ p: 0 }}>
+                                <Avatar alt={user.email} sx={{ bgcolor: 'secondary.main' }}>
+                                    {user.email.charAt(0).toUpperCase()}
+                                </Avatar>
+                            </IconButton>
+                            <Menu
+                                id="menu-appbar"
+                                anchorEl={anchorEl}
+                                anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                                keepMounted
+                                transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                                open={Boolean(anchorEl)}
+                                onClose={handleClose}
+                            >
+                                <MenuItem disabled>{user.email}</MenuItem>
+                                <MenuItem onClick={handleLogout}>Logout</MenuItem>
+                            </Menu>
+                        </div>
+                    )}
                 </Toolbar>
             </AppBar>
-            <Drawer
+             <Drawer
                 variant="permanent"
                 sx={{
                     width: drawerWidth,

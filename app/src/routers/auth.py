@@ -85,3 +85,18 @@ async def reset_password(request: ResetPasswordRequest, db: AsyncSession = Depen
     await db.commit()
 
     return {"message": "Password has been reset successfully."}
+
+
+@router.patch("/users/me", response_model=schemas.UserResponse)
+async def update_user_me(
+    user_update: schemas.UserUpdate,
+    current_user: models.User = Depends(security.get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """اطلاعات پروفایل کاربر فعلی را بروزرسانی می‌کند."""
+    for key, value in user_update.model_dump(exclude_unset=True).items():
+        setattr(current_user, key, value)
+
+    await db.commit()
+    await db.refresh(current_user)
+    return current_user
