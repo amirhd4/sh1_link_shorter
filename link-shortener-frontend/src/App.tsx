@@ -1,12 +1,12 @@
-import { LinksDashboard } from "./features/client-dashboard/components/LinksDashboard";
-import { Container } from '@mui/material';
+import { AppRouter } from "./Router";
+import { AppInitializer } from "./AppInitializer";
 
 function App() {
   return (
-    <Container sx={{ mt: 4 }}>
-      <LinksDashboard />
-    </Container>
-  )
+    <AppInitializer>
+      <AppRouter />
+    </AppInitializer>
+  );
 }
 
 export default App;
