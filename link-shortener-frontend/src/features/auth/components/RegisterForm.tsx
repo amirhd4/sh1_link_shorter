@@ -1,10 +1,12 @@
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { TextField, Button, Box, Typography, Alert } from '@mui/material';
 import { useMutation } from '@tanstack/react-query';
 import { authService } from '../../../services/authService';
-import { useNavigate } from 'react-router-dom';
+import type { RegisterCredentials } from '../../../types/auth';
+import { TextField, Button, Box, Typography, Alert, Link } from '@mui/material';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
+
 
 const registerSchema = z.object({
   email: z.string().email('آدرس ایمیل معتبر نیست.'),
@@ -25,12 +27,12 @@ export function RegisterForm() {
   });
 
   const registerMutation = useMutation({
-    mutationFn: authService.register,
+    mutationFn: (credentials: RegisterCredentials) => authService.register(credentials),
     onSuccess: () => {
-      // پس از ثبت‌نام موفق، کاربر را به صفحه ورود هدایت می‌کنیم
-      navigate('/login');
+      navigate('/login?registered=true');
     },
   });
+
 
   const onSubmit = (data: RegisterFormInputs) => {
     registerMutation.mutate(data);
@@ -88,6 +90,10 @@ export function RegisterForm() {
       >
         {registerMutation.isPending ? 'در حال ایجاد حساب...' : 'ثبت‌نام'}
       </Button>
+
+        <Link component={RouterLink} to="/login" variant="body2">
+            {"حساب کاربری دارید؟ وارد شوید"}
+        </Link>
     </Box>
   );
 }
