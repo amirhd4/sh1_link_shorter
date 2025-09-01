@@ -4,6 +4,7 @@ import { Link as RouterLink } from 'react-router-dom';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import SupervisorAccountIcon from '@mui/icons-material/SupervisorAccount';
 import { useUserStore } from '../../store/userStore'; // <<<< ایمپورت استور کاربر
+import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
 
 
 const drawerWidth = 240;
@@ -20,6 +21,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         { text: 'داشبورد اصلی', icon: <DashboardIcon />, path: '/dashboard', roles: ['user', 'admin'] },
         { text: 'پروفایل من', icon: <AccountCircleIcon />, path: '/profile', roles: ['user', 'admin'] },
         { text: 'پنل ادمین', icon: <SupervisorAccountIcon />, path: '/admin/dashboard', roles: ['admin'] },
+        { text: 'پلن‌ها و اشتراک', icon: <WorkspacePremiumIcon />, path: '/plans', roles: ['user', 'admin'] },
     ];
 
   return (

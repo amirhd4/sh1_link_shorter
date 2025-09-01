@@ -19,5 +19,9 @@ export const linkService = {
     updateLink: async ({ shortCode, longUrl }: { shortCode: string; longUrl: string }): Promise<LinkDetails> => {
         const response = await apiClient.patch(`/links/${shortCode}`, { long_url: longUrl });
         return response.data;
-    }
+    },
+    getLinkDetails: async (shortCode: string): Promise<LinkDetails> => {
+        const response = await apiClient.get(`/links/${shortCode}`); // فرض می‌کنیم این اندپوینت در بک‌اند وجود دارد
+        return response.data;
+  },
 }

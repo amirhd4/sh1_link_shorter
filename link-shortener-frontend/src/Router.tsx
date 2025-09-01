@@ -7,7 +7,10 @@ import { ClientLayout } from './layouts/ClientLayout';
 import { ProfilePage } from './features/profile/pages/ProfilePage.tsx';
 import { AdminRoute } from './layouts/AdminRoute';
 import { AdminLayout } from './layouts/AdminLayout';
-import { UserManagementPage } from './features/admin-dashboard/pages/UserManagementPage'; // <<<< صفحه جدید
+import { UserManagementPage } from './features/admin-dashboard/pages/UserManagementPage';
+import { PlansPage } from './features/billing/pages/PlansPage';
+import { PaymentStatusPage } from './features/billing/pages/PaymentStatusPage';
+import { LinkDetailsPage } from './features/links/pages/LinkDetailsPage';
 
 
 const router = createBrowserRouter([
@@ -19,6 +22,14 @@ const router = createBrowserRouter([
     path: '/register',
     element: <RegisterPage />,
   },
+    {
+          path: '/payment/success',
+          element: <PaymentStatusPage />,
+        },
+        {
+          path: '/payment/failure',
+          element: <PaymentStatusPage />,
+        },
   {
     path: '/',
     element: <ProtectedRoute />,
@@ -38,7 +49,14 @@ const router = createBrowserRouter([
             path: 'profile', // <<<< روت جدید
             element: <ProfilePage />,
           },
-
+        {
+          path: 'plans',
+          element: <PlansPage />,
+        },
+        {
+          path: 'links/:shortCode',
+          element: <LinkDetailsPage />,
+        },
         ],
       },
         {

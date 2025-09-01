@@ -12,8 +12,12 @@ import type { LinkDetails } from '../../../types/api';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
+import AnalyticsIcon from '@mui/icons-material/Analytics';
+import { useNavigate } from 'react-router-dom';
+
 
 export function LinksDashboard() {
+  const navigate = useNavigate();
   const { t } = useTranslation('common');
   const queryClient = useQueryClient();
 
@@ -44,6 +48,10 @@ export function LinksDashboard() {
       }
   });
 
+  const handleDetailsClick = (shortCode: string) => () => {
+    navigate(`/links/${shortCode}`); // هدایت به صفحه جزئیات لینک
+  };
+
   // Handlers
   const handleDeleteClick = (shortCode: string) => () => {
     setDeleteTarget(shortCode);
@@ -64,13 +72,23 @@ export function LinksDashboard() {
     { field: 'long_url', headerName: 'آدرس اصلی', flex: 1, minWidth: 250 },
     { field: 'clicks', headerName: 'تعداد کلیک', type: 'number', width: 130 },
     {
+      field: 'created_at',
+      headerName: 'تاریخ ایجاد',
+      width: 180,
+      valueFormatter: (value) => new Date(value).toLocaleDateString('fa-IR'),
+    },
+    {
       field: 'actions',
       type: 'actions',
       headerName: 'عملیات',
-      width: 100,
+      width: 120,
       cellClassName: 'actions',
-      // پارامتر 'row' شامل کل اطلاعات ردیف است
       getActions: ({ row }) => [
+        <GridActionsCellItem
+          icon={<AnalyticsIcon />}
+          label="Details"
+          onClick={handleDetailsClick(row.short_code)}
+        />,
         <GridActionsCellItem
           icon={<EditIcon />}
           label="Edit"
@@ -85,6 +103,7 @@ export function LinksDashboard() {
         />,
       ],
     },
+
   ];
 
   if (isLoading) {

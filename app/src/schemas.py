@@ -60,6 +60,7 @@ class LinkDetails(BaseModel):
     long_url: HttpUrl
     short_code: str
     clicks: int
+    created_at: str
 
     class Config:
         from_attributes = True
