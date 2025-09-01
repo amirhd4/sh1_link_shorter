@@ -5,6 +5,7 @@ import { DataGrid, type GridColDef, GridActionsCellItem } from '@mui/x-data-grid
 import { Alert, Box, CircularProgress, Typography, Button, Snackbar } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { CreateLinkForm } from './CreateLinkForm';
+import { EditLinkForm } from './EditLinkForm';
 import { ConfirmationDialog } from '../../../components/molecules/ConfirmationDialog';
 import type { LinkDetails } from '../../../types/api';
 
@@ -18,6 +19,7 @@ export function LinksDashboard() {
 
   // State Management
   const [isCreateModalOpen, setCreateModalOpen] = useState(false);
+  const [editTarget, setEditTarget] = useState<LinkDetails | null>(null); // <<<< وضعیت برای مودال ویرایش
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
 
@@ -35,7 +37,7 @@ export function LinksDashboard() {
           queryClient.invalidateQueries({ queryKey: ['my-links'] });
       },
       onError: () => {
-          setSnackbarMessage("خطا در حذف لینک. لطفاً دوباره تلاش کنید.");
+          setSnackbarMessage("خطا در حذف لینک.");
       },
       onSettled: () => {
           setDeleteTarget(null);
@@ -53,10 +55,8 @@ export function LinksDashboard() {
     }
   };
 
-  const handleEditClick = (shortCode: string) => () => {
-      // TODO: منطق باز کردن مودال ویرایش در اینجا پیاده‌سازی خواهد شد
-      console.log("Edit requested for:", shortCode);
-      setSnackbarMessage("قابلیت ویرایش به زودی اضافه خواهد شد!");
+  const handleEditClick = (link: LinkDetails) => () => {
+      setEditTarget(link); // <<<< باز کردن مودال ویرایش با اطلاعات لینک
   };
 
   const columns: GridColDef[] = [
@@ -69,17 +69,18 @@ export function LinksDashboard() {
       headerName: 'عملیات',
       width: 100,
       cellClassName: 'actions',
-      getActions: ({ id }) => [
+      // پارامتر 'row' شامل کل اطلاعات ردیف است
+      getActions: ({ row }) => [
         <GridActionsCellItem
           icon={<EditIcon />}
           label="Edit"
-          onClick={handleEditClick(id as string)}
+          onClick={handleEditClick(row as LinkDetails)} // <<<< پاس دادن کل اطلاعات لینک
           color="inherit"
         />,
         <GridActionsCellItem
           icon={<DeleteIcon />}
           label="Delete"
-          onClick={handleDeleteClick(id as string)}
+          onClick={handleDeleteClick(row.short_code as string)}
           color="inherit"
         />,
       ],
@@ -114,7 +115,7 @@ export function LinksDashboard() {
           rows={links || []}
           columns={columns}
           getRowId={(row: LinkDetails) => row.short_code}
-          loading={deleteMutation.isPending}
+          loading={isLoading || deleteMutation.isPending}
           initialState={{
             pagination: { paginationModel: { page: 0, pageSize: 5 } },
           }}
@@ -123,6 +124,12 @@ export function LinksDashboard() {
       </Box>
 
       <CreateLinkForm isOpen={isCreateModalOpen} onClose={() => setCreateModalOpen(false)} />
+
+      <EditLinkForm
+        isOpen={!!editTarget}
+        onClose={() => setEditTarget(null)}
+        link={editTarget}
+      />
 
       <ConfirmationDialog
         open={!!deleteTarget}
@@ -134,7 +141,7 @@ export function LinksDashboard() {
 
       <Snackbar
         open={!!snackbarMessage}
-        autoHideDuration={6000}
+        autoHideDuration={4000}
         onClose={() => setSnackbarMessage(null)}
         message={snackbarMessage}
       />
