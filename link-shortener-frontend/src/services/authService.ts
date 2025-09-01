@@ -1,6 +1,7 @@
 import apiClient from '../lib/axios';
 import type { UserResponse, TokenResponse } from '../types/api';
-import type { LoginCredentials, RegisterCredentials } from '../types/auth';
+import type { LoginCredentials, RegisterCredentials, UpdateProfilePayload, ChangePasswordPayload } from '../types/auth';
+
 
 export const authService = {
   login: async (credentials: LoginCredentials): Promise<TokenResponse> => {
@@ -22,6 +23,17 @@ export const authService = {
 
   getMe: async (): Promise<UserResponse> => {
     const response = await apiClient.get('/auth/users/me');
+    return response.data;
+  },
+
+
+    updateMe: async (payload: UpdateProfilePayload): Promise<UserResponse> => {
+    const response = await apiClient.patch('/auth/users/me', payload);
+    return response.data;
+  },
+
+  changePassword: async (payload: ChangePasswordPayload): Promise<{ message: string }> => {
+    const response = await apiClient.post('/auth/users/me/change-password', payload);
     return response.data;
   },
 };

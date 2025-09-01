@@ -3,7 +3,9 @@ import { LoginPage } from './features/auth/pages/LoginPage';
 import { RegisterPage } from './features/auth/pages/RegisterPage';
 import { LinksDashboard } from './features/client-dashboard/components/LinksDashboard';
 import { ProtectedRoute } from './layouts/ProtectedRoute';
-import { ClientLayout } from './layouts/ClientLayout'; // ایمپورت Layout
+import { ClientLayout } from './layouts/ClientLayout';
+import { ProfilePage } from './features/profile/pages/ProfilePage.tsx';
+
 
 const router = createBrowserRouter([
   {
@@ -29,7 +31,10 @@ const router = createBrowserRouter([
              path: 'my-links', // مسیر نمونه جدید
              element: <div>صفحه لینک‌های من</div>,
           },
-          // ... سایر روت‌های داخل داشبورد
+            {
+            path: 'profile', // <<<< روت جدید
+            element: <ProfilePage />,
+          },
         ],
       },
     ],

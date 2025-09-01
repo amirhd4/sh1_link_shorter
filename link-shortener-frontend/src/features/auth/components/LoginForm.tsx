@@ -1,12 +1,13 @@
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { TextField, Button, Box, Typography, Alert } from '@mui/material';
+import { TextField, Button, Box, Typography, Alert, Link } from '@mui/material';
 import { useMutation } from '@tanstack/react-query';
 import { authService } from '../../../services/authService';
 import { useUserStore } from '../../../store/userStore';
-import { useNavigate } from 'react-router-dom';
+import { Link as RouterLink, useNavigate, useSearchParams } from 'react-router-dom';
 import type { LoginCredentials } from '../../../types/auth';
+
 
 const loginSchema = z.object({
   email: z.string().email('آدرس ایمیل معتبر نیست.'),
@@ -16,6 +17,8 @@ const loginSchema = z.object({
 type LoginFormInputs = z.infer<typeof loginSchema>;
 
 export function LoginForm() {
+
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { setUser } = useUserStore();
   const {
@@ -45,6 +48,7 @@ export function LoginForm() {
         // 4. هدایت کاربر به صفحه داشبورد
         navigate('/dashboard');
       } catch (error) {
+          loginMutation.reset(); // ریست کردن وضعیت خطا
           console.error("خطا در واکشی اطلاعات کاربر پس از ورود:", error);
           // می‌توانید در اینجا یک پیام خطا در UI نمایش دهید
       }
@@ -60,6 +64,12 @@ export function LoginForm() {
       <Typography component="h1" variant="h5">
         ورود به حساب کاربری
       </Typography>
+
+        {searchParams.get('registered') && (
+        <Alert severity="success" sx={{ mt: 2, width: '100%' }}>
+          ثبت‌نام شما با موفقیت انجام شد! اکنون می‌توانید وارد شوید.
+        </Alert>
+      )}
 
       {loginMutation.isError && (
           <Alert severity="error" sx={{ mt: 2, width: '100%' }}>
@@ -112,6 +122,10 @@ export function LoginForm() {
       >
         {loginMutation.isPending ? 'در حال ورود...' : 'ورود'}
       </Button>
+
+        <Link component={RouterLink} to="/register" variant="body2">
+        {"حساب کاربری ندارید؟ ثبت‌نام کنید"}
+      </Link>
     </Box>
   );
 }
