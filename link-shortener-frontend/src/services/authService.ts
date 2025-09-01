@@ -1,6 +1,6 @@
 import apiClient from '../lib/axios';
-import { UserResponse, TokenResponse } from '../types/api';
-import { LoginCredentials, RegisterCredentials } from '../types/auth';
+import type { UserResponse, TokenResponse } from '../types/api';
+import type { LoginCredentials, RegisterCredentials } from '../types/auth';
 
 export const authService = {
   login: async (credentials: LoginCredentials): Promise<TokenResponse> => {

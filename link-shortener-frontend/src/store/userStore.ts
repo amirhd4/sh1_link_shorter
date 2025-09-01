@@ -4,11 +4,11 @@ import { create } from 'zustand';
 interface User {
   id: number;
   email: string;
-  first_name: string;
-  last_name: string;
-  phone_number: string;
+  role: 'user' | 'admin';
+  first_name?: string | null;
+  last_name?: string | null;
+  phone_number?: string | null;
 }
-
 
 interface UserState {
   user: User | null;

@@ -11,7 +11,8 @@ i18n
     supportedLngs: ['fa', 'en'],
     fallbackLng: 'fa', // زبان جایگزین در صورت عدم وجود ترجمه [cite: 472]
     lng: 'fa', // زبان پیش‌فرض [cite: 473]
-    debug: process.env.NODE_ENV === 'development',
+    // debug: process.env.NODE_ENV === 'development',
+    debug: import.meta.env.DEV,
     interpolation: {
       escapeValue: false, // React به طور پیش‌فرض از XSS جلوگیری می‌کند [cite: 477]
     },

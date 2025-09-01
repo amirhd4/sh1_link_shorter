@@ -6,10 +6,11 @@ import { useMutation } from '@tanstack/react-query';
 import { authService } from '../../../services/authService';
 import { useUserStore } from '../../../store/userStore';
 import { useNavigate } from 'react-router-dom';
+import type { LoginCredentials } from '../../../types/auth';
 
 const loginSchema = z.object({
   email: z.string().email('آدرس ایمیل معتبر نیست.'),
-  password: z.string().min(6, 'رمز عبور باید حداقل ۶ کاراکتر باشد.'),
+  password: z.string().min(1, 'رمز عبور نمی‌تواند خالی باشد.'),
 });
 
 type LoginFormInputs = z.infer<typeof loginSchema>;
@@ -27,16 +28,26 @@ export function LoginForm() {
   });
 
   const loginMutation = useMutation({
-    mutationFn: authService.login,
-    onSuccess: (data) => {
-      // 1. ذخیره توکن
+    // تایپ صریح برای credentials
+    mutationFn: (credentials: LoginCredentials) => authService.login(credentials),
+    onSuccess: async (data) => {
+      // 1. ذخیره توکن در حافظه محلی
       localStorage.setItem('access_token', data.access_token);
-      // 2. واکشی و ذخیره اطلاعات کاربر (در یک برنامه واقعی)
-      //    این کار می‌تواند با یک کوئری دیگر برای /auth/users/me انجام شود.
-      //    برای سادگی، فعلاً از ایمیل استفاده می‌کنیم.
-      setUser({ id: 0, email: 'user@example.com' });
-      // 3. هدایت به داشبورد
-      navigate('/dashboard');
+
+      try {
+        // 2. واکشی اطلاعات کامل و صحیح کاربر از سرور
+        const user = await authService.getMe();
+
+        // 3. ذخیره اطلاعات کامل کاربر در استور Zustand
+        // اکنون تایپ user با تایپ مورد انتظار setUser کاملاً مطابقت دارد
+        setUser(user);
+
+        // 4. هدایت کاربر به صفحه داشبورد
+        navigate('/dashboard');
+      } catch (error) {
+          console.error("خطا در واکشی اطلاعات کاربر پس از ورود:", error);
+          // می‌توانید در اینجا یک پیام خطا در UI نمایش دهید
+      }
     },
   });
 
@@ -51,7 +62,7 @@ export function LoginForm() {
       </Typography>
 
       {loginMutation.isError && (
-          <Alert severity="error" sx={{ mt: 2 }}>
+          <Alert severity="error" sx={{ mt: 2, width: '100%' }}>
             ایمیل یا رمز عبور اشتباه است.
           </Alert>
       )}
