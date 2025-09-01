@@ -5,6 +5,9 @@ import { LinksDashboard } from './features/client-dashboard/components/LinksDash
 import { ProtectedRoute } from './layouts/ProtectedRoute';
 import { ClientLayout } from './layouts/ClientLayout';
 import { ProfilePage } from './features/profile/pages/ProfilePage.tsx';
+import { AdminRoute } from './layouts/AdminRoute';
+import { AdminLayout } from './layouts/AdminLayout';
+import { UserManagementPage } from './features/admin-dashboard/pages/UserManagementPage'; // <<<< صفحه جدید
 
 
 const router = createBrowserRouter([
@@ -18,10 +21,10 @@ const router = createBrowserRouter([
   },
   {
     path: '/',
-    element: <ProtectedRoute />, // 1. ابتدا بررسی می‌کند کاربر توکن دارد یا نه
+    element: <ProtectedRoute />,
     children: [
       {
-        element: <ClientLayout />, // 2. اگر توکن داشت، Layout را نمایش می‌دهد
+        element: <ClientLayout />,
         children: [
           {
             path: 'dashboard', // مسیر: /dashboard
@@ -34,6 +37,20 @@ const router = createBrowserRouter([
             {
             path: 'profile', // <<<< روت جدید
             element: <ProfilePage />,
+          },
+
+        ],
+      },
+        {
+        path: 'admin',
+        element: <AdminRoute />, // ۱. بررسی می‌کند کاربر ادمین است
+        children: [
+          {
+            element: <AdminLayout />, // ۲. اگر ادمین بود، Layout ادمین را نمایش می‌دهد
+            children: [
+              { path: 'users', element: <UserManagementPage /> },
+              { path: 'dashboard', element: <div>داشبورد ادمین</div> }
+            ],
           },
         ],
       },
