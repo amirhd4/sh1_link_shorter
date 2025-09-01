@@ -9,6 +9,7 @@ from .database import engine, Base, async_session_factory
 from .routers import auth, links, admin, payment, stats, plans
 from .rate_limiter import limiter
 from .models import Plan
+from .config import settings
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -41,11 +42,8 @@ app = FastAPI(lifespan=lifespan)
 app.state.limiter = limiter
 from slowapi import _rate_limit_exceeded_handler
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
-
 origins = [
-    "http://localhost:3000",
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
+    settings.frontend_url,
 ]
 app.add_middleware(
     CORSMiddleware,

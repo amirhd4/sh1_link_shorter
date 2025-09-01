@@ -1,5 +1,6 @@
 from loguru import logger
 from ..config import settings
+from ..config import settings
 
 
 # from sendgrid import SendGridAPIClient
@@ -31,7 +32,7 @@ def send_email(to_email: str, subject: str, content: str):
 
 def send_password_reset_email(to_email: str, reset_token: str):
     subject = "Password Reset Request for Link Shortener"
-    reset_url = f"http://localhost:3000/reset-password?token={reset_token}"
+    reset_url = f"{settings.frontend_url}/reset-password?token={reset_token}"
     content = f"""
     <p>Hello,</p>
     <p>You requested a password reset. Click the link below to set a new password:</p>

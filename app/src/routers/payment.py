@@ -8,10 +8,12 @@ from .. import models, schemas
 from ..database import get_db
 from ..services import security
 from ..services.zarinpal_gateway import ZarinpalGateway
+from ..config import settings
+
 
 router = APIRouter(
     prefix="/payments",
-    tags=["Payments"]
+    tags=["Payments"],
 )
 
 
@@ -60,8 +62,8 @@ async def verify_zarinpal_payment(
         Status: str = Query(...),
         db: AsyncSession = Depends(get_db)
 ):
-    success_url = "http://localhost:3000/payment/success"
-    failure_url = "http://localhost:3000/payment/failure"
+    success_url = f"{settings.frontend_url}/payment/success"
+    failure_url = f"{settings.frontend_url}/payment/failure"
 
     if Status != "OK":
         return RedirectResponse(failure_url)
