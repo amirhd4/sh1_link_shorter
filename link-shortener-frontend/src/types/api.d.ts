@@ -1,3 +1,11 @@
+export interface PlanResponse {
+  id: number;
+  name: string;
+  price: int;
+  link_limit_per_month: int;
+  duration_days: int;
+}
+
 export interface UserResponse {
   id: number;
   email: string;
@@ -5,10 +13,7 @@ export interface UserResponse {
   first_name?: string | null;
   last_name?: string | null;
   phone_number?: string | null;
-  plan?: { // تایپ پلن را هم برای کامل بودن اضافه می‌کنیم
-    id: number;
-    name: string;
-  } | null;
+  plan?: PlanResponse | null;
   subscription_end_date?: string | null;
 }
 
