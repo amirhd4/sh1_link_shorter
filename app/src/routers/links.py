@@ -1,8 +1,11 @@
+from datetime import datetime, timezone, timedelta, date
+
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import RedirectResponse, JSONResponse
 from fastapi.responses import StreamingResponse
 import io
 
+from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 import redis.asyncio as redis
@@ -18,7 +21,8 @@ from ..rate_limiter import limiter
 
 
 router = APIRouter(
-    tags=["Links"]
+    prefix="/api/links",
+    tags=["Links Management"]
 )
 
 async def get_redis_client(request: Request) -> redis.Redis:
@@ -26,8 +30,6 @@ async def get_redis_client(request: Request) -> redis.Redis:
         کلاینت Redis را که در هنگام startup ایجاد شده، در دسترس قرار می‌دهد.
     """
     return request.app.state.redis
-
-
 
 
 @router.post("/shorten", response_model=schemas.URLResponse)
@@ -80,42 +82,6 @@ async def create_short_url(
     short_url_full = f"http://localhost:8000/{short_code}"
 
     return schemas.URLResponse(long_url=db_link.long_url, short_url=short_url_full)
-
-
-@router.get("/{short_code}")
-async def redirect_to_long_url(
-    short_code: str,
-    db: AsyncSession = Depends(get_db),
-    redis_client: redis.Redis = Depends(get_redis_client)
-):
-    """
-    کاربر را به URL اصلی هدایت می‌کند و تعداد کلیک را افزایش می‌دهد.
-    """
-    cache_key = f"link:{short_code}"
-    long_url = await redis_client.get(cache_key)
-
-    if long_url:
-        # حتی اگر از کش می‌خوانیم، باید شمارنده را در دیتابیس آپدیت کنیم
-        # برای بهینه‌سازی، این کار می‌تواند به یک صف پس‌زمینه منتقل شود
-        db_link_update = await db.get(models.Link, {"short_code": short_code}) # روش بهینه برای یافتن
-        if db_link_update:
-            db_link_update.clicks += 1
-            await db.commit()
-        return RedirectResponse(url=long_url, status_code=301)
-
-    result = await db.execute(select(models.Link).where(models.Link.short_code == short_code))
-    db_link = result.scalar_one_or_none()
-
-    if db_link is None:
-        raise HTTPException(status_code=404, detail="URL not found")
-
-    db_link.clicks += 1
-    await db.commit()
-
-    await redis_client.set(cache_key, db_link.long_url)
-
-    return RedirectResponse(url=db_link.long_url, status_code=301)
-
 
 
 @router.get("/my-links", response_model=List[schemas.LinkDetails])

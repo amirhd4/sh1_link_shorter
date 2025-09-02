@@ -1,12 +1,13 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
 from contextlib import asynccontextmanager
 import redis.asyncio as redis
 from sqlalchemy.future import select
 from slowapi.errors import RateLimitExceeded
-from fastapi.middleware.cors import CORSMiddleware
 
 from .database import engine, Base, async_session_factory
-from .routers import auth, links, admin, payment, stats, plans
+from .routers import auth, links, admin, payment, stats, plans, redirect
 from .rate_limiter import limiter
 from .models import Plan
 from .config import settings
@@ -26,7 +27,7 @@ async def lifespan(app: FastAPI):
 
         pro_plan_result = await session.execute(select(Plan).where(Plan.name == "Pro"))
         if not pro_plan_result.scalar_one_or_none():
-            session.add(Plan(name="Pro", link_limit_per_month=1000, duration_days=30, price=30000))
+            session.add(Plan(name="Pro", link_limit_per_month=1000, duration_days=30, price=500000))
             print("💎 'Pro' plan created.")
 
         await session.commit()
@@ -59,6 +60,8 @@ app.include_router(admin.router)
 app.include_router(payment.router)
 app.include_router(stats.router)
 app.include_router(plans.router)
+app.include_router(redirect.router)
+
 
 @app.get("/")
 def read_root():

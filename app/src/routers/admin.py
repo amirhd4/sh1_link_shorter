@@ -1,8 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from datetime import date, timedelta
 from typing import List
+from pydantic import BaseModel
 
 from .. import models, schemas
 from ..database import get_db
@@ -100,3 +102,37 @@ async def delete_user_by_admin(user_id: int, db: AsyncSession = Depends(get_db))
     await db.delete(user)
     await db.commit()
     return None
+
+
+@router.delete("/links/{short_code}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_link_by_admin(
+        short_code: str,
+        db: AsyncSession = Depends(get_db),
+        current_admin: models.User = Depends(security.get_current_admin_user)
+):
+    result = await db.execute(select(models.Link).where(models.Link.short_code == short_code))
+    link = result.scalar_one_or_none()
+    if not link:
+        raise HTTPException(status_code=404, detail="Link not found")
+
+    await db.delete(link)
+    await db.commit()
+    return None
+
+
+
+class SystemStats(BaseModel):
+    total_users: int
+    total_links: int
+    total_clicks: int
+
+@router.get("/stats", response_model=SystemStats)
+async def get_system_stats(db: AsyncSession = Depends(get_db)):
+    total_users = await db.scalar(select(func.count(models.User.id)))
+    total_links = await db.scalar(select(func.count(models.Link.id)))
+    total_clicks = await db.scalar(select(func.sum(models.Link.clicks)))
+    return SystemStats(
+        total_users=total_users or 0,
+        total_links=total_links or 0,
+        total_clicks=total_clicks or 0,
+    )

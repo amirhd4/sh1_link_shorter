@@ -12,6 +12,7 @@ import { PlansPage } from './features/billing/pages/PlansPage';
 import { PaymentStatusPage } from './features/billing/pages/PaymentStatusPage';
 import { LinkDetailsPage } from './features/links/pages/LinkDetailsPage';
 import { LinkManagementPage } from './features/admin-dashboard/pages/LinkManagementPage';
+import { AdminDashboardPage } from './features/admin-dashboard/pages/AdminDashboardPage';
 
 
 const router = createBrowserRouter([
@@ -69,6 +70,8 @@ const router = createBrowserRouter([
             children: [
               { path: 'links', element: <LinkManagementPage /> },
               { path: 'users', element: <UserManagementPage /> },
+              { path: 'dashboard', element: <AdminDashboardPage /> },
+
               { path: 'dashboard', element: <div>داشبورد ادمین</div> }
             ],
           },

@@ -33,10 +33,13 @@ export function PlansPage() {
           <Grid item key={plan.id} xs={12} md={4}>
             <Card>
               <CardContent>
+
                 <Typography variant="h5" component="div">{plan.name}</Typography>
+
                 <Typography sx={{ mb: 1.5 }} color="text.secondary">
-                  {plan.price === 0 ? "رایگان" : `${plan.price.toLocaleString('fa-IR')} تومان`}
+                  {plan.price === 0 ? "رایگان" : `${(plan.price / 10).toLocaleString('fa-IR')} تومان`}
                 </Typography>
+
                 <Typography variant="body2">
                   - محدودیت {plan.link_limit_per_month} لینک در ماه
                   <br />

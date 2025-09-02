@@ -56,3 +56,9 @@ export interface LinkDetailsForAdmin {
     email: string;
   };
 }
+
+export interface SystemStats {
+  total_users: number;
+  total_links: number;
+  total_clicks: number;
+}
