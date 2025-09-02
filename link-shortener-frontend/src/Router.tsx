@@ -14,6 +14,7 @@ import { LinkDetailsPage } from './features/links/pages/LinkDetailsPage';
 import { LinkManagementPage } from './features/admin-dashboard/pages/LinkManagementPage';
 import { AdminDashboardPage } from './features/admin-dashboard/pages/AdminDashboardPage';
 import { RootRedirect } from './layouts/RootRedirect'; // <<<< کامپوننت جدید
+import { HomePage } from './features/showcase/pages/HomePage';
 
 
 const router = createBrowserRouter([
@@ -25,14 +26,18 @@ const router = createBrowserRouter([
     path: '/register',
     element: <RegisterPage />,
   },
+  {
+    path: '/payment/success',
+    element: <PaymentStatusPage />,
+    },
     {
-          path: '/payment/success',
-          element: <PaymentStatusPage />,
-        },
-        {
-          path: '/payment/failure',
-          element: <PaymentStatusPage />,
-        },
+      path: '/payment/failure',
+      element: <PaymentStatusPage />,
+    },
+    {
+    path: '/home',
+    element: <HomePage />,
+  },
   {
     path: '/',
     element: <ProtectedRoute />,
@@ -76,7 +81,6 @@ const router = createBrowserRouter([
               { path: 'links', element: <LinkManagementPage /> },
               { path: 'users', element: <UserManagementPage /> },
               { path: 'dashboard', element: <AdminDashboardPage /> },
-
               { path: 'dashboard', element: <div>داشبورد ادمین</div> }
             ],
           },
