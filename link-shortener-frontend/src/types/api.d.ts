@@ -44,3 +44,15 @@ export interface ChangePasswordPayload {
   current_password: string;
   new_password: string;
 }
+
+
+export interface LinkDetailsForAdmin {
+  long_url: string;
+  short_code: string;
+  clicks: number;
+  created_at: string;
+  owner: {
+    id: number;
+    email: string;
+  };
+}

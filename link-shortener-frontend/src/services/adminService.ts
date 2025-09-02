@@ -1,5 +1,6 @@
 import apiClient from '../lib/axios';
-import type { UserResponse } from '../types/api';
+import type { UserResponse, LinkDetailsForAdmin } from '../types/api';
+
 
 export const adminService = {
   /**
@@ -15,6 +16,14 @@ export const adminService = {
    */
   assignPlanToUser: async ({ userId, planName }: { userId: number; planName: string }): Promise<UserResponse> => {
     const response = await apiClient.post(`/admin/users/${userId}/assign-plan`, { plan_name: planName });
+    return response.data;
+  },
+
+  /**
+   * لیست تمام لینک‌های موجود در سیستم را دریافت می‌کند.
+   */
+  getAllLinks: async (): Promise<LinkDetailsForAdmin[]> => {
+    const response = await apiClient.get('/admin/links');
     return response.data;
   },
 };

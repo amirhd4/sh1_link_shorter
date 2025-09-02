@@ -11,6 +11,7 @@ import { UserManagementPage } from './features/admin-dashboard/pages/UserManagem
 import { PlansPage } from './features/billing/pages/PlansPage';
 import { PaymentStatusPage } from './features/billing/pages/PaymentStatusPage';
 import { LinkDetailsPage } from './features/links/pages/LinkDetailsPage';
+import { LinkManagementPage } from './features/admin-dashboard/pages/LinkManagementPage';
 
 
 const router = createBrowserRouter([
@@ -61,11 +62,12 @@ const router = createBrowserRouter([
       },
         {
         path: 'admin',
-        element: <AdminRoute />, // ۱. بررسی می‌کند کاربر ادمین است
+        element: <AdminRoute />,
         children: [
           {
             element: <AdminLayout />, // ۲. اگر ادمین بود، Layout ادمین را نمایش می‌دهد
             children: [
+              { path: 'links', element: <LinkManagementPage /> },
               { path: 'users', element: <UserManagementPage /> },
               { path: 'dashboard', element: <div>داشبورد ادمین</div> }
             ],
