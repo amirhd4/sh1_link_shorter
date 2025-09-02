@@ -1,6 +1,6 @@
 from pydantic import BaseModel, HttpUrl, EmailStr
 from typing import Optional
-from datetime import date
+from datetime import date, datetime
 
 from . import models
 
@@ -60,7 +60,7 @@ class LinkDetails(BaseModel):
     long_url: HttpUrl
     short_code: str
     clicks: int
-    created_at: str
+    created_at: datetime
 
     class Config:
         from_attributes = True
