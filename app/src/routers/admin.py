@@ -2,12 +2,13 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime, timezone
 from typing import List
 from pydantic import BaseModel
 
 from .. import models, schemas
 from ..database import get_db
+from ..schemas import DailyStat, SystemStats
 from ..services import security
 
 router = APIRouter(
@@ -121,13 +122,17 @@ async def delete_link_by_admin(
 
 
 
-class SystemStats(BaseModel):
-    total_users: int
-    total_links: int
-    total_clicks: int
-
 @router.get("/stats", response_model=SystemStats)
 async def get_system_stats(db: AsyncSession = Depends(get_db)):
+    seven_days_ago = datetime.now(timezone.utc).date() - timedelta(days=7)
+    new_users_data = await db.execute(
+        select(func.date(models.User.created_at), func.count(models.User.id))
+        .where(models.User.created_at >= seven_days_ago)
+        .group_by(func.date(models.User.created_at))
+        .order_by(func.date(models.User.created_at))
+    )
+    new_users_last_7_days = [DailyStat(date=row[0], count=row[1]) for row in new_users_data.all()]
+
     total_users = await db.scalar(select(func.count(models.User.id)))
     total_links = await db.scalar(select(func.count(models.Link.id)))
     total_clicks = await db.scalar(select(func.sum(models.Link.clicks)))
@@ -135,4 +140,5 @@ async def get_system_stats(db: AsyncSession = Depends(get_db)):
         total_users=total_users or 0,
         total_links=total_links or 0,
         total_clicks=total_clicks or 0,
+        new_users_last_7_days=new_users_last_7_days
     )

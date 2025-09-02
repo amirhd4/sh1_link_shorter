@@ -61,4 +61,5 @@ export interface SystemStats {
   total_users: number;
   total_links: number;
   total_clicks: number;
+  new_users_last_7_days: DailyStat[];
 }

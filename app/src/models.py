@@ -33,6 +33,9 @@ class User(Base):
     subscription_start_date = Column(Date, nullable=True)
     subscription_end_date = Column(Date, nullable=True)
 
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
     plan = relationship("Plan")
     links = relationship("Link", back_populates="owner")
 

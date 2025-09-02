@@ -1,5 +1,5 @@
 from pydantic import BaseModel, HttpUrl, EmailStr
-from typing import Optional
+from typing import Optional, List
 from datetime import date, datetime
 
 from . import models
@@ -68,3 +68,14 @@ class LinkDetails(BaseModel):
 
 class LinkUpdate(BaseModel):
     long_url: HttpUrl
+
+
+class DailyStat(BaseModel):
+    date: date
+    count: int
+
+class SystemStats(BaseModel):
+    total_users: int
+    total_links: int
+    total_clicks: int
+    new_users_last_7_days: List[DailyStat]
