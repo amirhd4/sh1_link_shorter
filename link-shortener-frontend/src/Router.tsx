@@ -13,6 +13,7 @@ import { PaymentStatusPage } from './features/billing/pages/PaymentStatusPage';
 import { LinkDetailsPage } from './features/links/pages/LinkDetailsPage';
 import { LinkManagementPage } from './features/admin-dashboard/pages/LinkManagementPage';
 import { AdminDashboardPage } from './features/admin-dashboard/pages/AdminDashboardPage';
+import { RootRedirect } from './layouts/RootRedirect'; // <<<< کامپوننت جدید
 
 
 const router = createBrowserRouter([
@@ -39,6 +40,10 @@ const router = createBrowserRouter([
       {
         element: <ClientLayout />,
         children: [
+          {
+            index: true,
+            element: <RootRedirect />,
+          },
           {
             path: 'dashboard', // مسیر: /dashboard
             element: <LinksDashboard />,

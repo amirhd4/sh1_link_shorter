@@ -20,6 +20,16 @@ import { faIR } from '@mui/x-data-grid/locales';
 import config from '../../../config';
 
 
+const fullFaIRLocale = {
+  ...faIR.components.MuiDataGrid.defaultProps.localeText,
+  // این بخش را برای شخصی‌سازی متن صفحه‌بندی بازنویسی می‌کنیم
+  MuiTablePagination: {
+    labelDisplayedRows: ({ from, to, count }) =>
+      `${from.toLocaleString('fa-IR')}–${to.toLocaleString('fa-IR')} از ${count !== -1 ? count.toLocaleString('fa-IR') : `بیش از ${to.toLocaleString('fa-IR')}`}`,
+    labelRowsPerPage: "تعداد سطرها در هر صفحه:",
+  },
+};
+
 export function LinksDashboard() {
   const navigate = useNavigate();
   const { t } = useTranslation('common');
@@ -158,7 +168,8 @@ export function LinksDashboard() {
           initialState={{
             pagination: { paginationModel: { page: 0, pageSize: 5 } },
           }}
-          localeText={faIR.components.MuiDataGrid.defaultProps.localeText}
+          localeText={fullFaIRLocale}
+
           pageSizeOptions={[5, 10]}
         />
       </Box>
