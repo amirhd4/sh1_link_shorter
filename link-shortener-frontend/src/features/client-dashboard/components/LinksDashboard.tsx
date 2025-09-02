@@ -15,6 +15,10 @@ import EditIcon from '@mui/icons-material/Edit';
 import AnalyticsIcon from '@mui/icons-material/Analytics';
 import { useNavigate } from 'react-router-dom';
 
+import { Link as MuiLink, Tooltip } from '@mui/material';
+import { faIR } from '@mui/x-data-grid/locales';
+import config from '../../../config';
+
 
 export function LinksDashboard() {
   const navigate = useNavigate();
@@ -68,7 +72,20 @@ export function LinksDashboard() {
   };
 
   const columns: GridColDef[] = [
-    { field: 'short_code', headerName: 'کد کوتاه', width: 150 },
+    {
+      field: 'short_code',
+      headerName: 'کد کوتاه',
+      width: 150,
+      renderCell: (params) => (
+        <MuiLink
+          href={`${config.backendBaseUrl}/${params.value}`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {params.value}
+        </MuiLink>
+      ),
+    },
     { field: 'long_url', headerName: 'آدرس اصلی', flex: 1, minWidth: 250 },
     { field: 'clicks', headerName: 'تعداد کلیک', type: 'number', width: 130 },
     {
@@ -82,25 +99,28 @@ export function LinksDashboard() {
       type: 'actions',
       headerName: 'عملیات',
       width: 120,
-      cellClassName: 'actions',
       getActions: ({ row }) => [
-        <GridActionsCellItem
-          icon={<AnalyticsIcon />}
-          label="Details"
-          onClick={handleDetailsClick(row.short_code)}
-        />,
-        <GridActionsCellItem
-          icon={<EditIcon />}
-          label="Edit"
-          onClick={handleEditClick(row as LinkDetails)} // <<<< پاس دادن کل اطلاعات لینک
-          color="inherit"
-        />,
-        <GridActionsCellItem
-          icon={<DeleteIcon />}
-          label="Delete"
-          onClick={handleDeleteClick(row.short_code as string)}
-          color="inherit"
-        />,
+        <Tooltip title="مشاهده آمار و جزئیات">
+          <GridActionsCellItem
+            icon={<AnalyticsIcon />}
+            label="Details"
+            onClick={handleDetailsClick(row.short_code)}
+          />
+        </Tooltip>,
+        <Tooltip title="ویرایش لینک">
+          <GridActionsCellItem
+            icon={<EditIcon />}
+            label="Edit"
+            onClick={handleEditClick(row as LinkDetails)}
+          />
+        </Tooltip>,
+        <Tooltip title="حذف لینک">
+          <GridActionsCellItem
+            icon={<DeleteIcon />}
+            label="Delete"
+            onClick={handleDeleteClick(row.short_code as string)}
+          />
+        </Tooltip>,
       ],
     },
 
@@ -138,6 +158,7 @@ export function LinksDashboard() {
           initialState={{
             pagination: { paginationModel: { page: 0, pageSize: 5 } },
           }}
+          localeText={faIR.components.MuiDataGrid.defaultProps.localeText}
           pageSizeOptions={[5, 10]}
         />
       </Box>

@@ -22,7 +22,7 @@ export const linkService = {
   },
 
   getLinkDetails: async (shortCode: string): Promise<LinkDetails> => {
-    const response = await apiClient.get(`/api/links/links/${shortCode}`); // <<<< اصلاح شد
+    const response = await apiClient.get(`/api/links/${shortCode}`);
     return response.data;
   },
 };

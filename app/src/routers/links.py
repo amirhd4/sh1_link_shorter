@@ -1,10 +1,9 @@
-from datetime import datetime, timezone, timedelta, date
-
+import io
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import RedirectResponse, JSONResponse
 from fastapi.responses import StreamingResponse
-import io
 
+from datetime import datetime, timezone, timedelta, date
 from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -13,6 +12,7 @@ from typing import List
 import qrcode
 
 from .. import models, schemas
+from ..config import settings
 from ..database import get_db
 from ..services import security
 from ..services.kgs import generate_unique_short_key
@@ -79,7 +79,7 @@ async def create_short_url(
     await db.commit()
     await db.refresh(db_link)
 
-    short_url_full = f"http://localhost:8000/{short_code}"
+    short_url_full = f"{settings.backend_url}/{short_code}"
 
     return schemas.URLResponse(long_url=db_link.long_url, short_url=short_url_full)
 
@@ -183,3 +183,19 @@ async def get_qr_code(short_code: str, request: Request):
     buf.seek(0)
 
     return StreamingResponse(buf, media_type="image/png")
+
+
+@router.get("/{short_code}", response_model=schemas.LinkDetails)
+async def get_link_details(
+    short_code: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: models.User = Depends(security.get_current_user)
+):
+    result = await db.execute(
+        select(models.Link)
+        .where(models.Link.short_code == short_code, models.Link.owner_id == current_user.id)
+    )
+    link = result.scalar_one_or_none()
+    if not link:
+        raise HTTPException(status_code=404, detail="Link not found or you do not have permission to view it")
+    return link
