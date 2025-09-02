@@ -32,6 +32,8 @@ async def create_payment(
     if not plan:
         raise HTTPException(status_code=404, detail="Plan not found")
 
+    if current_user.plan_id == plan.id:
+        raise HTTPException(status_code=400, detail="You already have this plan.")
 
     gateway = ZarinpalGateway()
     payment_url, authority = await gateway.create_payment_link(
