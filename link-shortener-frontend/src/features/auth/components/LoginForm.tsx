@@ -1,7 +1,7 @@
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { TextField, Button, Box, Typography, Alert, Link } from '@mui/material';
+import {TextField, Button, Box, Typography, Alert, Link, Grid} from '@mui/material';
 import { useMutation } from '@tanstack/react-query';
 import { authService } from '../../../services/authService';
 import { useUserStore } from '../../../store/userStore';
@@ -122,6 +122,13 @@ export function LoginForm() {
       >
         {loginMutation.isPending ? 'در حال ورود...' : 'ورود'}
       </Button>
+        <Grid container justifyContent="flex-end">
+    <Grid>
+        <Link component={RouterLink} to="/forgot-password" variant="body2">
+            رمز عبور خود را فراموش کرده‌اید؟
+        </Link>
+    </Grid>
+</Grid>
 
         <Link component={RouterLink} to="/register" variant="body2">
         {"حساب کاربری ندارید؟ ثبت‌نام کنید"}

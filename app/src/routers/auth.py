@@ -2,8 +2,6 @@ from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
-from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import selectinload
 
 from .. import schemas, models
@@ -13,6 +11,7 @@ from ..rate_limiter import limiter
 from ..services import email_service
 from sqlalchemy.future import select
 from datetime import date, timedelta
+from ..schemas import ResetPasswordRequest, ChangePasswordRequest, EmailSchema
 
 
 router = APIRouter(
@@ -96,16 +95,18 @@ async def read_users_me(current_user: models.User = Depends(security.get_current
     return current_user
 
 
-@router.post("/forgot-password")
-async def forgot_password(email_schema: schemas.EmailStr, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(models.User).where(models.User.email == email_schema))
-    user = result.scalar_one_or_none()
+@router.post("/forgot-password", status_code=status.HTTP_200_OK)
+async def forgot_password(request: EmailSchema, db: AsyncSession = Depends(get_db)):
+    user_result = await db.execute(select(models.User).where(models.User.email == request.email))
+    user = user_result.scalar_one_or_none()
+
     if user:
         reset_token = security.create_access_token(
-            data={"sub": user.email},
+            data={"sub": user.email, "type": "password_reset"},
             expires_delta=timedelta(minutes=15)
         )
         email_service.send_password_reset_email(user.email, reset_token)
+
     return {"message": "If an account with that email exists, a password reset link has been sent."}
 
 
@@ -114,15 +115,31 @@ class ResetPasswordRequest(schemas.BaseModel):
     new_password: str
 
 
-@router.post("/reset-password")
+@router.post("/reset-password", status_code=status.HTTP_200_OK)
 async def reset_password(request: ResetPasswordRequest, db: AsyncSession = Depends(get_db)):
-    user = await security.get_current_user(token=request.token,
-                                           db=db)
+    try:
+        payload = jwt.decode(request.token, settings.secret_key, algorithms=[settings.algorithm])
 
-    user.hashed_password = security.get_password_hash(request.new_password)
-    await db.commit()
+        if payload.get("type") != "password_reset":
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token type")
 
-    return {"message": "Password has been reset successfully."}
+        email: str = payload.get("sub")
+        if email is None:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+
+        user_result = await db.execute(select(models.User).where(models.User.email == email))
+        user = user_result.scalar_one_or_none()
+
+        if user is None:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        user.hashed_password = security.get_password_hash(request.new_password)
+        await db.commit()
+
+        return {"message": "Password has been reset successfully."}
+
+    except JWTError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token has expired or is invalid")
 
 
 @router.patch("/users/me", response_model=schemas.UserResponse)

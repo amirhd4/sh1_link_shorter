@@ -24,6 +24,9 @@ import { PaymentStatusPage } from './features/billing/pages/PaymentStatusPage';
 import { AdminDashboardPage } from './features/admin-dashboard/pages/AdminDashboardPage';
 import { UserManagementPage } from './features/admin-dashboard/pages/UserManagementPage';
 import { LinkManagementPage } from './features/admin-dashboard/pages/LinkManagementPage';
+import { ForgotPasswordPage } from './features/auth/pages/ForgotPasswordPage';
+import { ResetPasswordPage } from './features/auth/pages/ResetPasswordPage';
+
 
 const router = createBrowserRouter([
   // --- گروه روت‌های عمومی ---
@@ -34,6 +37,8 @@ const router = createBrowserRouter([
       { path: '/home', element: <HomePage /> },
       { path: '/login', element: <LoginPage /> },
       { path: '/register', element: <RegisterPage /> },
+      { path: '/forgot-password', element: <ForgotPasswordPage /> },
+      { path: '/reset-password', element: <ResetPasswordPage /> },
     ],
   },
 

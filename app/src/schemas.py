@@ -5,6 +5,20 @@ from datetime import date, datetime
 from . import models
 
 
+class EmailSchema(BaseModel):
+    email: EmailStr
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
+
+
 class PlanResponse(BaseModel):
     id: int
     name: str
