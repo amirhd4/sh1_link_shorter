@@ -11,6 +11,7 @@ from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 
 from .. import schemas, models
+from ..config import settings
 from ..database import get_db
 from ..services import security
 from ..rate_limiter import limiter

@@ -12,6 +12,8 @@ class Settings(BaseSettings):
 
     # Google Web Risk
     google_api_key: str
+    google_client_secret: str
+    google_client_id: str
 
     # JWT Authentication
     secret_key: str
