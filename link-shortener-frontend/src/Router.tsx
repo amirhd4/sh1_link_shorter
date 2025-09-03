@@ -1,23 +1,33 @@
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
+
+// Layouts
+import { ProtectedRoute } from './layouts/ProtectedRoute';
+import { AdminRoute } from './layouts/AdminRoute';
+import { PublicLayout } from './layouts/PublicLayout';
+import { ClientLayout } from './layouts/ClientLayout';
+import { AdminLayout } from './layouts/AdminLayout';
+
+// Public Pages
+import { HomePage } from './features/showcase/pages/HomePage';
 import { LoginPage } from './features/auth/pages/LoginPage';
 import { RegisterPage } from './features/auth/pages/RegisterPage';
+
+// Client (User) Pages
 import { LinksDashboard } from './features/client-dashboard/components/LinksDashboard';
-import { ProtectedRoute } from './layouts/ProtectedRoute';
-import { ClientLayout } from './layouts/ClientLayout';
 import { ProfilePage } from './features/profile/pages/ProfilePage';
-import { HomePage } from './features/showcase/pages/HomePage';
-import { PublicLayout } from './layouts/PublicLayout'; // <<<< ایمپورت
-import { PaymentStatusPage } from './features/billing/pages/PaymentStatusPage';
 import { PlansPage } from './features/billing/pages/PlansPage';
+import { BillingHistoryPage } from './features/billing/pages/BillingHistoryPage';
 import { LinkDetailsPage } from './features/links/pages/LinkDetailsPage';
-import { AdminRoute } from './layouts/AdminRoute';
-import {AdminLayout} from "./layouts/AdminLayout.tsx";
-import { LinkManagementPage } from './features/admin-dashboard/pages/LinkManagementPage.tsx';
-import { UserManagementPage } from './features/admin-dashboard/pages/UserManagementPage.tsx';
-import {AdminDashboardPage} from "./features/admin-dashboard/pages/AdminDashboardPage.tsx";
+import { PaymentStatusPage } from './features/billing/pages/PaymentStatusPage';
+
+// Admin Pages
+import { AdminDashboardPage } from './features/admin-dashboard/pages/AdminDashboardPage';
+import { UserManagementPage } from './features/admin-dashboard/pages/UserManagementPage';
+import { LinkManagementPage } from './features/admin-dashboard/pages/LinkManagementPage';
 
 const router = createBrowserRouter([
-  // گروه روت‌های عمومی (برای کاربرانی که لاگین نکرده‌اند)
+  // --- گروه روت‌های عمومی ---
+  // این مسیرها برای هر بازدیدکننده‌ای قابل دسترس هستند
   {
     element: <PublicLayout />,
     children: [
@@ -27,11 +37,13 @@ const router = createBrowserRouter([
     ],
   },
 
-  // گروه روت‌های خصوصی و محافظت شده (برای کاربران لاگین کرده)
+  // --- گروه روت‌های خصوصی و محافظت شده ---
+  // برای دسترسی به این مسیرها، کاربر باید حتما لاگین کرده باشد
   {
     path: '/',
     element: <ProtectedRoute />,
     children: [
+      // --- روت‌های داشبورد کلاینت ---
       {
         element: <ClientLayout />,
         children: [
@@ -39,21 +51,23 @@ const router = createBrowserRouter([
           { path: 'dashboard', element: <LinksDashboard /> },
           { path: 'profile', element: <ProfilePage /> },
           { path: 'plans', element: <PlansPage /> },
-          { path: 'my-links', element: <div>صفحه لینک‌های من</div>, },
-          { path: 'links/:shortCode', element: <LinkDetailsPage />, },
+          { path: 'billing', element: <BillingHistoryPage /> },
+          { path: 'links/:shortCode', element: <LinkDetailsPage /> },
         ],
       },
+
+      // --- روت‌های داشبورد ادمین (محافظت دو مرحله‌ای) ---
       {
         path: 'admin',
-        element: <AdminRoute />,
+        element: <AdminRoute />, // مرحله دوم: بررسی نقش ادمین
         children: [
           {
             element: <AdminLayout />,
             children: [
-              { path: 'links', element: <LinkManagementPage /> },
-              { path: 'users', element: <UserManagementPage /> },
+              { index: true, element: <Navigate to="/admin/dashboard" replace /> },
               { path: 'dashboard', element: <AdminDashboardPage /> },
-              { path: 'dashboard', element: <div>داشبورد ادمین</div> }
+              { path: 'users', element: <UserManagementPage /> },
+              { path: 'links', element: <LinkManagementPage /> },
             ],
           },
         ],
@@ -61,14 +75,27 @@ const router = createBrowserRouter([
     ],
   },
 
-  // روت‌های بدون Layout خاص
-  { path: '/payment/success', element: <PaymentStatusPage /> },
-  { path: '/payment/failure', element: <PaymentStatusPage /> },
+  // --- روت‌های بدون Layout خاص (مانند بازگشت از درگاه پرداخت) ---
+  {
+    path: '/payment/success',
+    element: <PaymentStatusPage />,
+  },
+  {
+    path: '/payment/failure',
+    element: <PaymentStatusPage />,
+  },
 
-  // یک روت برای هندل کردن تمام مسیرهای ناموجود
-  { path: '*', element: <Navigate to="/home" replace /> },
+  // --- روت Catch-all برای هدایت مسیرهای ناموجود ---
+  // این روت همیشه باید در آخر قرار گیرد
+  {
+    path: '*',
+    element: <Navigate to="/home" replace />,
+  },
 ]);
 
+/**
+ * کامپوننت اصلی که RouterProvider را برای کل برنامه فراهم می‌کند.
+ */
 export function AppRouter() {
   return <RouterProvider router={router} />;
 }

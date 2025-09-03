@@ -63,3 +63,15 @@ export interface SystemStats {
   total_clicks: number;
   new_users_last_7_days: DailyStat[];
 }
+
+
+export interface TransactionResponse {
+  id: number;
+  amount: number;
+  status: 'pending' | 'completed' | 'failed';
+  authority: string;
+  created_at: string;
+  plan: {
+    name: string;
+  };
+}

@@ -1,11 +1,17 @@
+from typing import List
+
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from fastapi.responses import RedirectResponse
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
+
+from sqlalchemy.orm import selectinload
 
 from .. import models, schemas
 from ..database import get_db
+from ..schemas import PlanResponse
 from ..services import security
 from ..services.zarinpal_gateway import ZarinpalGateway
 from ..config import settings
@@ -96,3 +102,29 @@ async def verify_zarinpal_payment(
         transaction.status = models.TransactionStatus.FAILED
         await db.commit()
         return RedirectResponse(failure_url)
+
+
+
+class TransactionResponse(BaseModel):
+    id: int
+    amount: int
+    status: models.TransactionStatus
+    authority: str
+    created_at: datetime
+    plan: PlanResponse
+
+    class Config:
+        from_attributes = True
+
+@router.get("/transactions", response_model=List[TransactionResponse])
+async def get_my_transactions(
+    db: AsyncSession = Depends(get_db),
+    current_user: models.User = Depends(security.get_current_user)
+):
+    result = await db.execute(
+        select(models.Transaction)
+        .options(selectinload(models.Transaction.plan))
+        .where(models.Transaction.user_id == current_user.id)
+        .order_by(models.Transaction.id.desc())
+    )
+    return result.scalars().all()
