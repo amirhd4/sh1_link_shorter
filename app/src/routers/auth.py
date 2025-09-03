@@ -1,18 +1,23 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.responses import RedirectResponse
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
+from sqlalchemy.future import select
+from datetime import date, timedelta
+from google_auth_oauthlib.flow import Flow
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
 
 from .. import schemas, models
 from ..database import get_db
 from ..services import security
 from ..rate_limiter import limiter
 from ..services import email_service
-from sqlalchemy.future import select
-from datetime import date, timedelta
-from ..schemas import ResetPasswordRequest, ChangePasswordRequest, EmailSchema
 
+
+from ..schemas import ResetPasswordRequest, ChangePasswordRequest, EmailSchema
 
 router = APIRouter(
     prefix="/auth",
@@ -229,3 +234,64 @@ async def verify_email(token: str, db: AsyncSession = Depends(get_db)):
         return {"message": "Email verified successfully. You can now log in."}
     except JWTError:
         raise HTTPException(status_code=400, detail="Token is invalid or has expired.")
+
+
+CLIENT_SECRETS_FILE = {
+    "web": {
+        "client_id": settings.google_client_id,
+        "client_secret": settings.google_client_secret,
+        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+        "token_uri": "https://oauth2.googleapis.com/token",
+        "redirect_uris": [f"{settings.backend_url}/auth/google/callback"],
+    }
+}
+SCOPES = ["openid", "https://www.googleapis.com/auth/userinfo.email",
+          "https://www.googleapis.com/auth/userinfo.profile"]
+
+@router.get("/google/login")
+async def google_login():
+    flow = Flow.from_client_config(
+        client_config=CLIENT_SECRETS_FILE,
+        scopes=SCOPES,
+        redirect_uri=f"{settings.backend_url}/auth/google/callback"
+    )
+    authorization_url, state = flow.authorization_url(access_type='offline', include_granted_scopes='true')
+    return RedirectResponse(authorization_url)
+
+
+@router.get("/google/callback")
+async def google_callback(code: str, db: AsyncSession = Depends(get_db)):
+    flow = Flow.from_client_config(
+        client_config=CLIENT_SECRETS_FILE,
+        scopes=SCOPES,
+        redirect_uri=f"{settings.backend_url}/auth/google/callback"
+    )
+    flow.fetch_token(code=code)
+    credentials = flow.credentials
+
+    id_info = id_token.verify_oauth2_token(
+        id_token=credentials.id_token,
+        request=google_requests.Request(),
+        audience=settings.google_client_id
+    )
+
+    email = id_info.get('email')
+    user = await db.scalar(select(models.User).where(models.User.email == email))
+
+    if not user:
+        # اگر کاربر وجود ندارد، یک کاربر جدید ایجاد کن
+        free_plan = await db.scalar(select(models.Plan).where(models.Plan.name == "Free"))
+        new_user = models.User(
+            email=email,
+            hashed_password=security.get_password_hash(""),  # رمز عبور نیاز نیست
+            is_verified=True,  # کاربر گوگل تایید شده است
+            plan_id=free_plan.id,
+            # ... بقیه فیلدهای لازم
+        )
+        db.add(new_user)
+        await db.commit()
+        user = new_user
+
+    app_token = security.create_access_token(data={"sub": user.email})
+
+    return RedirectResponse(url=f"{settings.frontend_url}/auth/callback?token={app_token}")

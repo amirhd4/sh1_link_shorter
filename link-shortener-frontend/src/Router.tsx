@@ -28,6 +28,7 @@ import { ForgotPasswordPage } from './features/auth/pages/ForgotPasswordPage';
 import { ResetPasswordPage } from './features/auth/pages/ResetPasswordPage';
 import { VerifyEmailPage } from './features/auth/pages/VerifyEmailPage';
 import { EmailSentPage } from './features/auth/pages/EmailSentPage';
+import {AuthCallbackPage} from "./features/auth/pages/AuthCallbackPage.tsx";
 
 
 
@@ -45,6 +46,7 @@ const router = createBrowserRouter([
       { path: '/reset-password', element: <ResetPasswordPage /> },
       { path: '/email-sent', element: <EmailSentPage /> },
       { path: '/verify-email', element: <VerifyEmailPage /> },
+      { path: '/auth/callback', element: <AuthCallbackPage /> },
     ],
   },
 
