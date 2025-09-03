@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { PlanResponse } from '../types/api';
 
+
 interface User {
   id: number;
   email: string;
@@ -12,14 +13,6 @@ interface User {
   subscription_end_date?: string | null; // <<<< این پراپرتی هم اضافه شد
 }
 
-interface UserState {
-  user: User | null;
-  // ... (بقیه اینترفیس)
-}
-
-export const useUserStore = create<UserState>((set, get) => ({
-  // ... (بقیه کد استور)
-}));
 
 interface UserState {
   user: User | null;

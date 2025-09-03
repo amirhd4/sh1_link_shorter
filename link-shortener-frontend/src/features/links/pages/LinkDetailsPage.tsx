@@ -24,7 +24,7 @@ export function LinkDetailsPage() {
         <Typography variant="body1"><b>آدرس اصلی:</b> {link.long_url}</Typography>
         <Typography variant="body1"><b>تاریخ ایجاد:</b> {new Date(link.created_at).toLocaleString('fa-IR')}</Typography>
         <Grid container spacing={2} sx={{ mt: 2 }}>
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md:4 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6">مجموع کلیک‌ها</Typography>

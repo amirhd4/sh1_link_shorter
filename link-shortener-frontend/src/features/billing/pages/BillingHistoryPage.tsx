@@ -3,6 +3,8 @@ import { DataGrid, type GridColDef } from '@mui/x-data-grid';
 import { Alert, Box, CircularProgress, Typography, Chip } from '@mui/material';
 import { billingService } from '../../../services/billingService';
 import { faIR } from '@mui/x-data-grid/locales';
+import type { GridValueFormatter } from '@mui/x-data-grid'; // مثال برای MUI
+
 
 // کامپوننت برای نمایش وضعیت با رنگ‌های مختلف
 const StatusChip = ({ status }: { status: 'pending' | 'completed' | 'failed' }) => {
@@ -17,9 +19,19 @@ const StatusChip = ({ status }: { status: 'pending' | 'completed' | 'failed' }) 
 const columns: GridColDef[] = [
   { field: 'id', headerName: 'شماره فاکتور', width: 120 },
   { field: 'plan', headerName: 'پلن خریداری شده', width: 180, valueGetter: (value, row) => row.plan.name },
-  { field: 'amount', headerName: 'مبلغ (ریال)', width: 150, valueFormatter: (value) => value.toLocaleString('fa-IR') },
+  {
+  field: 'amount',
+  headerName: 'مبلغ (ریال)',
+  width: 150,
+  valueFormatter: (value: any) => {
+    if (typeof value === 'number') {
+      return value.toLocaleString('fa-IR');
+    }
+    return '---';
+  }
+},
   { field: 'status', headerName: 'وضعیت', width: 120, renderCell: (params) => <StatusChip status={params.value} /> },
-  { field: 'created_at', headerName: 'تاریخ', flex: 1, valueFormatter: (value) => new Date(value).toLocaleString('fa-IR') },
+  { field: 'created_at', headerName: 'تاریخ', flex: 1, valueFormatter: (value) => new Date(value as string).toLocaleString('fa-IR') },
 ];
 
 export function BillingHistoryPage() {

@@ -47,7 +47,7 @@ const router = createBrowserRouter([
       {
         element: <ClientLayout />,
         children: [
-          { index: true, element: <Navigate to="/dashboard" replace /> },
+          { index: true, element: <Navigate to="/dashboard" replace /> }, // هدایت از / به داشبورد
           { path: 'dashboard', element: <LinksDashboard /> },
           { path: 'profile', element: <ProfilePage /> },
           { path: 'plans', element: <PlansPage /> },

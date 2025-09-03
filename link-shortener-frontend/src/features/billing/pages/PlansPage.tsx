@@ -36,7 +36,7 @@ export function PlansPage() {
           const isCurrentPlan = user?.plan?.name === plan.name;
 
           return (
-              <Grid key={plan.id} xs={12} md={4}>
+              <Grid key={plan.id} size={{ xs: 12, md:4 }}>
                 <Card raised={isCurrentPlan}
                       sx={isCurrentPlan ? {borderColor: 'primary.main', borderWidth: 2, borderStyle: 'solid'} : {}}>
                   <CardContent>

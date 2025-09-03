@@ -30,13 +30,13 @@ export function AdminDashboardPage() {
         داشبورد ادمین - نمای کلی سیستم
       </Typography>
       <Grid container spacing={3}>
-        <Grid xs={12} sm={6} md={4}>
+        <Grid  size={{ xs: 12, sm: 6, md: 4 }}>
           <StatCard title="تعداد کل کاربران" value={stats?.total_users ?? 0} icon={<PeopleIcon fontSize="inherit" />} />
         </Grid>
-        <Grid xs={12} sm={6} md={4}>
+        <Grid size={{ xs: 12, sm: 6, md:4 }}>
           <StatCard title="تعداد کل لینک‌ها" value={stats?.total_links ?? 0} icon={<LinkIcon fontSize="inherit" />} />
         </Grid>
-        <Grid xs={12} sm={6} md={4}>
+        <Grid size={{ xs: 12, sm: 6, md:4 }}>
           <StatCard title="مجموع کل کلیک‌ها" value={stats?.total_clicks ?? 0} icon={<MouseIcon fontSize="inherit" />} />
         </Grid>
       </Grid>

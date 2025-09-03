@@ -19,10 +19,13 @@ export function Header({ onMenuClick }: HeaderProps) {
    * کاربر را از سیستم خارج کرده، توکن را پاک می‌کند و به صفحه ورود هدایت می‌کند.
    */
   const handleLogout = () => {
+    // 1. پاک کردن توکن از حافظه محلی مرورگر
     localStorage.removeItem('access_token');
 
+    // 2. پاک کردن اطلاعات کاربر از استور سراسری Zustand
     setUser(null);
 
+    // 3. هدایت کاربر به صفحه ورود
     navigate('/login');
   };
 
