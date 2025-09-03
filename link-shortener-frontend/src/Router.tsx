@@ -26,6 +26,10 @@ import { UserManagementPage } from './features/admin-dashboard/pages/UserManagem
 import { LinkManagementPage } from './features/admin-dashboard/pages/LinkManagementPage';
 import { ForgotPasswordPage } from './features/auth/pages/ForgotPasswordPage';
 import { ResetPasswordPage } from './features/auth/pages/ResetPasswordPage';
+import { VerifyEmailPage } from './features/auth/pages/VerifyEmailPage';
+import { EmailSentPage } from './features/auth/pages/EmailSentPage';
+
+
 
 
 const router = createBrowserRouter([
@@ -39,6 +43,8 @@ const router = createBrowserRouter([
       { path: '/register', element: <RegisterPage /> },
       { path: '/forgot-password', element: <ForgotPasswordPage /> },
       { path: '/reset-password', element: <ResetPasswordPage /> },
+      { path: '/email-sent', element: <EmailSentPage /> },
+      { path: '/verify-email', element: <VerifyEmailPage /> },
     ],
   },
 

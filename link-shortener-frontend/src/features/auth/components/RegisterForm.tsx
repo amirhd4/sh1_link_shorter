@@ -28,8 +28,8 @@ export function RegisterForm() {
 
   const registerMutation = useMutation({
     mutationFn: (credentials: RegisterCredentials) => authService.register(credentials),
-    onSuccess: () => {
-      navigate('/login?registered=true');
+    onSuccess: (data) => {
+      navigate('/email-sent', { state: { email: data.email } });
     },
   });
 

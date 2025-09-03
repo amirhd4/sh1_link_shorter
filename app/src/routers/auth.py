@@ -20,6 +20,14 @@ router = APIRouter(
 )
 
 
+async def send_verification_email(user: models.User, db: AsyncSession):
+    verification_token = security.create_access_token(
+        data={"sub": user.email, "type": "email_verification"},
+        expires_delta=timedelta(hours=24)
+    )
+    email_service.send_account_verification_email(user.email, verification_token)
+
+
 @router.post("/register", response_model=schemas.UserResponse, status_code=status.HTTP_201_CREATED)
 @limiter.limit("5/minute")
 async def register_user(
@@ -66,8 +74,11 @@ async def register_user(
         .options(selectinload(models.User.plan))
         .where(models.User.id == new_user.id)
     )
+
     result = await db.execute(query)
     complete_new_user = result.scalar_one()
+
+    await send_verification_email(new_user, db)
 
     return complete_new_user
 
@@ -81,6 +92,11 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
             headers={"WWW-Authenticate": "Bearer"},
+        )
+    if not user.is_verified:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Email not verified. Please check your inbox for the verification link."
         )
 
     access_token = security.create_access_token(data={"sub": user.email})
@@ -181,3 +197,35 @@ async def change_current_user_password(
     await db.commit()
 
     return {"message": "Password changed successfully"}
+
+
+
+@router.post("/resend-verification-email", status_code=status.HTTP_200_OK)
+@limiter.limit("5/minute")
+async def resend_verification_email(request: EmailSchema, db: AsyncSession = Depends(get_db)):
+    user = await db.scalar(select(models.User).where(models.User.email == request.email))
+    if user and not user.is_verified:
+        await send_verification_email(user, db)
+    return {"message": "If your account exists and is not verified, a new verification email has been sent."}
+
+
+@router.get("/verify-email", status_code=status.HTTP_200_OK)
+async def verify_email(token: str, db: AsyncSession = Depends(get_db)):
+    try:
+        payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
+        if payload.get("type") != "email_verification":
+            raise HTTPException(status_code=400, detail="Invalid token type")
+        email = payload.get("sub")
+
+        user = await db.scalar(select(models.User).where(models.User.email == email))
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        if user.is_verified:
+            return {"message": "Email already verified."}
+
+        user.is_verified = True
+        await db.commit()
+        return {"message": "Email verified successfully. You can now log in."}
+    except JWTError:
+        raise HTTPException(status_code=400, detail="Token is invalid or has expired.")

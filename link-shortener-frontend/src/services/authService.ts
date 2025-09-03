@@ -46,4 +46,13 @@ export const authService = {
     const response = await apiClient.post('/auth/reset-password', data);
     return response.data;
   },
+
+
+  /**
+   * درخواست ارسال مجدد ایمیل تایید را ارسال می‌کند.
+   */
+  resendVerificationEmail: async (email: string): Promise<{ message: string }> => {
+    const response = await apiClient.post('/auth/resend-verification-email', { email });
+    return response.data;
+  },
 };
