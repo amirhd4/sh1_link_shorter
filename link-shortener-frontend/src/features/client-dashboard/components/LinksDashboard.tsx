@@ -31,7 +31,7 @@ export function LinksDashboard() {
 
   // State Management
   const [isCreateModalOpen, setCreateModalOpen] = useState(false);
-  const [editTarget, setEditTarget] = useState<LinkDetails | null>(null); // <<<< وضعیت برای مودال ویرایش
+  const [editTarget, setEditTarget] = useState<LinkDetails | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
 

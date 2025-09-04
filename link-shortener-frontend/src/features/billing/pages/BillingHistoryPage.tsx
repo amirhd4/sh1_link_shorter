@@ -1,9 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { DataGrid, type GridColDef } from '@mui/x-data-grid';
-import { Alert, Box, CircularProgress, Typography, Chip } from '@mui/material';
+import { Box, Typography, Chip } from '@mui/material';
 import { billingService } from '../../../services/billingService';
-import { faIR } from '@mui/x-data-grid/locales';
-import type { GridValueFormatter } from '@mui/x-data-grid'; // مثال برای MUI
+import {usePersianDataGridLocale} from "../../../hooks/usePersianDataGridLocale.ts"; // مثال برای MUI
 
 
 // کامپوننت برای نمایش وضعیت با رنگ‌های مختلف
@@ -18,7 +17,7 @@ const StatusChip = ({ status }: { status: 'pending' | 'completed' | 'failed' }) 
 
 const columns: GridColDef[] = [
   { field: 'id', headerName: 'شماره فاکتور', width: 120 },
-  { field: 'plan', headerName: 'پلن خریداری شده', width: 180, valueGetter: (value, row) => row.plan.name },
+  { field: 'plan', headerName: 'پلن خریداری شده', width: 180, valueGetter: (_, row) => row.plan.name },
   {
   field: 'amount',
   headerName: 'مبلغ (ریال)',
@@ -35,6 +34,8 @@ const columns: GridColDef[] = [
 ];
 
 export function BillingHistoryPage() {
+  const localeText = usePersianDataGridLocale();
+
   const { data, isLoading } = useQuery({
     queryKey: ['billing-history'],
     queryFn: billingService.getMyTransactions,
@@ -48,7 +49,7 @@ export function BillingHistoryPage() {
           rows={data || []}
           columns={columns}
           loading={isLoading}
-          localeText={faIR.components.MuiDataGrid.defaultProps.localeText}
+          localeText={localeText}
         />
       </Box>
     </Box>
