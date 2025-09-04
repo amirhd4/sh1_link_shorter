@@ -20,6 +20,8 @@ from ..services import email_service
 
 
 from ..schemas import ResetPasswordRequest, ChangePasswordRequest, EmailSchema
+from datetime import date, timedelta
+
 
 router = APIRouter(
     prefix="/auth",
@@ -286,16 +288,20 @@ async def google_callback(code: str, db: AsyncSession = Depends(get_db)):
 
     if not user:
         # اگر کاربر وجود ندارد، یک کاربر جدید ایجاد کن
-        free_plan = await db.scalar(select(models.Plan).where(models.Plan.name == "Free"))
+        free_plan_result = await db.execute(select(models.Plan).where(models.Plan.name == "Free"))
+        free_plan = free_plan_result.scalar_one()
+
         new_user = models.User(
             email=email,
-            hashed_password=security.get_password_hash(""),  # رمز عبور نیاز نیست
-            is_verified=True,  # کاربر گوگل تایید شده است
+            hashed_password=security.get_password_hash("a_default_strong_password"),  # یک رمز پیش‌فرض امن
+            is_verified=True,
             plan_id=free_plan.id,
-            # ... بقیه فیلدهای لازم
+            subscription_start_date=date.today(),
+            subscription_end_date=date.today() + timedelta(days=free_plan.duration_days)
         )
         db.add(new_user)
         await db.commit()
+        await db.refresh(new_user)
         user = new_user
 
     app_token = security.create_access_token(data={"sub": user.email})
