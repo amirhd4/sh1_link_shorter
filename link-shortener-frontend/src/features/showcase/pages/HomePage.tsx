@@ -334,6 +334,9 @@ export const HomePage: React.FC = () => {
                   <Typography sx={{ color: '#64748b' }}>
                      کلیه حقوق محفوظ است. ساخته شده با 💜 در ایران.
                   </Typography>
+                  <Typography sx={{ color: '#ffffff' }}>
+                     تبلیغات: 09396092135
+                  </Typography>
               </Container>
           </Box>
         </Container>
