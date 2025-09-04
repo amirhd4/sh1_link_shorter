@@ -208,8 +208,12 @@ async def change_current_user_password(
 
 @router.post("/resend-verification-email", status_code=status.HTTP_200_OK)
 @limiter.limit("5/minute")
-async def resend_verification_email(request: EmailSchema, db: AsyncSession = Depends(get_db)):
-    user = await db.scalar(select(models.User).where(models.User.email == request.email))
+async def resend_verification_email(
+        payload: schemas.EmailSchema,
+        request: Request,
+        db: AsyncSession = Depends(get_db)
+    ):
+    user = await db.scalar(select(models.User).where(models.User.email == payload.email))
     if user and not user.is_verified:
         await send_verification_email(user, db)
     return {"message": "If your account exists and is not verified, a new verification email has been sent."}

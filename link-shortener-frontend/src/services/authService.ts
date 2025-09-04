@@ -38,21 +38,31 @@ export const authService = {
   },
 
 
-  forgotPassword: async (email: string): Promise<{ message: string }> => {
-    const response = await apiClient.post('/auth/forgot-password', { email });
-    return response.data;
-  },
-  resetPassword: async (data: { token: string; new_password: string }): Promise<{ message: string }> => {
-    const response = await apiClient.post('/auth/reset-password', data);
+  verifyEmail: async (token: string): Promise<{ message: string }> => {
+    const response = await apiClient.get(`/auth/verify-email?token=${token}`, {
+        headers: { Authorization: '' } // <<<< حذف توکن برای این درخواست
+    });
     return response.data;
   },
 
-
-  /**
-   * درخواست ارسال مجدد ایمیل تایید را ارسال می‌کند.
-   */
   resendVerificationEmail: async (email: string): Promise<{ message: string }> => {
-    const response = await apiClient.post('/auth/resend-verification-email', { email });
+    const response = await apiClient.post('/auth/resend-verification-email', { email }, {
+        headers: { Authorization: '' } // <<<< حذف توکن برای این درخواست
+    });
+    return response.data;
+  },
+
+  forgotPassword: async (email: string): Promise<{ message: string }> => {
+    const response = await apiClient.post('/auth/forgot-password', { email }, {
+        headers: { Authorization: '' } // <<<< حذف توکن برای این درخواست
+    });
+    return response.data;
+  },
+
+  resetPassword: async (data: { token: string; new_password: string }): Promise<{ message: string }> => {
+    const response = await apiClient.post('/auth/reset-password', data, {
+        headers: { Authorization: '' } // <<<< حذف توکن برای این درخواست
+    });
     return response.data;
   },
 };

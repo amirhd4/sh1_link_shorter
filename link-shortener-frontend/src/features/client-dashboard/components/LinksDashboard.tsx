@@ -17,53 +17,17 @@ import { useNavigate } from 'react-router-dom';
 
 import { Link as MuiLink, Tooltip } from '@mui/material';
 import config from '../../../config';
+import { usePersianDataGridLocale } from '../../../hooks/usePersianDataGridLocale';
 // ✅ تلاش برای گرفتن locale رسمی از پکیج MUI/X
-import * as gridLocales from '@mui/x-data-grid/locales';
-
-const getFaGridLocale = () => {
-  // برخی ورژن‌ها export مستقیم faIR دارند، برخی export کلی؛ با احتیاط دسترسی می‌دهیم
-  const maybeFa = (gridLocales as any).faIR ?? (gridLocales as any).fa ?? (gridLocales as any).default?.faIR;
-  if (maybeFa && maybeFa.components?.MuiDataGrid?.defaultProps?.localeText) {
-    return maybeFa.components.MuiDataGrid.defaultProps.localeText;
-  }
-  // fallback: فقط کلیدهایی که مورد نیازیمان هستند را می‌سازیم
-  return {
-    // متن‌های رایج pagination و toolbar که معمولاً نیاز است
-    MuiTablePagination: {
-      labelDisplayedRows: ({ from, to, count }: { from: number; to: number; count: number }) =>
-        `${from.toLocaleString('fa-IR')}–${to.toLocaleString('fa-IR')} از ${count !== -1 ? count.toLocaleString('fa-IR') : `بیش از ${to.toLocaleString('fa-IR')}`}`,
-      labelRowsPerPage: 'تعداد سطرها در هر صفحه:',
-    },
-    // چند کلید دیگر که ممکن است نیاز داشته باشی (اضافه کن/ویرایش کن برحسب نیاز)
-    noRowsLabel: 'بدون سطر',
-    toolbarDensity: 'چگالی',
-    toolbarFilters: 'فیلترها',
-    toolbarExport: 'صدور',
-    toolbarColumns: 'ستون‌ها',
-    columnMenuLabel: 'منو',
-    filterPanelOperators: 'عملگرها',
-  } as any;
-};
-
-
-// const persianLocale = {
-//     // از locale پیش‌فرض faIR استفاده می‌کنیم و فقط paginate را override می‌کنیم
-//     ...faIR.components.MuiDataGrid.defaultProps.localeText,
-//     // اگر خواستی بقیه کلیدها را هم بازنویسی کن
-//     MuiTablePagination: {
-//         // اگر faIR قبلاً شیئی داشت، آن را نگه‌دار
-//         ...faIR.components.MuiDataGrid.defaultProps.localeText.MuiTablePagination,
-//         labelDisplayedRows: ({from, to, count}: { from: number; to: number; count: number }) =>
-//             `${from.toLocaleString('fa-IR')}–${to.toLocaleString('fa-IR')} از ${count !== -1 ? count.toLocaleString('fa-IR') : `بیش از ${to.toLocaleString('fa-IR')}`}`,
-//         labelRowsPerPage: 'تعداد سطرها در هر صفحه:',
-//     },
-// };
+// import * as gridLocales from '@mui/x-data-grid/locales';
 
 
 export function LinksDashboard() {
   const navigate = useNavigate();
   const { t } = useTranslation('common');
   const queryClient = useQueryClient();
+  const localeText = usePersianDataGridLocale();
+
 
   // State Management
   const [isCreateModalOpen, setCreateModalOpen] = useState(false);
@@ -174,25 +138,6 @@ export function LinksDashboard() {
     return <Alert severity="error">{t('messages.error')}: {error.message}</Alert>;
   }
 
-  const faGridLocale = getFaGridLocale();
-  const mergedLocaleText = {
-    ...faGridLocale,
-    // override/افزونهٔ خاص ما برای pagination
-    paginationDisplayedRows: ({ from, to, count, estimated }: any) => {
-      if (!estimated) {
-        return `${from.toLocaleString('fa-IR')}–${to.toLocaleString('fa-IR')} از ${count !== -1 ? count.toLocaleString('fa-IR') : `بیش از ${to.toLocaleString('fa-IR')}`}`;
-      }
-      // اگر estimated ست شده، می‌تونیم برچسب متفاوتی بدهیم
-      const estimateLabel = estimated && estimated > to ? `حدود ${estimated.toLocaleString('fa-IR')}` : `بیش از ${to.toLocaleString('fa-IR')}`;
-      return `${from.toLocaleString('fa-IR')}–${to.toLocaleString('fa-IR')} از ${count !== -1 ? count.toLocaleString('fa-IR') : estimateLabel}`;
-    },
-    // کلید معمولیِ "Rows per page" هم مطمئناً ست کن:
-    labelRowsPerPage: 'تعداد سطرها در هر صفحه:',
-    // یا اگر mergedLocaleText قبلاً اینها را دارد، می‌توانی آنها را merge کنی
-    ...(faGridLocale || {}),
-  };
-  console.log('mergedLocaleText:', mergedLocaleText);
-
   return (
     <>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
@@ -217,13 +162,7 @@ export function LinksDashboard() {
           initialState={{
             pagination: { paginationModel: { page: 0, pageSize: 5 } },
           }}
-  localeText={mergedLocaleText}
-  // اگر خواستی backup با slotProps بذاری، اشکالی نیست، اما حذف componentsProps ضروریه:
-  slotProps={{
-    pagination: {
-      // بعضی ورژن‌ها اینجا هم می‌پذیرند؛ ولی برای حل مشکل "of" نیازی نیست حتماً اینجا بنویسی
-    },
-  }}
+          localeText={localeText}
           pageSizeOptions={[5, 10]}
         />
       </Box>
