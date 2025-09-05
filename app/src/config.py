@@ -22,6 +22,10 @@ class Settings(BaseSettings):
 
     zarinpal_merchant_id: str = ""
 
+    @property
+    def database_url_sync(self) -> str:
+        return self.database_url.replace("+asyncpg", "")
+
     class Config:
         env_file = ".env"
 

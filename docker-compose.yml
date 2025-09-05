@@ -6,16 +6,16 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./app/src:/app/src
+      - ./app:/app
     env_file:
       - .env
     depends_on:
-      - db
-      - cache
-    dns:
-      - 8.8.8.8
-      - 8.8.4.4
-    command: ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+      db:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
+    command: [ "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload" ]
+
 
 
   db:

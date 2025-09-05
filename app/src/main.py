@@ -17,7 +17,8 @@ async def lifespan(app: FastAPI):
     app.state.redis = redis.from_url("redis://cache", encoding="utf-8", decode_responses=True)
 
     async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+        # await conn.run_sync(Base.metadata.create_all)
+        pass
 
     async with async_session_factory() as session:
         free_plan_result = await session.execute(select(Plan).where(Plan.name == "Free"))
