@@ -3,6 +3,15 @@ from typing import Optional, List
 from datetime import date, datetime
 
 from . import models
+from datetime import date
+
+
+class LinkStatDay(BaseModel):
+    date: date
+    clicks: int
+
+class LinkStatsResponse(BaseModel):
+    clicks_last_7_days: List[LinkStatDay]
 
 
 class EmailSchema(BaseModel):

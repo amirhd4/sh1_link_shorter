@@ -1,3 +1,12 @@
+export interface LinkStatDay {
+  date: string;
+  clicks: number;
+}
+
+export interface LinkStatsResponse {
+  clicks_last_7_days: LinkStatDay[];
+}
+
 export interface PlanResponse {
   id: number;
   name: string;

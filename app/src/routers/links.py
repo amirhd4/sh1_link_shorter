@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import RedirectResponse, JSONResponse
 from fastapi.responses import StreamingResponse
 
+from sqlalchemy.exc import IntegrityError
 from datetime import datetime, timezone, timedelta, date
 from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -10,6 +11,9 @@ from sqlalchemy.future import select
 import redis.asyncio as redis
 from typing import List
 import qrcode
+from sqlalchemy import text
+from sqlalchemy import text
+from datetime import date, timedelta
 
 from .. import models, schemas
 from ..config import settings
@@ -18,6 +22,7 @@ from ..services import security
 from ..services.kgs import generate_unique_short_key
 from ..services import url_checker
 from ..rate_limiter import limiter
+
 
 
 router = APIRouter(
@@ -69,19 +74,39 @@ async def create_short_url(
 
     short_code = await generate_unique_short_key(redis_client)
 
-    db_link = models.Link(
-        long_url=str(url_data.long_url),
-        short_code=short_code,
-        owner_id=current_user.id
+    # --- START of the new resilient logic ---
+    MAX_RETRIES = 5  # Set a limit to prevent infinite loops
+    for _ in range(MAX_RETRIES):
+        short_code = await generate_unique_short_key(redis_client)
+
+        db_link = models.Link(
+            long_url=str(url_data.long_url),
+            short_code=short_code,
+            owner_id=current_user.id
+        )
+        db.add(db_link)
+
+        try:
+            # Try to save the new link to the database
+            await db.commit()
+            await db.refresh(db_link)
+
+            # If successful, create the full URL and exit the loop
+            short_url_full = f"{settings.backend_url}/{short_code}"
+            return schemas.URLResponse(long_url=db_link.long_url, short_url=short_url_full)
+
+        except IntegrityError:
+            # This error happens if the short_code was a duplicate.
+            # We roll back the failed transaction and the loop will try again.
+            await db.rollback()
+            continue
+    # --- END of the new resilient logic ---
+
+    # If the loop finishes without success, something is very wrong.
+    raise HTTPException(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        detail="Could not generate a unique short link. Please try again later."
     )
-
-    db.add(db_link)
-    await db.commit()
-    await db.refresh(db_link)
-
-    short_url_full = f"{settings.backend_url}/{short_code}"
-
-    return schemas.URLResponse(long_url=db_link.long_url, short_url=short_url_full)
 
 
 @router.get("/my-links", response_model=List[schemas.LinkDetails])
@@ -199,3 +224,52 @@ async def get_link_details(
     if not link:
         raise HTTPException(status_code=404, detail="Link not found or you do not have permission to view it")
     return link
+
+
+@router.get("/{short_code}/stats", response_model=schemas.LinkStatsResponse)
+async def get_link_stats(
+        short_code: str,
+        db: AsyncSession = Depends(get_db),
+        current_user: models.User = Depends(security.get_current_user)
+):
+    # ۱. پیدا کردن لینک مورد نظر برای اطمینان از مالکیت و دریافت ID
+    link_result = await db.execute(
+        select(models.Link.id)
+        .where(models.Link.short_code == short_code, models.Link.owner_id == current_user.id)
+    )
+    link_id = link_result.scalar_one_or_none()
+    if not link_id:
+        raise HTTPException(status_code=404, detail="Link not found or permission denied")
+
+    # ۲. محاسبه تاریخ شروع برای بازه ۷ روزه
+    seven_days_ago = datetime.now(timezone.utc).date() - timedelta(days=7)
+
+    # ۳. نوشتن کوئری SQL خام و پارامتری شده برای حداکثر اطمینان
+    stmt = text(
+        """
+        SELECT CAST(timestamp AS DATE) AS date,
+            COUNT(id) AS clicks
+        FROM click_events
+        WHERE link_id = :link_id AND timestamp >= :start_date
+        GROUP BY CAST (timestamp AS DATE)
+        ORDER BY date;
+        """
+    )
+
+    query_result = await db.execute(stmt, {"link_id": link_id, "start_date": seven_days_ago})
+
+    # ۴. تبدیل نتیجه کوئری به یک دیکشنری برای دسترسی آسان
+    clicks_by_date = {row.date: row.clicks for row in query_result.all()}
+
+    # ۵. ساخت لیست کامل ۷ روز گذشته (برای نمایش روزهای با کلیک صفر)
+    stats_last_7_days = []
+    for i in range(7):
+        current_date = seven_days_ago + timedelta(days=i)
+        stats_last_7_days.append(
+            schemas.LinkStatDay(
+                date=current_date,
+                clicks=clicks_by_date.get(current_date, 0)  # اگر روزی در نتایج نبود، یعنی ۰ کلیک داشته
+            )
+        )
+
+    return schemas.LinkStatsResponse(clicks_last_7_days=stats_last_7_days)

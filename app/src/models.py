@@ -80,3 +80,11 @@ class Transaction(Base):
 
     user = relationship("User")
     plan = relationship("Plan")
+
+
+class ClickEvent(Base):
+    __tablename__ = "click_events"
+
+    id = Column(BigInteger, primary_key=True)
+    link_id = Column(BigInteger, ForeignKey("links.id"), nullable=False, index=True)
+    timestamp = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)

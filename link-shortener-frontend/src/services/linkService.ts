@@ -25,4 +25,9 @@ export const linkService = {
     const response = await apiClient.get(`/api/links/${shortCode}`);
     return response.data;
   },
+
+  getLinkStats: async (shortCode: string): Promise<LinkStatsResponse> => {
+    const response = await apiClient.get(`/api/links/${short_code}/stats`);
+    return response.data;
+  },
 };
