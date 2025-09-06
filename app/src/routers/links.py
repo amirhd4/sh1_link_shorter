@@ -211,7 +211,9 @@ async def get_qr_code(short_code: str, request: Request):
 
 
 @router.get("/{short_code}/stats", response_model=schemas.LinkStatsResponse)
+@limiter.limit("30/minute")
 async def get_link_stats(
+    request: Request,
     short_code: str,
     db: AsyncSession = Depends(get_db),
     current_user: models.User = Depends(security.get_current_user)
@@ -259,7 +261,9 @@ async def get_link_stats(
 
 
 @router.get("/{short_code}", response_model=schemas.LinkDetails)
+@limiter.limit("30/minute")
 async def get_link_details(
+    request: Request,
     short_code: str,
     db: AsyncSession = Depends(get_db),
     current_user: models.User = Depends(security.get_current_user)

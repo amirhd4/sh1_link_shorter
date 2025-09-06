@@ -112,7 +112,7 @@ export function LinkDetailsPage() {
 
       <Grid container spacing={3}>
         {/* ستون اصلی اطلاعات و نمودار */}
-        <Grid item xs={12} md={8}>
+        <Grid size={{xs:12, md:8 }}>
           <Paper sx={{ p: { xs: 2, md: 3 }, display: 'flex', flexDirection: 'column', gap: 3 }}>
 
             <Box>
@@ -149,7 +149,7 @@ export function LinkDetailsPage() {
         </Grid>
 
         {/* ستون کناری برای QR کد و آمار کلی */}
-        <Grid item xs={12} md={4}>
+        <Grid size={{xs:12, md:4 }}>
           <Paper sx={{ p: 3, textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 3 }}>
             <Box>
                 <QrCode2Icon color="primary" sx={{ fontSize: 40 }}/>
