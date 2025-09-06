@@ -210,6 +210,54 @@ async def get_qr_code(short_code: str, request: Request):
     return StreamingResponse(buf, media_type="image/png")
 
 
+@router.get("/{short_code}/stats", response_model=schemas.LinkStatsResponse)
+async def get_link_stats(
+    short_code: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: models.User = Depends(security.get_current_user)
+):
+    """
+    آمار کلیک‌های یک لینک در ۷ روز گذشته را به صورت دقیق و آگاه از منطقه زمانی محاسبه می‌کند.
+    """
+    print("Amir Start")
+    link_result = await db.execute(
+        select(models.Link.id)
+        .where(models.Link.short_code == short_code, models.Link.owner_id == current_user.id)
+    )
+    link_id = link_result.scalar_one_or_none()
+    if not link_id:
+        raise HTTPException(status_code=404, detail="Link not found or permission denied")
+
+    end_date_utc = datetime.now(timezone.utc)
+    start_date_utc = (end_date_utc - timedelta(days=6)).replace(hour=0, minute=0, second=0, microsecond=0)
+
+    stmt = text(
+        """
+        SELECT
+            (timestamp AT TIME ZONE 'UTC')::date AS date,
+            COUNT(id) AS clicks
+        FROM click_events
+        WHERE link_id = :link_id AND timestamp >= :start_date
+        GROUP BY date
+        ORDER BY date;
+        """
+    )
+    query_result = await db.execute(stmt, {"link_id": link_id, "start_date": start_date_utc})
+    clicks_by_date = {row.date: row.clicks for row in query_result.all()}
+
+    stats_last_7_days = []
+    for i in range(7):
+        current_date = (start_date_utc + timedelta(days=i)).date()
+        stats_last_7_days.append(
+            schemas.LinkStatDay(
+                date=current_date,
+                clicks=clicks_by_date.get(current_date, 0)
+            )
+        )
+    print("Amir End")
+    return schemas.LinkStatsResponse(clicks_last_7_days=stats_last_7_days)
+
+
 @router.get("/{short_code}", response_model=schemas.LinkDetails)
 async def get_link_details(
     short_code: str,
@@ -224,52 +272,3 @@ async def get_link_details(
     if not link:
         raise HTTPException(status_code=404, detail="Link not found or you do not have permission to view it")
     return link
-
-
-@router.get("/{short_code}/stats", response_model=schemas.LinkStatsResponse)
-async def get_link_stats(
-        short_code: str,
-        db: AsyncSession = Depends(get_db),
-        current_user: models.User = Depends(security.get_current_user)
-):
-    # ۱. پیدا کردن لینک مورد نظر برای اطمینان از مالکیت و دریافت ID
-    link_result = await db.execute(
-        select(models.Link.id)
-        .where(models.Link.short_code == short_code, models.Link.owner_id == current_user.id)
-    )
-    link_id = link_result.scalar_one_or_none()
-    if not link_id:
-        raise HTTPException(status_code=404, detail="Link not found or permission denied")
-
-    # ۲. محاسبه تاریخ شروع برای بازه ۷ روزه
-    seven_days_ago = datetime.now(timezone.utc).date() - timedelta(days=7)
-
-    # ۳. نوشتن کوئری SQL خام و پارامتری شده برای حداکثر اطمینان
-    stmt = text(
-        """
-        SELECT CAST(timestamp AS DATE) AS date,
-            COUNT(id) AS clicks
-        FROM click_events
-        WHERE link_id = :link_id AND timestamp >= :start_date
-        GROUP BY CAST (timestamp AS DATE)
-        ORDER BY date;
-        """
-    )
-
-    query_result = await db.execute(stmt, {"link_id": link_id, "start_date": seven_days_ago})
-
-    # ۴. تبدیل نتیجه کوئری به یک دیکشنری برای دسترسی آسان
-    clicks_by_date = {row.date: row.clicks for row in query_result.all()}
-
-    # ۵. ساخت لیست کامل ۷ روز گذشته (برای نمایش روزهای با کلیک صفر)
-    stats_last_7_days = []
-    for i in range(7):
-        current_date = seven_days_ago + timedelta(days=i)
-        stats_last_7_days.append(
-            schemas.LinkStatDay(
-                date=current_date,
-                clicks=clicks_by_date.get(current_date, 0)  # اگر روزی در نتایج نبود، یعنی ۰ کلیک داشته
-            )
-        )
-
-    return schemas.LinkStatsResponse(clicks_last_7_days=stats_last_7_days)
