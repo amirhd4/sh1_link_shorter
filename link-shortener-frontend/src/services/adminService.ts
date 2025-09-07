@@ -35,5 +35,14 @@ export const adminService = {
   getSystemStats: async (): Promise<SystemStats> => {
     const response = await apiClient.get('/admin/stats');
     return response.data;
-  }
+  },
+
+  toggleUserActive: async (userId: number): Promise<UserResponse> => {
+    const response = await apiClient.patch(`/admin/users/${userId}/toggle-active`);
+    return response.data;
+  },
+
+  deleteUser: async (userId: number): Promise<void> => {
+    await apiClient.delete(`/admin/users/${userId}`);
+  },
 };

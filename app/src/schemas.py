@@ -6,6 +6,24 @@ from . import models
 from datetime import date
 
 
+class UserSummary(BaseModel):
+    id: int
+    email: EmailStr
+    class Config:
+        from_attributes = True
+
+
+class LinkDetailsForAdmin(BaseModel):
+    long_url: HttpUrl
+    short_code: str
+    clicks: int
+    created_at: datetime
+    owner: UserSummary
+
+    class Config:
+        from_attributes = True
+
+
 class LinkStatDay(BaseModel):
     date: date
     clicks: int
@@ -45,6 +63,7 @@ class UserUpdate(BaseModel):
     phone_number: Optional[str] = None
 
 
+
 class UserResponse(BaseModel):
     id: int
     email: EmailStr
@@ -52,6 +71,7 @@ class UserResponse(BaseModel):
     last_name: Optional[str] = None
     phone_number: Optional[str] = None
     role: models.UserRole
+    is_active: bool
     plan: Optional[PlanResponse] = None
     subscription_end_date: Optional[date] = None
 

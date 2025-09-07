@@ -193,21 +193,6 @@ async def update_link(
     return db_link
 
 
-@router.get("/{short_code}/qr", tags=["QR Codes"])
-async def get_qr_code(short_code: str, request: Request):
-    """
-    برای یک لینک کوتاه شده، یک تصویر QR Code تولید و برمی‌گرداند.
-    """
-    base_url = str(request.base_url)
-    full_short_url = f"{base_url}{short_code}"
-
-    img = qrcode.make(full_short_url)
-
-    buf = io.BytesIO()
-    img.save(buf, "PNG")
-    buf.seek(0)
-
-    return StreamingResponse(buf, media_type="image/png")
 
 
 @router.get("/{short_code}/stats", response_model=schemas.LinkStatsResponse)
@@ -276,3 +261,20 @@ async def get_link_details(
     if not link:
         raise HTTPException(status_code=404, detail="Link not found or you do not have permission to view it")
     return link
+
+
+@router.get("/{short_code}/qr", tags=["QR Codes"])
+async def get_qr_code(short_code: str, request: Request):
+    """
+    برای یک لینک کوتاه شده، یک تصویر QR Code تولید و برمی‌گرداند.
+    """
+    base_url = str(request.base_url)
+    full_short_url = f"{base_url}{short_code}"
+
+    img = qrcode.make(full_short_url)
+
+    buf = io.BytesIO()
+    img.save(buf, "PNG")
+    buf.seek(0)
+
+    return StreamingResponse(buf, media_type="image/png")

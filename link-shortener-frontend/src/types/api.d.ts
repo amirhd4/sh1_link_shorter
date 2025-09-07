@@ -18,7 +18,8 @@ export interface PlanResponse {
 export interface UserResponse {
   id: number;
   email: string;
-  role: 'user' | 'admin'; // <<<< فیلد role اضافه شد
+  role: 'user' | 'admin';
+  is_active: boolean;
   first_name?: string | null;
   last_name?: string | null;
   phone_number?: string | null;

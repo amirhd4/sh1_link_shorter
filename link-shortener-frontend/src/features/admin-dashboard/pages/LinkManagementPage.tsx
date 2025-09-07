@@ -7,11 +7,14 @@ import type { LinkDetailsForAdmin } from '../../../types/api';
 import { ConfirmationDialog } from '../../../components/molecules/ConfirmationDialog';
 
 import DeleteIcon from '@mui/icons-material/Delete';
+import { usePersianDataGridLocale } from '../../../hooks/usePersianDataGridLocale';
+
 
 export function LinkManagementPage() {
   const queryClient = useQueryClient();
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
+  const localeText = usePersianDataGridLocale();
 
   const { data: links, isLoading, isError, error } = useQuery({
     queryKey: ['admin-all-links'],
@@ -90,6 +93,7 @@ export function LinkManagementPage() {
             getRowId={(row: LinkDetailsForAdmin) => row.short_code}
             loading={isLoading || deleteMutation.isPending}
             initialState={{ pagination: { paginationModel: { page: 0, pageSize: 10 } } }}
+            localeText={localeText}
             pageSizeOptions={[10, 25, 50]}
           />
         </Box>

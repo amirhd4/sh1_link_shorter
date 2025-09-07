@@ -30,6 +30,7 @@ class User(Base):
     is_verified = Column(Boolean, default=False, nullable=False)
     hashed_password = Column(String, nullable=False)
     role = Column(SQLAlchemyEnum(UserRole), default=UserRole.USER, nullable=False)
+    is_active = Column(Boolean, default=True, nullable=False)
 
     plan_id = Column(Integer, ForeignKey("plans.id"))
     subscription_start_date = Column(Date, nullable=True)

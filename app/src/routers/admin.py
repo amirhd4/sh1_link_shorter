@@ -5,6 +5,7 @@ from sqlalchemy.future import select
 from datetime import date, timedelta, datetime, timezone
 from typing import List
 from pydantic import BaseModel
+from sqlalchemy.orm import selectinload
 
 from .. import models, schemas
 from ..database import get_db
@@ -28,11 +29,30 @@ class UpdateUserRoleRequest(schemas.BaseModel):
 
 @router.get("/users", response_model=List[schemas.UserResponse])
 async def list_users(skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(models.User).offset(skip).limit(limit))
+    """لیست تمام کاربران را به همراه اطلاعات پلن آنها برمی‌گرداند."""
+    stmt = (
+        select(models.User)
+        .options(selectinload(models.User.plan))
+        .order_by(models.User.id)
+        .offset(skip)
+        .limit(limit)
+    )
+    result = await db.execute(stmt)
     users = result.scalars().all()
     return users
 
 
+@router.get("/links", response_model=List[schemas.LinkDetailsForAdmin])
+async def list_all_links(db: AsyncSession = Depends(get_db)):
+    """لیست تمام لینک‌های موجود در سیستم را برمی‌گرداند."""
+    stmt = (
+        select(models.Link)
+        .options(selectinload(models.Link.owner)) # <<<< Eager Loading برای اطلاعات صاحب لینک
+        .order_by(models.Link.id.desc())
+    )
+    result = await db.execute(stmt)
+    links = result.scalars().all()
+    return links
 @router.post("/users", response_model=schemas.UserResponse, status_code=status.HTTP_201_CREATED)
 async def create_user_by_admin(user_create: schemas.UserCreate, db: AsyncSession = Depends(get_db)):
     """
@@ -58,8 +78,14 @@ async def assign_plan_to_user(user_id: int, request: AssignPlanRequest, db: Asyn
     """
     یک پلن را به کاربر اختصاص داده و اشتراک او را فعال می‌کند.
     """
-    user_result = await db.execute(select(models.User).where(models.User.id == user_id))
+    user_query = (
+        select(models.User)
+        .options(selectinload(models.User.plan))
+        .where(models.User.id == user_id)
+    )
+    user_result = await db.execute(user_query)
     user = user_result.scalar_one_or_none()
+
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
@@ -78,6 +104,7 @@ async def assign_plan_to_user(user_id: int, request: AssignPlanRequest, db: Asyn
     return user
 
 
+
 @router.patch("/users/{user_id}/role", response_model=schemas.UserResponse)
 async def update_user_role(user_id: int, request: UpdateUserRoleRequest, db: AsyncSession = Depends(get_db)):
     """نقش یک کاربر را (به user یا admin) تغییر می‌دهد."""
@@ -94,16 +121,14 @@ async def update_user_role(user_id: int, request: UpdateUserRoleRequest, db: Asy
 
 @router.delete("/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_user_by_admin(user_id: int, db: AsyncSession = Depends(get_db)):
-    """یک کاربر را از سیستم حذف می‌کند."""
-    user_result = await db.execute(select(models.User).where(models.User.id == user_id))
-    user = user_result.scalar_one_or_none()
+    """یک کاربر را به طور کامل از سیستم حذف می‌کند."""
+    user = await db.get(models.User, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
     await db.delete(user)
     await db.commit()
     return None
-
 
 @router.delete("/links/{short_code}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_link_by_admin(
@@ -142,3 +167,16 @@ async def get_system_stats(db: AsyncSession = Depends(get_db)):
         total_clicks=total_clicks or 0,
         new_users_last_7_days=new_users_last_7_days
     )
+
+
+@router.patch("/users/{user_id}/toggle-active", response_model=schemas.UserResponse)
+async def toggle_user_active_status(user_id: int, db: AsyncSession = Depends(get_db)):
+    """وضعیت فعال/غیرفعال یک کاربر را تغییر می‌دهد."""
+    user = await db.get(models.User, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    user.is_active = not user.is_active
+    await db.commit()
+    await db.refresh(user)
+    return user
