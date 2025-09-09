@@ -1,34 +1,21 @@
-services:
-  db:
-    image: postgres:16-alpine
-    volumes:
-      - postgres_data_prod:/var/lib/postgresql/data/
-    env_file: .env
-    restart: unless-stopped
+# Base image سبک و امن
+FROM python:3.11-slim
 
-  cache:
-    image: redis:7-alpine
-    restart: unless-stopped
+# Set working directory
+WORKDIR /app
 
-  backend:
-    build:
-      context: ./app
-      dockerfile: Dockerfile.prod # Use the production Dockerfile
-    env_file: .env
-    depends_on:
-      - db
-      - cache
-    restart: unless-stopped
+# نصب وابستگی‌ها
+COPY ./requirements.txt /app/requirements.txt
+RUN pip install --upgrade pip && pip install -r requirements.txt
 
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile.prod # We will create this next
-    ports:
-      - "80:80" # Nginx will serve on the standard HTTP port
-    depends_on:
-      - backend
-    restart: unless-stopped
+# کپی سورس کد
+COPY ./src /app/src
 
-volumes:
-  postgres_data_prod:
+# نصب Gunicorn برای اجرا در پروداکشن
+RUN pip install gunicorn uvicorn
+
+# expose پورت مورد نظر
+EXPOSE 8000
+
+# دستور شروع اپ با Gunicorn
+CMD ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "src.main:app", "--bind", "0.0.0.0:8000", "--workers", "4", "--log-level", "info"]
