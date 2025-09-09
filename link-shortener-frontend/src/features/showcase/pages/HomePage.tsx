@@ -324,21 +324,7 @@ export const HomePage: React.FC = () => {
             </Container>
           </Section>
 
-          {/* بخش فوتر */}
-          <Box component="footer" sx={{
-              borderTop: '1px solid rgba(51, 65, 85, 0.7)',
-              py: 5,
-              backgroundColor: 'rgba(2, 6, 23, 0.5)'
-          }}>
-              <Container maxWidth="lg" sx={{ textAlign: 'center' }}>
-                  <Typography sx={{ color: '#64748b' }}>
-                     کلیه حقوق محفوظ است. ساخته شده با 💜 در ایران.
-                  </Typography>
-                  <Typography sx={{ color: '#ffffff' }}>
-                     تبلیغات: 09396092135
-                  </Typography>
-              </Container>
-          </Box>
+
         </Container>
       </Box>
     </>

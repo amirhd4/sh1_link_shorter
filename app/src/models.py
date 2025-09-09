@@ -28,9 +28,10 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String, unique=True, index=True, nullable=False)
     is_verified = Column(Boolean, default=False, nullable=False)
+    is_active = Column(Boolean, default=True, nullable=False)
+
     hashed_password = Column(String, nullable=False)
     role = Column(SQLAlchemyEnum(UserRole), default=UserRole.USER, nullable=False)
-    is_active = Column(Boolean, default=True, nullable=False)
 
     plan_id = Column(Integer, ForeignKey("plans.id"))
     subscription_start_date = Column(Date, nullable=True)
@@ -40,7 +41,10 @@ class User(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     plan = relationship("Plan")
-    links = relationship("Link", back_populates="owner")
+
+    links = relationship("Link", back_populates="owner", cascade="all, delete-orphan")
+    transactions = relationship("Transaction", back_populates="user", cascade="all, delete-orphan")
+
 
     first_name = Column(String, nullable=True)
     last_name = Column(String, nullable=True)
@@ -57,6 +61,8 @@ class Link(Base):
 
     owner_id = Column(Integer, ForeignKey("users.id"))
     owner = relationship("User", back_populates="links")
+
+    click_events = relationship("ClickEvent", back_populates="link", cascade="all, delete-orphan")
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
@@ -79,7 +85,7 @@ class Transaction(Base):
     status = Column(SQLAlchemyEnum(TransactionStatus), default=TransactionStatus.PENDING, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-    user = relationship("User")
+    user = relationship("User", back_populates="transactions")
     plan = relationship("Plan")
 
 
@@ -89,3 +95,5 @@ class ClickEvent(Base):
     id = Column(BigInteger, primary_key=True)
     link_id = Column(BigInteger, ForeignKey("links.id"), nullable=False, index=True)
     timestamp = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+    link = relationship("Link", back_populates="click_events")

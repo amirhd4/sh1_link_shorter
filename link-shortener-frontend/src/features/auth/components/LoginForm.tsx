@@ -1,8 +1,23 @@
-import { useState } from 'react'; // <<<< ایمپورت useState
+import { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { TextField, Button, Box, Typography, Alert, Link as MuiLink, Grid, Divider } from '@mui/material';
+import {
+  TextField,
+  Button,
+  Box,
+  Typography,
+  Alert,
+  Link as MuiLink,
+  Grid,
+  Divider,
+  Paper,
+  IconButton,
+  InputAdornment,
+  Stack
+} from '@mui/material';
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { useMutation } from '@tanstack/react-query';
 import { authService } from '../../../services/authService';
 import { useUserStore } from '../../../store/userStore';
@@ -22,9 +37,9 @@ export function LoginForm() {
   const [searchParams] = useSearchParams();
   const { setUser } = useUserStore();
 
-  // ۱. تعریف state برای مدیریت نمایش خطای تایید ایمیل <<<<
   const [verificationError, setVerificationError] = useState(false);
   const [resendSuccess, setResendSuccess] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const { control, handleSubmit, getValues, formState: { errors } } = useForm<LoginFormInputs>({
     resolver: zodResolver(loginSchema),
@@ -44,8 +59,7 @@ export function LoginForm() {
       }
     },
     onError: (error: any) => {
-      // بررسی می‌کنیم که آیا خطا به دلیل تایید نشدن ایمیل است یا خیر
-      if (error.response?.status === 403 && error.response?.data?.detail.includes("Email not verified")) {
+      if (error.response?.status === 403 && error.response?.data?.detail?.includes("Email not verified")) {
         setVerificationError(true);
       } else {
         setVerificationError(false);
@@ -57,15 +71,17 @@ export function LoginForm() {
     mutationFn: authService.resendVerificationEmail,
     onSuccess: () => {
       setResendSuccess(true);
-      setVerificationError(false); // مخفی کردن پیام خطای اولیه
+      setVerificationError(false);
     }
   });
 
-  // ۲. تعریف تابع برای ارسال مجدد لینک <<<<
   const handleResend = () => {
-    const email = getValues("email"); // دریافت ایمیل وارد شده در فرم
+    const email = getValues("email");
     if (email) {
       resendMutation.mutate(email);
+    } else {
+      // show inline hint if needed (here we set verificationError to keep UI consistent)
+      setVerificationError(true);
     }
   };
 
@@ -76,82 +92,171 @@ export function LoginForm() {
   };
 
   return (
-    <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate sx={{ mt: 1 }}>
-      <Typography component="h1" variant="h5">
-        ورود به حساب کاربری
-      </Typography>
+    <Paper
+      elevation={8}
+      sx={{
+        p: { xs: 3, sm: 5 },
+        borderRadius: 3,
+        maxWidth: 480,
+        mx: 'auto',
+        mt: { xs: 4, sm: 6 },
+        background: 'linear-gradient(180deg, #ffffff 0%, #faf5ff 100%)',
+        boxShadow: '0 12px 40px rgba(15, 23, 42, 0.08)',
+      }}
+    >
+      <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
+        <Typography variant="h5" sx={{ fontWeight: 800, mb: 1, textAlign: 'center', color: '#4c1d95' }}>
+          خوش آمدید
+        </Typography>
+        <Typography variant="body2" sx={{ textAlign: 'center', mb: 3, color: '#6b7280' }}>
+          وارد حساب کاربری خود شوید تا لینک‌هایتان را مدیریت کنید
+        </Typography>
 
-      {searchParams.get('registered') && (
-        <Alert severity="success" sx={{ mt: 2, width: '100%' }}>
-          ثبت‌نام شما با موفقیت انجام شد! لطفاً ایمیل خود را برای فعال‌سازی حساب بررسی کنید.
-        </Alert>
-      )}
+        {searchParams.get('registered') && (
+          <Alert severity="success" sx={{ mb: 2, borderRadius: 2 }}>
+            ثبت‌نام شما موفقیت‌آمیز بود. لطفاً ایمیل خود را برای فعال‌سازی بررسی کنید.
+          </Alert>
+        )}
 
-      {resendSuccess && (
-         <Alert severity="success" sx={{ mt: 2, width: '100%' }}>
-            ایمیل فعال‌سازی مجدداً برای شما ارسال شد.
-        </Alert>
-      )}
+        {resendSuccess && (
+          <Alert severity="success" sx={{ mb: 2, borderRadius: 2 }}>
+            ایمیل فعال‌سازی مجدداً ارسال شد.
+          </Alert>
+        )}
 
-      {loginMutation.isError && !verificationError && (
-          <Alert severity="error" sx={{ mt: 2, width: '100%' }}>
+        {loginMutation.isError && !verificationError && (
+          <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>
             ایمیل یا رمز عبور اشتباه است.
           </Alert>
-      )}
+        )}
 
-      {/* ۳. قرار دادن JSX در محل مناسب <<<< */}
-      {verificationError && (
-        <Alert severity="warning" sx={{mt: 2, width: '100%' }}>
-            ایمیل شما هنوز تایید نشده است.
+        {verificationError && (
+          <Alert severity="warning" sx={{ mb: 2, borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Box>
+              ایمیل شما هنوز تایید نشده است.
+            </Box>
             <Button
               onClick={handleResend}
               disabled={resendMutation.isPending}
               size="small"
+              variant="outlined"
+              sx={{ textTransform: 'none', borderRadius: 2 }}
             >
               {resendMutation.isPending ? "در حال ارسال..." : "ارسال مجدد لینک"}
             </Button>
-        </Alert>
-      )}
-
-      <Controller
-        name="email"
-        control={control}
-        render={({ field }) => (
-          <TextField {...field} margin="normal" required fullWidth label="آدرس ایمیل" autoComplete="email" autoFocus error={!!errors.email} helperText={errors.email?.message} />
+          </Alert>
         )}
-      />
-      <Controller
-        name="password"
-        control={control}
-        render={({ field }) => (
-          <TextField {...field} margin="normal" required fullWidth label="رمز عبور" type="password" autoComplete="current-password" error={!!errors.password} helperText={errors.password?.message} />
-        )}
-      />
-      <Button
-        type="submit"
-        fullWidth
-        variant="contained"
-        sx={{ mt: 3, mb: 2 }}
-        disabled={loginMutation.isPending}
-      >
-        {loginMutation.isPending ? 'در حال ورود...' : 'ورود'}
-      </Button>
 
-      <Divider sx={{ my: 2 }}>یا</Divider>
-      <GoogleLoginButton />
+        <Stack spacing={2}>
+          <Controller
+            name="email"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                margin="normal"
+                required
+                fullWidth
+                label="آدرس ایمیل"
+                autoComplete="email"
+                autoFocus
+                error={!!errors.email}
+                helperText={errors.email?.message}
+                variant="outlined"
+                sx={{
+                  background: '#fff',
+                  borderRadius: 2,
+                  '& .MuiOutlinedInput-root': {
+                    '&:hover fieldset': { borderColor: '#c084fc' },
+                    '&.Mui-focused fieldset': { borderColor: '#7c3aed', borderWidth: 2 },
+                  },
+                }}
+              />
+            )}
+          />
 
-      <Grid container>
-        <Grid>
-          <MuiLink component={RouterLink} to="/forgot-password" variant="body2">
-            رمز عبور خود را فراموش کرده‌اید؟
-          </MuiLink>
+          <Controller
+            name="password"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                margin="normal"
+                required
+                fullWidth
+                label="رمز عبور"
+                type={showPassword ? 'text' : 'password'}
+                autoComplete="current-password"
+                error={!!errors.password}
+                helperText={errors.password?.message}
+                variant="outlined"
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        onClick={() => setShowPassword(s => !s)}
+                        edge="end"
+                        aria-label={showPassword ? "Hide password" : "Show password"}
+                        size="small"
+                      >
+                        {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                      </IconButton>
+                    </InputAdornment>
+                  )
+                }}
+                sx={{
+                  background: '#fff',
+                  borderRadius: 2,
+                  '& .MuiOutlinedInput-root': {
+                    '&:hover fieldset': { borderColor: '#c084fc' },
+                    '&.Mui-focused fieldset': { borderColor: '#7c3aed', borderWidth: 2 },
+                  },
+                }}
+              />
+            )}
+          />
+
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            disabled={loginMutation.isPending}
+            sx={{
+              mt: 1,
+              py: 1.6,
+              borderRadius: 50,
+              fontWeight: 700,
+              fontSize: '1rem',
+              background: 'linear-gradient(90deg, #7c3aed, #d946ef)',
+              color: '#fff',
+              boxShadow: '0 8px 26px rgba(124,58,237,0.18)',
+              '&:hover': {
+                transform: 'translateY(-2px)',
+                boxShadow: '0 12px 40px rgba(124,58,237,0.22)',
+              },
+            }}
+          >
+            {loginMutation.isPending ? 'در حال ورود...' : 'ورود'}
+          </Button>
+
+          <Divider sx={{ my: 1 }}>یا</Divider>
+
+          <GoogleLoginButton />
+        </Stack>
+
+        <Grid container sx={{ mt: 2 }} justifyContent="space-between" alignItems="center">
+          <Grid>
+            <MuiLink component={RouterLink} to="/forgot-password" variant="body2" sx={{ color: '#6b21a8' }}>
+              رمز عبور خود را فراموش کرده‌اید؟
+            </MuiLink>
+          </Grid>
+          <Grid>
+            <MuiLink component={RouterLink} to="/register" variant="body2" sx={{ color: '#6b21a8' }}>
+              حساب کاربری ندارید؟ ثبت‌نام کنید
+            </MuiLink>
+          </Grid>
         </Grid>
-        <Grid>
-          <MuiLink component={RouterLink} to="/register" variant="body2">
-            {"حساب کاربری ندارید؟ ثبت‌نام کنید"}
-          </MuiLink>
-        </Grid>
-      </Grid>
-    </Box>
+      </Box>
+    </Paper>
   );
 }

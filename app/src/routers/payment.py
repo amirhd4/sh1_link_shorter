@@ -38,8 +38,12 @@ async def create_payment(
     if not plan:
         raise HTTPException(status_code=404, detail="Plan not found")
 
-    if current_user.plan_id == plan.id:
-        raise HTTPException(status_code=400, detail="You already have this plan.")
+
+    if current_user.plan_id == plan.id and plan.name == "Free":
+        raise HTTPException(status_code=400, detail="You already have the Free plan.")
+
+    # if current_user.plan_id == plan.id:
+    #     raise HTTPException(status_code=400, detail="You already have this plan.")
 
     gateway = ZarinpalGateway()
     payment_url, authority = await gateway.create_payment_link(
@@ -93,8 +97,22 @@ async def verify_zarinpal_payment(
         plan = plan_result.scalar_one()
 
         user.plan_id = plan.id
-        user.subscription_start_date = date.today()
-        user.subscription_end_date = date.today() + timedelta(days=plan.duration_days)
+
+        today = date.today()
+
+        if (
+                user.subscription_end_date
+                and user.subscription_end_date >= today
+                and user.plan_id == plan.id
+        ):
+            user.subscription_end_date = user.subscription_end_date + timedelta(days=plan.duration_days)
+        else:
+            user.subscription_start_date = today
+            user.subscription_end_date = today + timedelta(days=plan.duration_days)
+
+
+        # user.subscription_start_date = date.today()
+        # user.subscription_end_date = date.today() + timedelta(days=plan.duration_days)
 
         await db.commit()
         return RedirectResponse(success_url)
