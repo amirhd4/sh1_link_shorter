@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 import { Outlet, Link as RouterLink } from "react-router-dom";
 import {
   AppBar,
