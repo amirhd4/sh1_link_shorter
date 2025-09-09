@@ -212,7 +212,7 @@ export const HomePage: React.FC = () => {
               <Grid container spacing={isMobile ? 3 : 4}>
                 {featureList.map((feature, index) => (
                   // استفاده صحیح از گرید با props های واکنش‌گرا
-                  <Grid item xs={12} sm={6} md={3} key={index}>
+                  <Grid size={{xs:12, sm:6, md:3}} key={index}>
                     <motion.div
                       initial={{ opacity: 0, y: 50 }}
                       whileInView={{ opacity: 1, y: 0 }}
