@@ -12,6 +12,7 @@ from .rate_limiter import limiter
 from .models import Plan
 from .config import settings
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     app.state.redis = redis.from_url("redis://cache", encoding="utf-8", decode_responses=True)
@@ -23,7 +24,7 @@ async def lifespan(app: FastAPI):
     async with async_session_factory() as session:
         free_plan_result = await session.execute(select(Plan).where(Plan.name == "Free"))
         if not free_plan_result.scalar_one_or_none():
-            session.add(Plan(name="Free", link_limit_per_month=50, duration_days=9999, price=0))
+            session.add(Plan(name="Free", link_limit_per_month=50, duration_days=60, price=0))
             print("✨ 'Free' plan created.")
 
         pro_plan_result = await session.execute(select(Plan).where(Plan.name == "Pro"))

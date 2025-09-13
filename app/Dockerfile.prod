@@ -1,10 +1,12 @@
 # Base image سبک و امن
-FROM python:3.11-slim
+FROM docker.arvancloud.ir/python:3.11-slim
 
 # Set working directory
 WORKDIR /app
 
 # نصب وابستگی‌ها
+COPY ./alembic.ini /app/alembic.ini
+COPY ./alembic /app/alembic
 COPY ./requirements.txt /app/requirements.txt
 RUN pip install --upgrade pip && pip install -r requirements.txt
 

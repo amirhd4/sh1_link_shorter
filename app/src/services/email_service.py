@@ -14,7 +14,9 @@ def send_email(to_email: str, subject: str, content: str):
 
 def send_password_reset_email(to_email: str, reset_token: str):
     subject = "بازیابی رمز عبور برای کوتاه کننده لینک"
+    # reset_url = f"{settings.frontend_url}/api/auth/reset-password?token={reset_token}"
     reset_url = f"{settings.frontend_url}/reset-password?token={reset_token}"
+
     content = f"""
     <p>سلام،</p>
     <p>برای تنظیم مجدد رمز عبور خود روی لینک زیر کلیک کنید:</p>
@@ -26,7 +28,9 @@ def send_password_reset_email(to_email: str, reset_token: str):
 # تابع جدید برای ارسال ایمیل تایید حساب کاربری <<<<
 def send_account_verification_email(to_email: str, verification_token: str):
     subject = "فعال‌سازی حساب کاربری در کوتاه کننده لینک"
+    # verification_url = f"{settings.frontend_url}/api/auth/verify-email?token={verification_token}"
     verification_url = f"{settings.frontend_url}/verify-email?token={verification_token}"
+
     content = f"""
     <p>سلام،</p>
     <p>از ثبت‌نام شما در سرویس ما متشکریم! برای فعال‌سازی حساب خود روی لینک زیر کلیک کنید:</p>
