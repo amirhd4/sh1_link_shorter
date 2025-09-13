@@ -1,7 +1,10 @@
+import secrets
+
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.responses import RedirectResponse
 from jose import JWTError, jwt
+from fastapi import APIRouter, HTTPException
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -10,17 +13,19 @@ from datetime import date, timedelta
 from google_auth_oauthlib.flow import Flow
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
+from datetime import date, timedelta
+import random
+import phonenumbers
 
+from ..schemas import RegisterOtpRequest
+from ..services.sms_service import send_otp
 from .. import schemas, models
 from ..config import settings
 from ..database import get_db
 from ..services import security
 from ..rate_limiter import limiter
 from ..services import email_service
-
-
 from ..schemas import ResetPasswordRequest, ChangePasswordRequest, EmailSchema
-from datetime import date, timedelta
 
 
 router = APIRouter(
@@ -313,3 +318,104 @@ async def google_callback(code: str, db: AsyncSession = Depends(get_db)):
     app_token = security.create_access_token(data={"sub": user.email})
 
     return RedirectResponse(url=f"{settings.frontend_url}/auth/callback?token={app_token}")
+
+
+@router.post("/send-otp")
+@limiter.limit("3/minute")
+async def send_otp_code(phone: str, request: Request):
+    try:
+        pn = phonenumbers.parse(phone, "IR")
+        if not phonenumbers.is_valid_number(pn):
+            raise ValueError()
+    except Exception:
+        raise HTTPException(status_code=400, detail="شماره موبایل نامعتبر")
+
+    code = str(random.randint(100000, 999999))
+    await request.app.state.redis.setex(f"otp:{phone}", 120, code)
+    send_otp(phone, code)
+    return {"message": "کد تایید ارسال شد."}
+
+
+async def verify_otp_from_store(phone: str, code: str, request: Request):
+    saved_code = await request.app.state.redis.get(f"otp:{phone}")
+    return saved_code == code
+
+
+@router.post("/verify-otp")
+async def verify_otp(phone: str, code: str, request: Request, db: AsyncSession = Depends(get_db)):
+    saved_code = await request.app.state.redis.get(f"otp:{phone}")
+    if saved_code != code:
+        raise HTTPException(status_code=400, detail="کد اشتباه است.")
+
+    user = await db.scalar(select(models.User).where(models.User.phone_number == phone))
+    if not user:
+        raise HTTPException(status_code=404, detail="کاربری با این شماره یافت نشد.")
+
+    access_token = security.create_access_token(data={"sub": user.email})
+
+    await request.app.state.redis.delete(f"otp:{phone}")
+    return {"access_token": access_token, "token_type": "bearer"}
+
+
+@router.post("/register-otp", response_model=schemas.UserResponse, status_code=status.HTTP_201_CREATED)
+async def register_with_otp(
+    payload: RegisterOtpRequest,
+    request: Request,
+    db: AsyncSession = Depends(get_db)
+):
+    phone = payload.phone
+    code = payload.code
+
+
+    try:
+        pn = phonenumbers.parse(phone, "IR")
+        if not phonenumbers.is_valid_number(pn):
+            raise ValueError()
+    except Exception:
+        raise HTTPException(status_code=400, detail="شماره موبایل نامعتبر")
+
+
+    # بررسی صحت OTP
+    if not await verify_otp_from_store(phone, code, request):
+        raise HTTPException(status_code=400, detail="کد اشتباه است.")
+
+    # بررسی اینکه کاربر با این شماره قبلا وجود نداشته باشه
+    existing_user = await db.scalar(select(models.User).where(models.User.phone_number == phone))
+    if existing_user:
+        raise HTTPException(status_code=400, detail="شماره موبایل قبلاً ثبت شده است.")
+
+    # گرفتن پلن پیش‌فرض Free
+    free_plan_result = await db.execute(select(models.Plan).where(models.Plan.name == "Free"))
+    free_plan = free_plan_result.scalar_one_or_none()
+    if not free_plan:
+        raise HTTPException(status_code=500, detail="Default 'Free' plan not found.")
+
+    random_password = secrets.token_urlsafe(32)
+
+    # ایجاد کاربر جدید
+    new_user = models.User(
+        email=f"user_{phone}@otp.local",  # چون ایمیل اجباری است، یک ایمیل ساختگی می‌گذاریم
+        # hashed_password=security.get_password_hash("default_password"),
+        hashed_password=security.get_password_hash(random_password),
+        phone_number=phone,
+        first_name=payload.first_name,
+        last_name=payload.last_name,
+        is_verified=True,  # چون OTP تایید شد
+        plan_id=free_plan.id,
+        subscription_start_date=date.today(),
+        subscription_end_date=date.today() + timedelta(days=free_plan.duration_days)
+    )
+
+    db.add(new_user)
+    await db.commit()
+    await db.refresh(new_user)
+
+    # صدور JWT
+    access_token = security.create_access_token(data={"sub": new_user.email})
+    await request.app.state.redis.delete(f"otp:{phone}")
+
+    return {
+        **schemas.UserResponse.model_validate(new_user).dict(),
+        "access_token": access_token,
+        "token_type": "bearer"
+    }

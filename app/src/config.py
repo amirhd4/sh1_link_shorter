@@ -7,7 +7,7 @@ class Settings(BaseSettings):
 
     frontend_url: str
     backend_url: str
-    zarinpal_merchant_id: str
+    zarinpal_merchant_id: str = ""
     zarinpal_sandbox_mode: bool = False
 
     # Google Web Risk
@@ -20,7 +20,10 @@ class Settings(BaseSettings):
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
 
-    zarinpal_merchant_id: str = ""
+    # SMS.ir
+    sms_ir_api_key: str
+    sms_ir_line_number: str
+    sms_ir_template_id: int  # برای قالب پیامک OTP
 
     @property
     def database_url_sync(self) -> str:

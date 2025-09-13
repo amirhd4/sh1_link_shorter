@@ -122,3 +122,10 @@ class SystemStats(BaseModel):
     total_links: int
     total_clicks: int
     new_users_last_7_days: List[DailyStat]
+
+
+class RegisterOtpRequest(BaseModel):
+    phone: str
+    code: str
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None

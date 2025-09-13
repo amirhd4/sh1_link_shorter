@@ -29,6 +29,8 @@ import { ResetPasswordPage } from './features/auth/pages/ResetPasswordPage';
 import { VerifyEmailPage } from './features/auth/pages/VerifyEmailPage';
 import { EmailSentPage } from './features/auth/pages/EmailSentPage';
 import {AuthCallbackPage} from "./features/auth/pages/AuthCallbackPage.tsx";
+import { LoginOtpPage } from './features/auth/pages/LoginOtpPage.tsx';
+import {RegisterOtpPage} from "./features/auth/pages/RegisterOtpPage.tsx";
 
 
 
@@ -47,6 +49,8 @@ const router = createBrowserRouter([
       { path: '/email-sent', element: <EmailSentPage /> },
       { path: '/verify-email', element: <VerifyEmailPage /> },
       { path: '/auth/callback', element: <AuthCallbackPage /> },
+      { path: '/login-otp', element: <LoginOtpPage /> },
+      { path: '/register-otp', element: <RegisterOtpPage /> },
     ],
   },
 
