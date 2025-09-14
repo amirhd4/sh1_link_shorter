@@ -1,40 +1,65 @@
-from loguru import logger
-from ..config import settings
+# from loguru import logger
+# from ..config import settings
+#
+#
+# def send_email(to_email: str, subject: str, content: str):
+#     """
+#     تابع شبیه‌سازی شده برای ارسال ایمیل که محتوا را در لاگ‌ها چاپ می‌کند.
+#     """
+#     logger.info(" MOCK EMAIL SERVICE ".center(50, "="))
+#     logger.info(f"Sending email to: {to_email}")
+#     logger.info(f"Subject: {subject}")
+#     logger.info(f"Content:\n{content}")
+#     logger.info("=" * 50)
+#
+# def send_password_reset_email(to_email: str, reset_token: str):
+#     subject = "بازیابی رمز عبور برای کوتاه کننده لینک"
+#     # reset_url = f"{settings.frontend_url}/api/auth/reset-password?token={reset_token}"
+#     reset_url = f"{settings.frontend_url}/reset-password?token={reset_token}"
+#
+#     content = f"""
+#     <p>سلام،</p>
+#     <p>برای تنظیم مجدد رمز عبور خود روی لینک زیر کلیک کنید:</p>
+#     <p><a href="{reset_url}">{reset_url}</a></p>
+#     <p>اگر شما این درخواست را نداده‌اید، این ایمیل را نادیده بگیرید.</p>
+#     """
+#     send_email(to_email, subject, content)
+#
+# # تابع جدید برای ارسال ایمیل تایید حساب کاربری <<<<
+# def send_account_verification_email(to_email: str, verification_token: str):
+#     subject = "فعال‌سازی حساب کاربری در کوتاه کننده لینک"
+#     # verification_url = f"{settings.frontend_url}/api/auth/verify-email?token={verification_token}"
+#     verification_url = f"{settings.frontend_url}/verify-email?token={verification_token}"
+#
+#     content = f"""
+#     <p>سلام،</p>
+#     <p>از ثبت‌نام شما در سرویس ما متشکریم! برای فعال‌سازی حساب خود روی لینک زیر کلیک کنید:</p>
+#     <p><a href="{verification_url}">{verification_url}</a></p>
+#     <p>این لینک تا ۲۴ ساعت آینده معتبر است.</p>
+#     """
+#     send_email(to_email, subject, content)
 
 
-def send_email(to_email: str, subject: str, content: str):
-    """
-    تابع شبیه‌سازی شده برای ارسال ایمیل که محتوا را در لاگ‌ها چاپ می‌کند.
-    """
-    logger.info(" MOCK EMAIL SERVICE ".center(50, "="))
-    logger.info(f"Sending email to: {to_email}")
-    logger.info(f"Subject: {subject}")
-    logger.info(f"Content:\n{content}")
-    logger.info("=" * 50)
+from fastapi import BackgroundTasks
+from .email_sender import EmailSender
 
-def send_password_reset_email(to_email: str, reset_token: str):
-    subject = "بازیابی رمز عبور برای کوتاه کننده لینک"
-    # reset_url = f"{settings.frontend_url}/api/auth/reset-password?token={reset_token}"
-    reset_url = f"{settings.frontend_url}/reset-password?token={reset_token}"
+email_sender = EmailSender()
 
-    content = f"""
-    <p>سلام،</p>
-    <p>برای تنظیم مجدد رمز عبور خود روی لینک زیر کلیک کنید:</p>
-    <p><a href="{reset_url}">{reset_url}</a></p>
-    <p>اگر شما این درخواست را نداده‌اید، این ایمیل را نادیده بگیرید.</p>
-    """
-    send_email(to_email, subject, content)
+async def send_account_verification_email(to_email: str, token: str):
+    verify_url = f"{email_sender_render_frontend_url()}/verify-email?token={token}"
+    html = email_sender.render_template("verify_email.html", {"verify_url": verify_url})
+    subject = "تأیید حساب کاربری"
+    await email_sender.send_message(to_email, subject, html)
 
-# تابع جدید برای ارسال ایمیل تایید حساب کاربری <<<<
-def send_account_verification_email(to_email: str, verification_token: str):
-    subject = "فعال‌سازی حساب کاربری در کوتاه کننده لینک"
-    # verification_url = f"{settings.frontend_url}/api/auth/verify-email?token={verification_token}"
-    verification_url = f"{settings.frontend_url}/verify-email?token={verification_token}"
 
-    content = f"""
-    <p>سلام،</p>
-    <p>از ثبت‌نام شما در سرویس ما متشکریم! برای فعال‌سازی حساب خود روی لینک زیر کلیک کنید:</p>
-    <p><a href="{verification_url}">{verification_url}</a></p>
-    <p>این لینک تا ۲۴ ساعت آینده معتبر است.</p>
-    """
-    send_email(to_email, subject, content)
+async def send_password_reset_email(to_email: str, token: str):
+    reset_url = f"{email_sender_render_frontend_url()}/reset-password?token={token}"
+    html = email_sender.render_template("reset_password.html", {"reset_url": reset_url})
+    subject = "بازیابی رمز عبور"
+    await email_sender.send_message(to_email, subject, html)
+
+
+def email_sender_render_frontend_url() -> str:
+    # خواندن از settings.frontend_url (ممکن است settings را import کنی)
+    from ..config import settings
+    return settings.frontend_url.rstrip("/")

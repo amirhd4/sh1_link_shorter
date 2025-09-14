@@ -39,7 +39,7 @@ async def send_verification_email(user: models.User, db: AsyncSession):
         data={"sub": user.email, "type": "email_verification"},
         expires_delta=timedelta(hours=24)
     )
-    email_service.send_account_verification_email(user.email, verification_token)
+    await email_service.send_account_verification_email(user.email, verification_token)
 
 
 @router.post("/register", response_model=schemas.UserResponse, status_code=status.HTTP_201_CREATED)
@@ -141,7 +141,7 @@ async def forgot_password(request: EmailSchema, db: AsyncSession = Depends(get_d
             data={"sub": user.email, "type": "password_reset"},
             expires_delta=timedelta(minutes=15)
         )
-        email_service.send_password_reset_email(user.email, reset_token)
+        await email_service.send_password_reset_email(user.email, reset_token)
 
     return {"message": "If an account with that email exists, a password reset link has been sent."}
 
