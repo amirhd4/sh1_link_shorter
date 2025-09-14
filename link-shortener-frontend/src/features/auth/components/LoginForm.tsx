@@ -25,10 +25,12 @@ import { Link as RouterLink, useNavigate, useSearchParams } from 'react-router-d
 import type { LoginCredentials } from '../../../types/auth';
 import { GoogleLoginButton } from './GoogleLoginButton';
 
+
 const loginSchema = z.object({
   email: z.string().email('آدرس ایمیل معتبر نیست.'),
   password: z.string().min(1, 'رمز عبور نمی‌تواند خالی باشد.'),
 });
+
 
 type LoginFormInputs = z.infer<typeof loginSchema>;
 
@@ -255,6 +257,9 @@ export function LoginForm() {
               حساب کاربری ندارید؟ ثبت‌نام کنید
             </MuiLink>
           </Grid>
+            <MuiLink component={RouterLink} to="/login-otp" variant="body2" sx={{ color: '#6b21a8' }}>
+              ورود با شماره موبایل
+            </MuiLink>
         </Grid>
       </Box>
     </Paper>

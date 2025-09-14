@@ -4,8 +4,9 @@ import { z } from 'zod';
 import { useMutation } from '@tanstack/react-query';
 import { authService } from '../../../services/authService';
 import type { RegisterCredentials } from '../../../types/auth';
-import { TextField, Button, Box, Typography, Alert, Link, Paper } from '@mui/material';
+import {TextField, Button, Box, Typography, Alert, Link, Paper, type LinkProps} from '@mui/material';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import type {ReactNode} from "react";
 
 const registerSchema = z.object({
   email: z.string().email('آدرس ایمیل معتبر نیست.'),
@@ -13,6 +14,16 @@ const registerSchema = z.object({
 });
 
 type RegisterFormInputs = z.infer<typeof registerSchema>;
+
+function MuiLink(props: {
+    component: React.ForwardRefExoticComponent<LinkProps & React.RefAttributes<HTMLAnchorElement>>,
+    to: string,
+    variant: string,
+    sx: { color: string },
+    children: ReactNode
+}) {
+    return null;
+}
 
 export function RegisterForm() {
   const navigate = useNavigate();
@@ -135,6 +146,11 @@ export function RegisterForm() {
             وارد شوید
           </Link>
         </Typography>
+
+          <MuiLink component={RouterLink} to="/register-otp" variant="body2" sx={{ color: '#6b21a8' }}>
+            ثبت‌نام با شماره موبایل
+          </MuiLink>
+
       </Box>
     </Paper>
   );

@@ -65,4 +65,33 @@ export const authService = {
     });
     return response.data;
   },
+
+  sendOtp: async (phone: string) => {
+    const res = await fetch(`/auth/send-otp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phone }),
+    });
+    if (!res.ok) throw new Error("خطا در ارسال OTP");
+    return res.json();
+  },
+  verifyOtp: async (phone: string, code: string) => {
+    const res = await fetch(`/auth/verify-otp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phone, code }),
+    });
+    if (!res.ok) throw new Error("خطا در تایید OTP");
+    return res.json();
+  },
+  registerWithOtp: async (phone: string, code: string) => {
+    const res = await fetch(`/auth/register-otp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phone, code }),
+    });
+    if (!res.ok) throw new Error("خطا در ثبت‌نام OTP");
+    return res.json();
+  },
+
 };
