@@ -58,7 +58,7 @@ export function PublicLayout({ children }: PublicLayoutProps) {
             style={{ textDecoration: "none", color: "inherit" }}
             sx={{ fontWeight: 800, letterSpacing: "-0.5px" }}
           >
-            وان اس ال
+           ال وان اس
           </Typography>
 
           <Box sx={{ flexGrow: 1 }} />
