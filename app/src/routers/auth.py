@@ -43,10 +43,10 @@ async def send_verification_email(
         data={"sub": user.email, "type": "email_verification"},
         expires_delta=timedelta(hours=24)
     )
+
     await email_service.send_account_verification_email(
         request, user.email, verification_token
     )
-
 
 
 @router.post("/register", response_model=schemas.UserResponse, status_code=status.HTTP_201_CREATED)
@@ -154,6 +154,7 @@ async def forgot_password(
             data={"sub": user.email, "type": "password_reset"},
             expires_delta=timedelta(minutes=15)
         )
+
         await email_service.send_password_reset_email(
             request, user.email, reset_token
         )
@@ -161,7 +162,6 @@ async def forgot_password(
     return {
         "message": "If an account with that email exists, a password reset link has been sent."
     }
-
 
 
 class ResetPasswordRequest(schemas.BaseModel):

@@ -23,7 +23,19 @@ class Settings(BaseSettings):
     # SMS.ir
     sms_ir_api_key: str
     sms_ir_line_number: str
-    sms_ir_template_id: int  # برای قالب پیامک OTP
+    sms_ir_template_id: int
+
+    # Email / SMTP (ParsPack)
+    email_host: str
+    email_port: int = 587
+    email_use_tls: bool = True
+    email_username: str
+    email_password: str
+    email_from: str  # e.g. "no-reply@yourdomain.com"
+    email_from_name: str = "Your App Name"
+
+    # Optional: provider toggle (parspack or sendgrid)
+    email_provider: str = "parspack"
 
     smtp_host: str
     smtp_port: str

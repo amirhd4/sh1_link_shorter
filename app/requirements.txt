@@ -25,3 +25,5 @@ psycopg2-binary
 smsir-python
 phonenumbers
 aiosmtplib
+email-validator
+jinja2
