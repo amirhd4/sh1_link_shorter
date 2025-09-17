@@ -25,6 +25,14 @@ class Settings(BaseSettings):
     sms_ir_line_number: str
     sms_ir_template_id: int  # برای قالب پیامک OTP
 
+    smtp_host: str
+    smtp_port: str
+    smtp_user: str
+    smtp_pass:  str
+    smtp_starttls: str
+    smtp_from_name: str
+    smtp_from: str
+    
     @property
     def database_url_sync(self) -> str:
         return self.database_url.replace("+asyncpg", "")

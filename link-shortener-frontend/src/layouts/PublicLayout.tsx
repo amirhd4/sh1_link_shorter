@@ -16,6 +16,10 @@ interface PublicLayoutProps {
   children?: ReactNode;
 }
 
+const enamadCode = `
+    <a referrerpolicy='origin' target='_blank' href='https://trustseal.enamad.ir/?id=647916&Code=RbBIen4xSg5as0EBSm90wdtNge118hJf'><img referrerpolicy='origin' src='https://trustseal.enamad.ir/logo.aspx?id=647916&Code=RbBIen4xSg5as0EBSm90wdtNge118hJf' alt='' style='cursor:pointer' code='RbBIen4xSg5as0EBSm90wdtNge118hJf'></a>
+  `;
+
 export function PublicLayout({ children }: PublicLayoutProps) {
   const { scrollYProgress } = useScroll();
   const scaleX = useTransform(scrollYProgress, [0, 1], [0, 1]);
@@ -112,11 +116,17 @@ export function PublicLayout({ children }: PublicLayoutProps) {
         }}
       >
         <Typography variant="body2" sx={{ color: "#475569" }}>
-          © {new Date().getFullYear()} کوتاه‌کنـده — ساخته‌شده با 💜
+          © {new Date().getFullYear()} کوتاه کننده لینک L1s — ساخته‌شده با 💜
         </Typography>
-        <Link href="tel:09396092135" sx={{ display: "block", mt: 1, color: "#6b21a8" }}>
-          تبلیغات: 09396092135
-        </Link>
+        <Box sx={{display: "flex", justifyContent: "center", alignItems: "center", gap: 3, mt: 1,}}>
+          <Link
+            href="tel:09396092135"
+            sx={{ color: "#6b21a8", fontWeight: 500, textDecoration: "none" }}
+          >
+            تبلیغات: 09396092135
+          </Link>
+          <div dangerouslySetInnerHTML={{ __html: enamadCode }} />
+        </Box>
       </Box>
     </>
   );

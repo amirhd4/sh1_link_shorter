@@ -34,12 +34,19 @@ router = APIRouter(
 )
 
 
-async def send_verification_email(user: models.User, db: AsyncSession):
+async def send_verification_email(
+    request: Request,
+    user: models.User,
+    db: AsyncSession
+):
     verification_token = security.create_access_token(
         data={"sub": user.email, "type": "email_verification"},
         expires_delta=timedelta(hours=24)
     )
-    email_service.send_account_verification_email(user.email, verification_token)
+    await email_service.send_account_verification_email(
+        request, user.email, verification_token
+    )
+
 
 
 @router.post("/register", response_model=schemas.UserResponse, status_code=status.HTTP_201_CREATED)
@@ -92,7 +99,7 @@ async def register_user(
     result = await db.execute(query)
     complete_new_user = result.scalar_one()
 
-    await send_verification_email(new_user, db)
+    await send_verification_email(request, new_user, db)
 
     return complete_new_user
 
@@ -132,8 +139,14 @@ async def read_users_me(current_user: models.User = Depends(security.get_current
 
 
 @router.post("/forgot-password", status_code=status.HTTP_200_OK)
-async def forgot_password(request: EmailSchema, db: AsyncSession = Depends(get_db)):
-    user_result = await db.execute(select(models.User).where(models.User.email == request.email))
+async def forgot_password(
+    form: EmailSchema,
+    db: AsyncSession = Depends(get_db),
+    request: Request = None
+):
+    user_result = await db.execute(
+        select(models.User).where(models.User.email == form.email)
+    )
     user = user_result.scalar_one_or_none()
 
     if user:
@@ -141,9 +154,14 @@ async def forgot_password(request: EmailSchema, db: AsyncSession = Depends(get_d
             data={"sub": user.email, "type": "password_reset"},
             expires_delta=timedelta(minutes=15)
         )
-        email_service.send_password_reset_email(user.email, reset_token)
+        await email_service.send_password_reset_email(
+            request, user.email, reset_token
+        )
 
-    return {"message": "If an account with that email exists, a password reset link has been sent."}
+    return {
+        "message": "If an account with that email exists, a password reset link has been sent."
+    }
+
 
 
 class ResetPasswordRequest(schemas.BaseModel):
@@ -229,7 +247,7 @@ async def resend_verification_email(
     ):
     user = await db.scalar(select(models.User).where(models.User.email == payload.email))
     if user and not user.is_verified:
-        await send_verification_email(user, db)
+        await send_verification_email(request, user, db)
     return {"message": "If your account exists and is not verified, a new verification email has been sent."}
 
 
@@ -317,7 +335,7 @@ async def google_callback(code: str, db: AsyncSession = Depends(get_db)):
 
     app_token = security.create_access_token(data={"sub": user.email})
 
-    return RedirectResponse(url=f"{settings.frontend_url}/auth/callback?token={app_token}")
+    return RedirectResponse(url=f"{settings.frontend_url}/api/auth/callback?token={app_token}")
 
 
 @router.post("/send-otp")
