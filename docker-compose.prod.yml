@@ -35,10 +35,13 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./link-shortener-frontend/dist:/usr/share/nginx/html
+      # - ./link-shortener-frontend/dist:/usr/share/nginx/html
+      - ./link-shortener-frontend/dist:/usr/share/nginx/html/pages
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
-      - ./nginx/conf.d:/etc/nginx/conf.d
+      # - ./nginx/conf.d:/etc/nginx/conf.d
       - /etc/letsencrypt:/etc/letsencrypt:ro
+      - ./link-shortener-frontend/dist/locales:/usr/share/nginx/html/locales
+      - ./link-shortener-frontend/dist/fonts:/usr/share/nginx/html/fonts
       
     networks:
       - 1sl_default

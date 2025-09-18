@@ -108,11 +108,13 @@ const router = createBrowserRouter([
     path: '*',
     element: <Navigate to="/home" replace />,
   },
-]);
+],
+{ basename: '/pages' }
+);
 
 /**
  * کامپوننت اصلی که RouterProvider را برای کل برنامه فراهم می‌کند.
  */
 export function AppRouter() {
-  return <RouterProvider router={router} />;
+  return <RouterProvider router={router}/>;
 }

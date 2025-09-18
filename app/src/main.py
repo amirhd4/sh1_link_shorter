@@ -6,6 +6,7 @@ import redis.asyncio as redis
 from sqlalchemy.future import select
 from slowapi.errors import RateLimitExceeded
 from aiosmtplib import SMTP
+import ssl
 
 from .database import engine, Base, async_session_factory
 from .routers import auth, links, admin, payment, stats, plans, redirect
@@ -14,7 +15,6 @@ from .models import Plan
 from .config import settings
 
 
-        
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     app.state.redis = redis.from_url("redis://cache", encoding="utf-8", decode_responses=True)
@@ -22,14 +22,11 @@ async def lifespan(app: FastAPI):
     # SMTP
     app.state.smtp = SMTP(
         hostname=settings.smtp_host,
-        port=int(settings.smtp_port),
-        use_tls=True,   # ⚠️ مهم
+        port=settings.smtp_port,
+        tls_context=ssl.create_default_context()
     )
-    smtp = SMTP(
-    hostname="mail.l1s.ir",
-    port=465,
-    use_tls=True  # SSL مستقیم روی پورت 465
-    )
+
+
     await app.state.smtp.connect()
     if settings.smtp_user:
         await app.state.smtp.login(settings.smtp_user, settings.smtp_pass)
@@ -84,7 +81,7 @@ app.include_router(admin.router, prefix="/api")
 app.include_router(payment.router, prefix="/api")
 app.include_router(stats.router, prefix="/api")
 app.include_router(plans.router, prefix="/api")
-app.include_router(redirect.router, prefix="/api")
+app.include_router(redirect.router)
 
 
 @app.get("/")

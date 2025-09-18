@@ -25,8 +25,10 @@ from ..rate_limiter import limiter
 
 
 
+router = APIRouter(tags=["Redirect"])
+
 router = APIRouter(
-    prefix="/api/links",
+    prefix="/links",
     tags=["Links Management"]
 )
 
@@ -74,6 +76,7 @@ async def create_short_url(
 
     short_code = await generate_unique_short_key(redis_client)
 
+    
     # --- START of the new resilient logic ---
     MAX_RETRIES = 5  # Set a limit to prevent infinite loops
     for _ in range(MAX_RETRIES):
@@ -84,6 +87,7 @@ async def create_short_url(
             short_code=short_code,
             owner_id=current_user.id
         )
+        
         db.add(db_link)
 
         try:
@@ -92,7 +96,11 @@ async def create_short_url(
             await db.refresh(db_link)
 
             # If successful, create the full URL and exit the loop
-            short_url_full = f"{settings.backend_url}/{short_code}"
+            # short_url_full = f"{settings.origin_backend_url}/{short_code}"
+
+            short_url_full = f"{settings.origin_backend_url}/{db_link.short_code}"
+
+
             return schemas.URLResponse(long_url=db_link.long_url, short_url=short_url_full)
 
         except IntegrityError:
@@ -128,7 +136,7 @@ async def get_user_links(
     return links
 
 
-@router.delete("/links/{short_code}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{short_code}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_link(
         short_code: str,
         current_user: models.User = Depends(security.get_current_user),
@@ -159,7 +167,7 @@ async def delete_link(
     return None
 
 
-@router.patch("/links/{short_code}", response_model=schemas.LinkDetails)
+@router.patch("/{short_code}", response_model=schemas.LinkDetails)
 async def update_link(
     short_code: str,
     link_update: schemas.LinkUpdate,
@@ -206,7 +214,6 @@ async def get_link_stats(
     """
     آمار کلیک‌های یک لینک در ۷ روز گذشته را به صورت دقیق و آگاه از منطقه زمانی محاسبه می‌کند.
     """
-    print("Amir Start")
     link_result = await db.execute(
         select(models.Link.id)
         .where(models.Link.short_code == short_code, models.Link.owner_id == current_user.id)
@@ -241,7 +248,6 @@ async def get_link_stats(
                 clicks=clicks_by_date.get(current_date, 0)
             )
         )
-    print("Amir End")
     return schemas.LinkStatsResponse(clicks_last_7_days=stats_last_7_days)
 
 

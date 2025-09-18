@@ -86,8 +86,8 @@ export function LinkDetailsPage() {
     enabled: !!shortCode,
   });
 
-  const fullShortUrl = `${config.backendBaseUrl}/${link?.short_code}`;
-  const qrCodeUrl = `${config.backendBaseUrl}/api/links/${link?.short_code}/qr`;
+  const fullShortUrl = `${config.backendBaseUrlOrigin}/${link?.short_code}`;
+  const qrCodeUrl = `${config.backendBaseUrl}/links/${link?.short_code}/qr`;
 
   const handleCopyToClipboard = () => {
     if (!fullShortUrl) return;
