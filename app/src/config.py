@@ -25,6 +25,7 @@ class Settings(BaseSettings):
     sms_ir_api_key: str
     sms_ir_line_number: str
     sms_ir_template_id: int
+    sms_ir_verify_template_id: int
 
     # Optional: provider toggle (parspack or sendgrid)
     email_provider: str = "parspack"

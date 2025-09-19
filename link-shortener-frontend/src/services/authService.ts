@@ -66,32 +66,27 @@ export const authService = {
     return response.data;
   },
 
-  sendOtp: async (phone: string) => {
-    const res = await fetch(`/auth/send-otp`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phone }),
+
+  sendOtp: async (phone: string): Promise<{ message: string }> => {
+    const response = await apiClient.post('/auth/send-otp', { phone }, {
+      headers: { Authorization: '' }
     });
-    if (!res.ok) throw new Error("خطا در ارسال OTP");
-    return res.json();
+    return response.data;
   },
-  verifyOtp: async (phone: string, code: string) => {
-    const res = await fetch(`/auth/verify-otp`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phone, code }),
+
+  verifyOtp: async (phone: string, code: string): Promise<{ message: string, access_token: string }> => {
+    const response = await apiClient.post('/auth/verify-otp', { phone, code }, {
+      headers: { Authorization: '' }
     });
-    if (!res.ok) throw new Error("خطا در تایید OTP");
-    return res.json();
+    return response.data;
   },
-  registerWithOtp: async (phone: string, code: string) => {
-    const res = await fetch(`/auth/register-otp`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phone, code }),
+
+  registerWithOtp: async (phone: string, code: string): Promise<{ message: string; access_token: string }> => {
+    const response = await apiClient.post('/auth/register-otp', { phone, code }, {
+      headers: { Authorization: '' }
     });
-    if (!res.ok) throw new Error("خطا در ثبت‌نام OTP");
-    return res.json();
-  },
+    return response.data;
+  }
+
 
 };

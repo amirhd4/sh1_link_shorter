@@ -16,6 +16,7 @@ from google.auth.transport import requests as google_requests
 from datetime import date, timedelta
 import random
 import phonenumbers
+import logging
 
 from ..schemas import RegisterOtpRequest
 from ..services.sms_service import send_otp
@@ -26,6 +27,10 @@ from ..services import security
 from ..rate_limiter import limiter
 from ..services import email_service
 from ..schemas import ResetPasswordRequest, ChangePasswordRequest, EmailSchema
+
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 
 router = APIRouter(
@@ -338,9 +343,15 @@ async def google_callback(code: str, db: AsyncSession = Depends(get_db)):
     return RedirectResponse(url=f"{settings.frontend_url}/api/auth/callback?token={app_token}")
 
 
+# OTP
+class PhoneRequest(schemas.BaseModel):
+    phone: str
+
+
 @router.post("/send-otp")
 @limiter.limit("3/minute")
-async def send_otp_code(phone: str, request: Request):
+async def send_otp_code(phone: PhoneRequest, request: Request):
+    phone = phone.phone
     try:
         pn = phonenumbers.parse(phone, "IR")
         if not phonenumbers.is_valid_number(pn):
@@ -359,8 +370,17 @@ async def verify_otp_from_store(phone: str, code: str, request: Request):
     return saved_code == code
 
 
+
+class VerifyOtpRequest(schemas.BaseModel):
+    phone: str
+    code: str
+
+
 @router.post("/verify-otp")
-async def verify_otp(phone: str, code: str, request: Request, db: AsyncSession = Depends(get_db)):
+async def verify_otp(payload: VerifyOtpRequest, request: Request, db: AsyncSession = Depends(get_db)):
+    phone = payload.phone
+    code = payload.code
+
     saved_code = await request.app.state.redis.get(f"otp:{phone}")
     if saved_code != code:
         raise HTTPException(status_code=400, detail="کد اشتباه است.")
@@ -390,16 +410,19 @@ async def register_with_otp(
         if not phonenumbers.is_valid_number(pn):
             raise ValueError()
     except Exception:
+        logger.info("1مشکل اینجا بید")        
         raise HTTPException(status_code=400, detail="شماره موبایل نامعتبر")
 
 
     # بررسی صحت OTP
     if not await verify_otp_from_store(phone, code, request):
+        logger.error("مشکل اینجا بید")        
         raise HTTPException(status_code=400, detail="کد اشتباه است.")
 
     # بررسی اینکه کاربر با این شماره قبلا وجود نداشته باشه
     existing_user = await db.scalar(select(models.User).where(models.User.phone_number == phone))
     if existing_user:
+        logger.info("مشکل اینجا بید3")        
         raise HTTPException(status_code=400, detail="شماره موبایل قبلاً ثبت شده است.")
 
     # گرفتن پلن پیش‌فرض Free
@@ -412,7 +435,7 @@ async def register_with_otp(
 
     # ایجاد کاربر جدید
     new_user = models.User(
-        email=f"user_{phone}@otp.local",  # چون ایمیل اجباری است، یک ایمیل ساختگی می‌گذاریم
+        email=f"user_{phone}@somedom.ir",  # چون ایمیل اجباری است، یک ایمیل ساختگی می‌گذاریم
         # hashed_password=security.get_password_hash("default_password"),
         hashed_password=security.get_password_hash(random_password),
         phone_number=phone,

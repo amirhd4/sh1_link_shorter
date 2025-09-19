@@ -146,10 +146,14 @@ export function RegisterForm() {
             وارد شوید
           </Link>
         </Typography>
-
-          <MuiLink component={RouterLink} to="/register-otp" variant="body2" sx={{ color: '#6b21a8' }}>
+        <Typography variant="body2" sx={{ textAlign: 'center', color: '#4b5563' }}>
+          ورود با شماره{' '}
+          <Link component={RouterLink} to="/register-otp" variant="body2" sx={{ color: '#6b21a8' }}>
             ثبت‌نام با شماره موبایل
-          </MuiLink>
+          </Link>
+        </Typography>
+
+          
 
       </Box>
     </Paper>

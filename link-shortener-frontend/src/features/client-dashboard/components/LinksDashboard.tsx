@@ -1,304 +1,351 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { linkService } from '../../../services/linkService';
 import { DataGrid, type GridColDef, GridActionsCellItem } from '@mui/x-data-grid';
 import { 
-    Alert, 
-    Box, 
-    CircularProgress, 
-    Typography, 
-    Button, 
-    Snackbar,
-    Container, // ✨ NEW: For better layout and margins
-    Paper,     // ✨ NEW: To elevate the main content
-    Stack,     // ✨ NEW: For easier header layout
-    Tooltip,
-    useMediaQuery, // 📱 NEW: For responsive logic
-    useTheme,      // 📱 NEW: To access breakpoints
-    Card,          // 📱 NEW: For mobile view
-    CardContent,   // 📱 NEW: For mobile view
-    CardActions,   // 📱 NEW: For mobile view
-    IconButton,    // 📱 NEW: For mobile action buttons
-    Divider,       // ✨ NEW: For visual separation in mobile view
-    Link as MuiLink 
+    Alert, Box, Typography, Button, Snackbar, Container, Paper, Stack, Tooltip,
+    useMediaQuery, useTheme, Card, CardContent, CardActions, IconButton, Divider,
+    Link as MuiLink, Skeleton, alpha
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { CreateLinkForm } from './CreateLinkForm';
 import { EditLinkForm } from './EditLinkForm';
 import { ConfirmationDialog } from '../../../components/molecules/ConfirmationDialog';
 import type { LinkDetails } from '../../../types/api';
+import { useNavigate } from 'react-router-dom';
 
+// Icons
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import AnalyticsIcon from '@mui/icons-material/Analytics';
-import { useNavigate } from 'react-router-dom';
+import LinkIcon from '@mui/icons-material/Link';
+import LinkOffIcon from '@mui/icons-material/LinkOff';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import CheckIcon from '@mui/icons-material/Check';
+import SubdirectoryArrowRightIcon from '@mui/icons-material/SubdirectoryArrowRight';
 
 import config from '../../../config';
 import { usePersianDataGridLocale } from '../../../hooks/usePersianDataGridLocale';
 
-// 📱 A new component for rendering a single link on mobile devices
-const MobileLinkCard = ({ link, onDetailsClick, onEditClick, onDeleteClick }: {
-    link: LinkDetails,
-    onDetailsClick: () => void,
-    onEditClick: () => void,
-    onDeleteClick: () => void,
-}) => (
+// =================================================================
+// ✨ Copy Button Component
+// =================================================================
+const CopyButton = ({ textToCopy }: { textToCopy: string }) => {
+    const [copied, setCopied] = useState(false);
+
+    const handleCopy = () => {
+        navigator.clipboard.writeText(textToCopy);
+        setCopied(true);
+    };
+
+    useEffect(() => {
+        if (copied) {
+            const timer = setTimeout(() => setCopied(false), 2000);
+            return () => clearTimeout(timer);
+        }
+    }, [copied]);
+
+    return (
+        <Tooltip title={copied ? "کپی شد!" : "کپی لینک کوتاه"}>
+            <IconButton onClick={handleCopy} size="small">
+                {copied ? <CheckIcon color="success" fontSize="small" /> : <ContentCopyIcon fontSize="small" />}
+            </IconButton>
+        </Tooltip>
+    );
+};
+
+// =================================================================
+// Skeleton برای موبایل
+// =================================================================
+const MobileLinkCardSkeleton = () => (
     <Card sx={{ mb: 2 }}>
         <CardContent>
-            <Stack spacing={1.5}>
-                <Box>
-                    <Typography variant="body2" color="text.secondary" gutterBottom>کد کوتاه</Typography>
-                    <MuiLink href={`${config.backendBaseUrlOrigin}/${link.short_code}`} target="_blank" rel="noopener noreferrer" sx={{ fontWeight: 'bold' }}>
-                        {link.short_code}
-                    </MuiLink>
-                </Box>
-                <Box>
-                    <Typography variant="body2" color="text.secondary" gutterBottom>آدرس اصلی</Typography>
-                    <Typography 
-                        variant="body2" 
-                        sx={{ 
-                            wordBreak: 'break-all', 
-                            overflow: 'hidden', 
-                            textOverflow: 'ellipsis', 
-                            display: '-webkit-box',
-                            WebkitLineClamp: 2,
-                            WebkitBoxOrient: 'vertical'
-                        }}
-                    >
-                        {link.long_url}
-                    </Typography>
-                </Box>
-                <Stack direction="row" justifyContent="space-between">
-                     <Box>
-                        <Typography variant="body2" color="text.secondary">تعداد کلیک</Typography>
-                        <Typography variant="body1">{link.clicks}</Typography>
-                    </Box>
-                    <Box>
-                        <Typography variant="body2" color="text.secondary">تاریخ ایجاد</Typography>
-                        <Typography variant="body1">{new Date(link.created_at).toLocaleDateString('fa-IR')}</Typography>
-                    </Box>
-                </Stack>
+            <Stack spacing={2}>
+                <Skeleton variant="text" width="60%" />
+                <Skeleton variant="text" width="90%" />
+                <Skeleton variant="rounded" height={40} />
             </Stack>
         </CardContent>
         <Divider />
         <CardActions sx={{ justifyContent: 'flex-end' }}>
-            <Tooltip title="مشاهده آمار و جزئیات">
-                <IconButton onClick={onDetailsClick}><AnalyticsIcon /></IconButton>
-            </Tooltip>
-            <Tooltip title="ویرایش لینک">
-                <IconButton onClick={onEditClick}><EditIcon /></IconButton>
-            </Tooltip>
-            <Tooltip title="حذف لینک">
-                <IconButton onClick={onDeleteClick} color="error"><DeleteIcon /></IconButton>
-            </Tooltip>
+            <Skeleton variant="circular" width={34} height={34} />
+            <Skeleton variant="circular" width={34} height={34} />
+            <Skeleton variant="circular" width={34} height={34} />
         </CardActions>
     </Card>
 );
 
+// =================================================================
+// EmptyState
+// =================================================================
+const EmptyState = () => (
+    <Box textAlign="center" p={{ xs: 2, sm: 5 }}>
+        <LinkOffIcon sx={{ fontSize: 60, color: 'text.disabled', mb: 2 }} />
+        <Typography variant="h6" color="text.secondary">
+            هنوز لینکی ایجاد نکرده‌اید
+        </Typography>
+        <Typography variant="body2" color="text.disabled">
+            برای شروع، روی دکمه "ایجاد لینک جدید" کلیک کنید.
+        </Typography>
+    </Box>
+);
 
-export function LinksDashboard() {
-  const navigate = useNavigate();
-  const { t } = useTranslation('common');
-  const queryClient = useQueryClient();
-  const localeText = usePersianDataGridLocale();
-  
-  // 📱 Responsive hook
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+// =================================================================
+// Mobile Link Card
+// =================================================================
+const MobileLinkCard = ({ link, index, onDetailsClick, onEditClick, onDeleteClick, isDeleting }: {
+    link: LinkDetails,
+    index: number,
+    onDetailsClick: () => void,
+    onEditClick: () => void,
+    onDeleteClick: () => void,
+    isDeleting: boolean,
+}) => {
+    const theme = useTheme();
+    const shortUrl = `${config.backendBaseUrlOrigin}/${link.short_code}`;
 
-  // State Management (unchanged)
-  const [isCreateModalOpen, setCreateModalOpen] = useState(false);
-  const [editTarget, setEditTarget] = useState<LinkDetails | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
-  const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
-
-  // Data Fetching Query (unchanged)
-  const { data: links, isLoading, isError, error } = useQuery({
-    queryKey: ['my-links'],
-    queryFn: linkService.getMyLinks,
-  });
-
-  // Delete Mutation (unchanged)
-  const deleteMutation = useMutation({
-      mutationFn: linkService.deleteLink,
-      onSuccess: () => {
-          setSnackbarMessage("لینک با موفقیت حذف شد.");
-          queryClient.invalidateQueries({ queryKey: ['my-links'] });
-      },
-      onError: () => {
-          setSnackbarMessage("خطا در حذف لینک.");
-      },
-      onSettled: () => {
-          setDeleteTarget(null);
-      }
-  });
-
-  // Handlers (unchanged)
-  const handleDetailsClick = (shortCode: string) => () => {
-    navigate(`/links/${shortCode}`);
-  };
-
-  const handleDeleteClick = (shortCode: string) => () => {
-    setDeleteTarget(shortCode);
-  };
-
-  const handleConfirmDelete = () => {
-    if (deleteTarget) {
-        deleteMutation.mutate(deleteTarget);
-    }
-  };
-
-  const handleEditClick = (link: LinkDetails) => () => {
-      setEditTarget(link);
-  };
-
-  const columns: GridColDef[] = [
-    {
-      field: 'short_code',
-      headerName: 'کد کوتاه',
-      width: 150,
-      renderCell: (params) => (
-        <MuiLink
-          href={`${config.backendBaseUrlOrigin}/${params.value}`}
-          target="_blank"
-          rel="noopener noreferrer"
+    return (
+        <Card 
+            sx={{ 
+                mb: 2, 
+                transition: 'box-shadow 0.3s', 
+                '&:hover': { boxShadow: theme.shadows[4] },
+                borderLeft: `4px solid ${theme.palette.primary.main}`,
+                opacity: isDeleting ? 0.6 : 1,
+            }}
         >
-          {params.value}
-        </MuiLink>
-      ),
-    },
-    { field: 'long_url', headerName: 'آدرس اصلی', flex: 1, minWidth: 250 },
-    { field: 'clicks', headerName: 'تعداد کلیک', type: 'number', width: 130 },
-    {
-      field: 'created_at',
-      headerName: 'تاریخ ایجاد',
-      width: 180,
-      valueFormatter: (value) => new Date(value).toLocaleDateString('fa-IR'),
-    },
-    {
-      field: 'actions',
-      type: 'actions',
-      headerName: 'عملیات',
-      width: 120,
-      getActions: ({ row }) => [
-        <Tooltip title="مشاهده آمار و جزئیات">
-          <GridActionsCellItem
-            icon={<AnalyticsIcon />}
-            label="Details"
-            onClick={handleDetailsClick(row.short_code)}
-          />
-        </Tooltip>,
-        <Tooltip title="ویرایش لینک">
-          <GridActionsCellItem
-            icon={<EditIcon />}
-            label="Edit"
-            onClick={handleEditClick(row as LinkDetails)}
-          />
-        </Tooltip>,
-        <Tooltip title="حذف لینک">
-          <GridActionsCellItem
-            icon={<DeleteIcon />}
-            label="Delete"
-            onClick={handleDeleteClick(row.short_code as string)}
-          />
-        </Tooltip>,
-      ],
-    },
-  ];
+            <CardContent>
+                <Stack spacing={1.5}>
+                    {/* شماره ردیف */}
+                    <Typography variant="caption" color="text.secondary">ردیف: {index + 1}</Typography>
 
-  if (isLoading) {
-    return <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}><CircularProgress /></Box>;
-  }
+                    {/* لینک کوتاه */}
+                    <Box>
+                        <Typography variant="caption" color="text.secondary">لینک کوتاه شما</Typography>
+                        <Stack direction="row" alignItems="center" justifyContent="space-between">
+                            <MuiLink href={shortUrl} target="_blank" rel="noopener noreferrer" sx={{ fontWeight: 'bold', fontSize: '1rem' }}>
+                                {link.short_code}
+                            </MuiLink>
+                            <CopyButton textToCopy={shortUrl} />
+                        </Stack>
+                    </Box>
 
-  if (isError) {
-    return <Container sx={{ py: 4 }}><Alert severity="error">{t('messages.error')}: {error.message}</Alert></Container>;
-  }
-
-  return (
-    <>
-      {/* ✨ NEW: Using Container for better spacing and max-width */}
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        {/* ✨ NEW: Using Stack for responsive header */}
-        <Stack
-            direction={{ xs: 'column', sm: 'row' }}
-            justifyContent="space-between"
-            alignItems="center"
-            spacing={2}
-            mb={3}
-        >
-          <Typography variant="h5" component="h1" fontWeight="bold">
-            لینک‌های من
-          </Typography>
-          <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={() => setCreateModalOpen(true)}
-              sx={{ alignSelf: { xs: 'stretch', sm: 'auto' } }}
-          >
-            ایجاد لینک جدید
-          </Button>
-        </Stack>
-        
-        {/* ✨ NEW: Using Paper for elevation and better UI */}
-        <Paper sx={{ p: { xs: 1, sm: 2 }, borderRadius: 2 }} elevation={2}>
-            {/* 📱 NEW: Conditional rendering based on screen size */}
-            {isMobile ? (
+                    {/* لینک اصلی */}
+                    <Box>
+                        <Stack direction="row" alignItems="center" spacing={0.5} color="text.secondary">
+                            <SubdirectoryArrowRightIcon sx={{ fontSize: '1rem' }} />
+                            <Typography variant="caption">هدایت می‌شود به:</Typography>
+                        </Stack>
+                        <Typography 
+                            variant="body2" 
+                            color="text.primary"
+                            sx={{ wordBreak: 'break-all', pl: 2.5 }}
+                        >
+                            {link.long_url}
+                        </Typography>
+                    </Box>
+                </Stack>
+            </CardContent>
+            <Divider />
+            <CardActions sx={{ justifyContent: 'space-between', px: 2 }}>
                 <Box>
-                    {links && links.length > 0 ? links.map((link) => (
+                    <Typography variant="caption" color="text.secondary">کلیک: </Typography>
+                    <Typography component="span" variant="body2" fontWeight="bold">{link.clicks.toLocaleString('fa-IR')}</Typography>
+                </Box>
+                <Box>
+                    <Tooltip title="مشاهده جزئیات">
+                        <span><IconButton onClick={onDetailsClick} disabled={isDeleting}><AnalyticsIcon /></IconButton></span>
+                    </Tooltip>
+                    <Tooltip title="ویرایش لینک">
+                        <span><IconButton onClick={onEditClick} disabled={isDeleting}><EditIcon /></IconButton></span>
+                    </Tooltip>
+                    <Tooltip title="حذف لینک">
+                        <span><IconButton onClick={onDeleteClick} color="error" disabled={isDeleting}><DeleteIcon /></IconButton></span>
+                    </Tooltip>
+                </Box>
+            </CardActions>
+        </Card>
+    );
+};
+
+// =================================================================
+// Main Dashboard
+// =================================================================
+export function LinksDashboard() {
+    const navigate = useNavigate();
+    const { t } = useTranslation('common');
+    const queryClient = useQueryClient();
+    const localeText = usePersianDataGridLocale();
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+    const [isCreateModalOpen, setCreateModalOpen] = useState(false);
+    const [editTarget, setEditTarget] = useState<LinkDetails | null>(null);
+    const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+    const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
+
+    const [mobilePage, setMobilePage] = useState(0);
+    const pageSize = 5;
+
+    const { data: links, isLoading, isError, error } = useQuery({
+        queryKey: ['my-links'],
+        queryFn: linkService.getMyLinks,
+    });
+
+    const deleteMutation = useMutation({
+        mutationFn: linkService.deleteLink,
+        onSuccess: () => {
+            setSnackbarMessage("لینک با موفقیت حذف شد.");
+            queryClient.invalidateQueries({ queryKey: ['my-links'] });
+        },
+        onError: () => setSnackbarMessage("خطا در حذف لینک."),
+        onSettled: () => setDeleteTarget(null),
+    });
+
+    const handleDetailsClick = (shortCode: string) => () => navigate(`/links/${shortCode}`);
+    const handleDeleteClick = (shortCode: string) => () => setDeleteTarget(shortCode);
+    const handleConfirmDelete = () => { if(deleteTarget) deleteMutation.mutate(deleteTarget); };
+    const handleEditClick = (link: LinkDetails) => () => setEditTarget(link);
+
+    const columns: GridColDef<LinkDetails>[] = [
+        {
+            field: 'short_code',
+            headerName: 'کد کوتاه',
+            width: 150,
+            renderCell: (params) => (
+                <MuiLink href={`${config.backendBaseUrlOrigin}/${params.value}`} target="_blank" rel="noopener noreferrer">
+                    {params.value}
+                </MuiLink>
+            ),
+        },
+        { 
+            field: 'long_url', 
+            headerName: 'آدرس اصلی', 
+            flex: 1, 
+            minWidth: 250,
+            renderCell: (params) => (
+                <Tooltip title={params.value} placement="bottom-start">
+                    <Typography noWrap variant="body2">{params.value}</Typography>
+                </Tooltip>
+            )
+        },
+        { field: 'clicks', headerName: 'تعداد کلیک', type: 'number', width: 130 },
+        {
+            field: 'created_at',
+            headerName: 'تاریخ ایجاد',
+            width: 180,
+            valueFormatter: (value) => new Date(value).toLocaleDateString('fa-IR'),
+        },
+        {
+            field: 'actions',
+            type: 'actions',
+            headerName: 'عملیات',
+            width: 150,
+            getActions: ({ row }) => [
+                <GridActionsCellItem icon={<AnalyticsIcon />} label="جزئیات" onClick={handleDetailsClick(row.short_code)} />,
+                <GridActionsCellItem icon={<EditIcon />} label="ویرایش" onClick={handleEditClick(row)} />,
+                <GridActionsCellItem icon={<DeleteIcon />} label="حذف" onClick={handleDeleteClick(row.short_code)} />,
+            ],
+        },
+    ];
+
+    const renderContent = () => {
+        if (isLoading) return isMobile 
+            ? <Stack>{[...Array(3)].map((_, i) => <MobileLinkCardSkeleton key={i} />)}</Stack>
+            : <DataGrid rows={[]} columns={columns} loading sx={{ height: 370 }} />;
+
+        if (isError) return <Alert severity="error">{t('messages.error')}: {error.message}</Alert>;
+        if (!links || links.length === 0) return <EmptyState />;
+
+        // موبایل با pagination ساده
+        if (isMobile) {
+            const start = mobilePage * pageSize;
+            const end = start + pageSize;
+            const pageLinks = links.slice(start, end);
+
+            return (
+                <Box>
+                    {pageLinks.map((link, idx) => (
                         <MobileLinkCard 
                             key={link.short_code}
+                            index={start + idx}
                             link={link}
                             onDetailsClick={handleDetailsClick(link.short_code)}
                             onEditClick={handleEditClick(link)}
                             onDeleteClick={handleDeleteClick(link.short_code)}
+                            isDeleting={deleteMutation.isPending && deleteMutation.variables === link.short_code}
                         />
-                    )) : (
-                        <Typography align="center" sx={{ p: 4, color: 'text.secondary' }}>
-                            هنوز لینکی ایجاد نکرده‌اید.
-                        </Typography>
-                    )}
+                    ))}
+                    <Stack direction="row" justifyContent="center" spacing={2} mt={2}>
+                        <Button disabled={mobilePage === 0} onClick={() => setMobilePage(p => p - 1)}>قبلی</Button>
+                        <Typography variant="body2" mt={0.5}>{mobilePage + 1} / {Math.ceil(links.length / pageSize)}</Typography>
+                        <Button disabled={end >= links.length} onClick={() => setMobilePage(p => p + 1)}>بعدی</Button>
+                    </Stack>
                 </Box>
-            ) : (
-                <DataGrid
-                  rows={links || []}
-                  columns={columns}
-                  getRowId={(row: LinkDetails) => row.short_code}
-                  loading={isLoading || deleteMutation.isPending}
-                  initialState={{
-                    pagination: { paginationModel: { page: 0, pageSize: 5 } },
-                  }}
-                  localeText={localeText}
-                  pageSizeOptions={[5, 10, 20]}
-                  // ✨ UX Improvement: autoHeight makes the grid fit its content
-                  autoHeight 
-                  // 🎨 STYLE: Remove borders for a cleaner look
-                  sx={{ border: 'none' }}
-                />
-            )}
-        </Paper>
-      </Container>
-      
-      {/* Modals and Snackbar remain unchanged */}
-      <CreateLinkForm isOpen={isCreateModalOpen} onClose={() => setCreateModalOpen(false)} />
-      <EditLinkForm
-        isOpen={!!editTarget}
-        onClose={() => setEditTarget(null)}
-        link={editTarget}
-      />
-      <ConfirmationDialog
-        open={!!deleteTarget}
-        onClose={() => setDeleteTarget(null)}
-        onConfirm={handleConfirmDelete}
-        title="تایید حذف لینک"
-        description="آیا از حذف این لینک اطمینان دارید؟ این عمل غیرقابل بازگشت است."
-      />
-      <Snackbar
-        open={!!snackbarMessage}
-        autoHideDuration={4000}
-        onClose={() => setSnackbarMessage(null)}
-        message={snackbarMessage}
-      />
-    </>
-  );
+            );
+        }
+
+        // دسکتاپ
+        return (
+            <DataGrid
+                rows={links}
+                columns={columns}
+                getRowId={(row) => row.short_code}
+                loading={deleteMutation.isPending}
+                initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
+                localeText={localeText}
+                pageSizeOptions={[5, 10, 20]}
+                autoHeight
+                sx={{
+                    border: 'none',
+                    '& .MuiDataGrid-columnHeaders': { 
+                        backgroundColor: alpha(theme.palette.primary.light, 0.1),
+                        borderBottom: `1px solid ${theme.palette.divider}`
+                    },
+                    '& .MuiDataGrid-row:nth-of-type(odd)': {
+                        backgroundColor: alpha(theme.palette.action.hover, 0.02),
+                    },
+                }}
+            />
+        );
+    };
+
+    return (
+        <>
+            <Container maxWidth="lg" sx={{ py: 4 }}>
+                <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems="center" spacing={2} mb={4}>
+                    <Stack direction="row" alignItems="center" spacing={1.5}>
+                        <LinkIcon color="primary" sx={{ fontSize: {xs: 28, sm: 32} }}/>
+                        <Typography variant={isMobile ? 'h6' : 'h5'} component="h1" fontWeight="bold">
+                            مدیریت لینک‌ها
+                        </Typography>
+                    </Stack>
+                    <Button
+                        variant="contained"
+                        startIcon={<AddIcon />}
+                        onClick={() => setCreateModalOpen(true)}
+                        sx={{ alignSelf: { xs: 'stretch', sm: 'auto' } }}
+                    >
+                        ایجاد لینک جدید
+                    </Button>
+                </Stack>
+                
+                <Paper sx={{ p: { xs: 1, sm: 2 }, borderRadius: 3 }} elevation={3}>
+                    {renderContent()}
+                </Paper>
+            </Container>
+
+            <CreateLinkForm isOpen={isCreateModalOpen} onClose={() => setCreateModalOpen(false)} />
+            <EditLinkForm isOpen={!!editTarget} onClose={() => setEditTarget(null)} link={editTarget} />
+            <ConfirmationDialog 
+                open={!!deleteTarget} 
+                onClose={() => setDeleteTarget(null)} 
+                onConfirm={handleConfirmDelete} 
+                title="تایید حذف لینک" 
+                description="آیا از حذف این لینک اطمینان دارید؟ این عمل غیرقابل بازگشت است." 
+            />
+            <Snackbar open={!!snackbarMessage} autoHideDuration={4000} onClose={() => setSnackbarMessage(null)} message={snackbarMessage} />
+        </>
+    );
 }

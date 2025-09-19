@@ -18,7 +18,7 @@ export function RegisterWithOtpForm() {
       authService.registerWithOtp(phone, code),
     onSuccess: (data) => {
       localStorage.setItem("access_token", data.access_token);
-      window.location.href = "/dashboard";
+      window.location.href = "/pages/dashboard";
     },
   });
 

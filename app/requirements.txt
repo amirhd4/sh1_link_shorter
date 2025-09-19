@@ -27,3 +27,4 @@ phonenumbers
 aiosmtplib
 email-validator
 jinja2
+requests
