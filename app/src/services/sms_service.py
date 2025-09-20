@@ -7,7 +7,7 @@ def send_otp(mobile: str, code: str):
 
     API_KEY = settings.sms_ir_api_key
     TEMPLATE_ID = 996765  # شناسه قالب تأیید شده
-    MOBILE = '09033135876'  # شماره گیرنده
+    # MOBILE = '09033135876'  # شماره گیرنده
     OTP_CODE = code
 
     url = 'https://api.sms.ir/v1/send/verify'
@@ -17,7 +17,7 @@ def send_otp(mobile: str, code: str):
         'X-API-KEY': API_KEY
     }
     payload = {
-        'mobile': MOBILE,
+        'mobile': mobile,
         'templateId': settings.sms_ir_verify_template_id,
         'parameters': [
             {'name': 'code', 'value': OTP_CODE}

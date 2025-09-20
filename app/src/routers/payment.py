@@ -74,8 +74,8 @@ async def verify_zarinpal_payment(
         Status: str = Query(...),
         db: AsyncSession = Depends(get_db)
 ):
-    success_url = f"{settings.frontend_url}/payment/success"
-    failure_url = f"{settings.frontend_url}/payment/failure"
+    success_url = f"{settings.frontend_url}/pages/payment/success"
+    failure_url = f"{settings.frontend_url}/pages/payment/failure"
 
     if Status != "OK":
         return RedirectResponse(failure_url)
