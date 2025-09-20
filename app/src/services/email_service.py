@@ -35,8 +35,13 @@ async def send_email(
     msg.add_alternative(html_content, subtype="html")
 
 
-    await request.app.state.smtp.send_message(msg)
-    
+    try:
+        await request.app.state.smtp.send_message(msg)
+    except aiosmtplib.errors.SMTPServerDisconnected:
+        await request.app.state.smtp.connect()
+        await request.app.state.smtp.login(settings.smtp_user, settings.smtp_pass)
+        await request.app.state.smtp.send_message(msg)
+
     # try:
     #     request.app.state.smtp.send_message(msg)
     #     logger.info("✅ Email sent to %s", to_email)
@@ -49,7 +54,7 @@ async def send_email(
 async def send_password_reset_email(request: Request, to_email: str, reset_token: str):
     subject = "بازیابی رمز عبور برای کوتاه کننده لینک"
     # reset_url = f"{settings.frontend_url}/api/auth/reset-password?token={reset_token}"
-    reset_url = f"{settings.frontend_url}/reset-password?token={reset_token}"
+    reset_url = f"{settings.frontend_url}/pages/reset-password?token={reset_token}"
 
     content = f"""
     <p>سلام،</p>
@@ -62,7 +67,7 @@ async def send_password_reset_email(request: Request, to_email: str, reset_token
 
 async def send_account_verification_email(request: Request, to_email: str, verification_token: str):
     subject = "فعال‌سازی حساب کاربری در کوتاه کننده لینک"
-    verification_url = f"{settings.frontend_url}/verify-email?token={verification_token}"
+    verification_url = f"{settings.frontend_url}/pages/verify-email?token={verification_token}"
 
     content = f"""
     <p>سلام،</p>

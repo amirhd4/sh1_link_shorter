@@ -108,6 +108,7 @@ async def register_user(
 
     return complete_new_user
 
+
 @router.post("/token", response_model=schemas.Token)
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(models.User).where(models.User.email == form_data.username))
@@ -340,7 +341,7 @@ async def google_callback(code: str, db: AsyncSession = Depends(get_db)):
 
     app_token = security.create_access_token(data={"sub": user.email})
 
-    return RedirectResponse(url=f"{settings.frontend_url}/api/auth/callback?token={app_token}")
+    return RedirectResponse(url=f"{settings.frontend_url}/pages/auth/callback?token={app_token}")
 
 
 # OTP
