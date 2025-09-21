@@ -107,26 +107,83 @@ export function PublicLayout({ children }: PublicLayoutProps) {
 
       {/* Footer */}
       <Box
-        component="footer"
-        sx={{
-          borderTop: "1px solid #e2e8f0",
-          bgcolor: "#ffffff",
-          py: 3,
-          textAlign: "center",
-        }}
-      >
-        <Typography variant="body2" sx={{ color: "#475569" }}>
-          © {new Date().getFullYear()} کوتاه کننده لینک L1s — ساخته‌شده با 💜
-        </Typography>
-        <Box sx={{display: "flex", justifyContent: "center", alignItems: "center", gap: 3, mt: 1,}}>
-          <Link
-            href="tel:09396092135"
-            sx={{ color: "#6b21a8", fontWeight: 500, textDecoration: "none" }}
-          >
-            تبلیغات: 09396092135
-          </Link>
-          <div dangerouslySetInnerHTML={{ __html: enamadCode }} />
-        </Box>
+  component="footer"
+  sx={{
+    borderTop: "1px solid #e2e8f0",
+    bgcolor: "#ffffff",
+    py: 3,
+    textAlign: "center",
+  }}
+>
+  <Typography variant="body2" sx={{ color: "#475569" }}>
+    © {new Date().getFullYear()} کوتاه کننده لینک L1s — ساخته‌شده با 💜
+  </Typography>
+
+  {/* بخش پشتیبانی */}
+  <Box
+    sx={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      gap: 1,
+      mt: 2,
+      px: 2,
+      py: 1,
+      bgcolor: "#f3e8ff",
+      borderRadius: "12px",
+      width: "fit-content",
+      mx: "auto",
+    }}
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={2}
+      stroke="#6b21a8"
+      width="20"
+      height="20"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M21.75 7.5l-9.75 7.5-9.75-7.5M3.75 6.75h16.5c.621 0 1.125.504 
+        1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125H3.75a1.125 
+        1.125 0 01-1.125-1.125v-9.75c0-.621.504-1.125 
+        1.125-1.125z"
+      />
+    </svg>
+    <Link
+      href="mailto:support@l1s.ir"
+      sx={{
+        color: "#6b21a8",
+        fontWeight: 600,
+        textDecoration: "none",
+      }}
+    >
+      support@l1s.ir
+    </Link>
+  </Box>
+
+  <Box
+    sx={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      gap: 3,
+      mt: 2,
+    }}
+  >
+    <Link
+      href="tel:09396092135"
+      sx={{ color: "#6b21a8", fontWeight: 500, textDecoration: "none" }}
+    >
+      تبلیغات: 09396092135
+    </Link>
+    <div dangerouslySetInnerHTML={{ __html: enamadCode }} />
+  </Box>
+{/* </Box> */}
+
       </Box>
     </>
   );

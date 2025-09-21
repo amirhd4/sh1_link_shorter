@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     # JWT Authentication
     secret_key: str
     algorithm: str = "HS256"
-    access_token_expire_minutes: int = 30
+    access_token_expire_minutes: int = 1 * 60 * 24 * 15
 
     # SMS.ir
     sms_ir_api_key: str

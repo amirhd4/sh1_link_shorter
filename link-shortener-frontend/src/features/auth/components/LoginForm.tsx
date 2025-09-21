@@ -26,13 +26,22 @@ import type { LoginCredentials } from '../../../types/auth';
 import { GoogleLoginButton } from './GoogleLoginButton';
 
 
-const loginSchema = z.object({
-  email: z.string().email('آدرس ایمیل معتبر نیست.'),
+// const loginSchema = z.object({
+//   email: z.string().email('آدرس ایمیل معتبر نیست.'),
+//   password: z.string().min(1, 'رمز عبور نمی‌تواند خالی باشد.'),
+// });
+
+const emailOrPhoneSchema = z.object({
+  emailOrPhone: z.string().refine(val => {
+    const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+    const isPhone = /^[0-9]{10,15}$/.test(val); // فقط اعداد ۱۰ تا ۱۵ رقمی
+    return isEmail || isPhone;
+  }, "لطفاً ایمیل یا شماره معتبر وارد کنید."),
   password: z.string().min(1, 'رمز عبور نمی‌تواند خالی باشد.'),
 });
 
 
-type LoginFormInputs = z.infer<typeof loginSchema>;
+type LoginFormInputs = z.infer<typeof emailOrPhoneSchema>;
 
 export function LoginForm() {
   const navigate = useNavigate();
@@ -44,9 +53,10 @@ export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
 
   const { control, handleSubmit, getValues, formState: { errors } } = useForm<LoginFormInputs>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: { email: '', password: '' },
-  });
+  resolver: zodResolver(emailOrPhoneSchema),
+  defaultValues: { emailOrPhone: '', password: '' },
+});
+
 
   const loginMutation = useMutation({
     mutationFn: (credentials: LoginCredentials) => authService.login(credentials),
@@ -78,20 +88,27 @@ export function LoginForm() {
   });
 
   const handleResend = () => {
-    const email = getValues("email");
-    if (email) {
-      resendMutation.mutate(email);
-    } else {
-      // show inline hint if needed (here we set verificationError to keep UI consistent)
-      setVerificationError(true);
-    }
-  };
+  const emailOrPhone = getValues("emailOrPhone");
+  if (emailOrPhone) {
+    resendMutation.mutate(emailOrPhone);
+  } else {
+    setVerificationError(true);
+  }
+};
 
-  const onSubmit = (data: LoginFormInputs) => {
-    setVerificationError(false);
-    setResendSuccess(false);
-    loginMutation.mutate(data);
-  };
+
+ const onSubmit = (data: LoginFormInputs) => {
+  setVerificationError(false);
+  setResendSuccess(false);
+
+  // تبدیل emailOrPhone به email (برای API)
+  loginMutation.mutate({
+    email: data.emailOrPhone,
+    password: data.password,
+  });
+};
+
+
 
   return (
     <Paper
@@ -151,7 +168,7 @@ export function LoginForm() {
 
         <Stack spacing={2}>
           <Controller
-            name="email"
+            name="emailOrPhone"
             control={control}
             render={({ field }) => (
               <TextField
@@ -159,11 +176,11 @@ export function LoginForm() {
                 margin="normal"
                 required
                 fullWidth
-                label="آدرس ایمیل"
+                label="ایمیل یا شماره تلفن"
                 autoComplete="email"
                 autoFocus
-                error={!!errors.email}
-                helperText={errors.email?.message}
+                error={!!errors.emailOrPhone}
+                helperText={errors.emailOrPhone?.message}
                 variant="outlined"
                 sx={{
                   background: '#fff',
@@ -176,6 +193,8 @@ export function LoginForm() {
               />
             )}
           />
+
+
 
           <Controller
             name="password"

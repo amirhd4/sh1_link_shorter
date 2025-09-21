@@ -193,6 +193,15 @@ export function LinksDashboard() {
         queryFn: linkService.getMyLinks,
     });
 
+    useEffect(() => {
+        const msg = localStorage.getItem("welcome_msg");
+        if (msg) {
+            setSnackbarMessage(msg);
+            localStorage.removeItem("welcome_msg"); // فقط یک بار نشون بده
+        }
+    }, []);
+
+
     const deleteMutation = useMutation({
         mutationFn: linkService.deleteLink,
         onSuccess: () => {

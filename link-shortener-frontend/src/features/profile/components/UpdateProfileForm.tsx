@@ -11,7 +11,7 @@ import type { UpdateProfilePayload } from '../../../types/auth';
 const profileSchema = z.object({
   first_name: z.string().optional(),
   last_name: z.string().optional(),
-  phone_number: z.string().optional(),
+  // phone_number: z.string().optional(),
 });
 
 type ProfileFormInputs = z.infer<typeof profileSchema>;
@@ -32,7 +32,7 @@ export function UpdateProfileForm() {
     values: {
         first_name: user?.first_name || '',
         last_name: user?.last_name || '',
-        phone_number: user?.phone_number || '',
+        // phone_number: user?.phone_number || '',
     },
     // اگر کاربر هنوز لود نشده، فرم را ریست نکن
     resetOptions: {
@@ -67,7 +67,7 @@ export function UpdateProfileForm() {
         <Controller name="first_name" control={control} render={({ field }) => <TextField {...field} fullWidth label="نام" />} />
         <Controller name="last_name" control={control} render={({ field }) => <TextField {...field} fullWidth label="نام خانوادگی" />} />
       </Box>
-      <Controller name="phone_number" control={control} render={({ field }) => <TextField {...field} fullWidth label="شماره تلفن" sx={{ mt: 2 }} />} />
+      {/* <Controller name="phone_number" control={control} render={({ field }) => <TextField {...field} fullWidth label="شماره تلفن" sx={{ mt: 2 }} />} /> */}
 
       <Button type="submit" variant="contained" sx={{ mt: 3 }} disabled={updateMutation.isPending}>
         {updateMutation.isPending ? 'در حال ذخیره...' : 'ذخیره تغییرات'}

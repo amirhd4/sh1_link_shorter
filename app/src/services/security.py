@@ -1,10 +1,11 @@
+from fastapi import Depends, HTTPException, status
+
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 from passlib.context import CryptContext
 from jose import JWTError, jwt
 from pydantic import BaseModel
-
-from fastapi import Depends, HTTPException, status
+from sqlalchemy import or_
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -41,8 +42,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
 
 class TokenData(BaseModel):
-    email: Optional[str] = None
-
+    identifier: Optional[str] = None
 
 async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)) -> models.User:
     credentials_exception = HTTPException(
@@ -50,24 +50,29 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
+
     try:
         payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
-        email: str = payload.get("sub")
-        if email is None:
+        identifier: str = payload.get("sub")
+        if not identifier:
             raise credentials_exception
-        token_data = TokenData(email=email)
+        token_data = TokenData(identifier=identifier)
     except JWTError:
         raise credentials_exception
 
-    query = (
+    # پیدا کردن کاربر با ایمیل یا شماره
+    result = await db.execute(
         select(models.User)
         .options(selectinload(models.User.plan))
-        .where(models.User.email == token_data.email)
+        .where(
+            or_(
+                models.User.email == token_data.identifier,
+                models.User.phone_number == token_data.identifier
+            )
+        )
     )
-    result = await db.execute(query)
     user = result.scalar_one_or_none()
-
-    if user is None:
+    if not user:
         raise credentials_exception
     return user
 

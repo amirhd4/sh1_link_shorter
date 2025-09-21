@@ -2,8 +2,13 @@ import { useState } from "react";
 import { Button, TextField, Box, Typography, Alert } from "@mui/material";
 import { useMutation } from "@tanstack/react-query";
 import { authService } from "../../../services/authService";
+import { useNavigate } from "react-router-dom";
+import { useUserStore } from '../../../store/userStore';
+
 
 export function LoginWithOtpForm() {
+  const navigate = useNavigate();
+  const { setUser } = useUserStore();
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
   const [step, setStep] = useState<"phone" | "verify">("phone");
@@ -13,12 +18,20 @@ export function LoginWithOtpForm() {
     onSuccess: () => setStep("verify"),
   });
 
+
+
   const verifyOtpMutation = useMutation({
     mutationFn: ({ phone, code }: { phone: string; code: string }) =>
       authService.verifyOtp(phone, code),
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       localStorage.setItem("access_token", data.access_token);
-      window.location.href = "/pages/dashboard";
+      try {
+        const user = await authService.getMe(); // واکشی اطلاعات کاربر بعد از ست شدن توکن
+        setUser(user); // state کاربر
+        navigate("/dashboard"); // navigation بدون refresh
+      } catch (err) {
+        console.error("خطا در واکشی اطلاعات کاربر:", err);
+      }
     },
   });
 

@@ -60,13 +60,13 @@ class PlanResponse(BaseModel):
 class UserUpdate(BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
-    phone_number: Optional[str] = None
+    # phone_number: Optional[str] = None
 
 
 
 class UserResponse(BaseModel):
     id: int
-    email: EmailStr
+    email: Optional[EmailStr] = None
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     phone_number: Optional[str] = None
