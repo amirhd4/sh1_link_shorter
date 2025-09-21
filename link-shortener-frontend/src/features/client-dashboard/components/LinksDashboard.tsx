@@ -104,6 +104,7 @@ const MobileLinkCard = ({ link, index, onDetailsClick, onEditClick, onDeleteClic
 }) => {
     const theme = useTheme();
     const shortUrl = `${config.backendBaseUrlOrigin}/${link.short_code}`;
+    
 
     return (
         <Card 
@@ -183,7 +184,8 @@ export function LinksDashboard() {
     const [isCreateModalOpen, setCreateModalOpen] = useState(false);
     const [editTarget, setEditTarget] = useState<LinkDetails | null>(null);
     const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
-    const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
+    // const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
+    const [snackbarMessage, setSnackbarMessage] = useState<{ text: string; severity: "success" | "error" } | null>(null);
 
     const [mobilePage, setMobilePage] = useState(0);
     const pageSize = 5;
@@ -193,22 +195,27 @@ export function LinksDashboard() {
         queryFn: linkService.getMyLinks,
     });
 
+
     useEffect(() => {
-        const msg = localStorage.getItem("welcome_msg");
-        if (msg) {
+        const msgStr = localStorage.getItem("welcome_msg");
+        if (msgStr) {
+            const msg = JSON.parse(msgStr);
             setSnackbarMessage(msg);
-            localStorage.removeItem("welcome_msg"); // فقط یک بار نشون بده
+            localStorage.removeItem("welcome_msg");
         }
     }, []);
+
 
 
     const deleteMutation = useMutation({
         mutationFn: linkService.deleteLink,
         onSuccess: () => {
-            setSnackbarMessage("لینک با موفقیت حذف شد.");
+            setSnackbarMessage({ text: "لینک با موفقیت حذف شد.", severity: "success" });
+
+            // setSnackbarMessage("لینک با موفقیت حذف شد.");
             queryClient.invalidateQueries({ queryKey: ['my-links'] });
         },
-        onError: () => setSnackbarMessage("خطا در حذف لینک."),
+        onError: () => setSnackbarMessage({ text: "خطا در حذف لینک.", severity: "error" }),
         onSettled: () => setDeleteTarget(null),
     });
 
@@ -354,7 +361,12 @@ export function LinksDashboard() {
                 title="تایید حذف لینک" 
                 description="آیا از حذف این لینک اطمینان دارید؟ این عمل غیرقابل بازگشت است." 
             />
-            <Snackbar open={!!snackbarMessage} autoHideDuration={4000} onClose={() => setSnackbarMessage(null)} message={snackbarMessage} />
+            {/* <Snackbar open={!!snackbarMessage} autoHideDuration={4000} onClose={() => setSnackbarMessage(null)} message={snackbarMessage} /> */}
+            <Snackbar open={!!snackbarMessage} autoHideDuration={4000} onClose={() => setSnackbarMessage(null)}>
+                {snackbarMessage && <Alert severity={snackbarMessage.severity}>{snackbarMessage.text}</Alert>}
+            </Snackbar>
+
+
         </>
     );
 }

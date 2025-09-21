@@ -26,7 +26,13 @@ export function RegisterWithOtpForm() {
     console.log("Register response:", data);
 
     localStorage.setItem("access_token", data.access_token);
+
     // localStorage.setItem("welcome_msg", "ورود موفقیت‌آمیز بود 🎉 خوش اومدی. رمز عبور شما همان شماره شماست. آن را تغییر دهید!");
+
+    localStorage.setItem(
+      "welcome_msg",
+      JSON.stringify({ text: "ورود موفقیت‌آمیز بود. رمز عبور شما، شماره شماست! لطفا آن را تغییر دهید 🎉", severity: "success" })
+    );
 
     localStorage.setItem("access_token", data.access_token);
 
