@@ -1,22 +1,23 @@
-import secrets
-
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.responses import RedirectResponse
-from jose import JWTError, jwt
 from fastapi import APIRouter, HTTPException
+from fastapi.concurrency import run_in_threadpool
 
+from jose import JWTError, jwt
+import secrets
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from sqlalchemy.future import select
 from datetime import date, timedelta
 from google_auth_oauthlib.flow import Flow
 from google.oauth2 import id_token
-from google.auth.transport import requests as google_requests
 from datetime import date, timedelta
 import random
 import phonenumbers
 import logging
+import httpx
+from google.auth.transport.requests import Request as google_request
 
 from ..schemas import RegisterOtpRequest
 from ..services.sms_service import send_otp
@@ -304,17 +305,29 @@ async def google_login():
 
 @router.get("/google/callback")
 async def google_callback(code: str, db: AsyncSession = Depends(get_db)):
+    proxy_client = httpx.Client(proxy="socks5://172.17.0.1:10808")
+    proxy_request = google_request(session=proxy_client)
+
     flow = Flow.from_client_config(
         client_config=CLIENT_SECRETS_FILE,
         scopes=SCOPES,
         redirect_uri=f"{settings.backend_url}/auth/google/callback"
     )
-    flow.fetch_token(code=code)
+
+    # گرفتن توکن از گوگل از طریق پروکسی
+    await run_in_threadpool(
+        flow.fetch_token,
+        code=code,
+        request=proxy_request
+    )
+
     credentials = flow.credentials
 
-    id_info = id_token.verify_oauth2_token(
+    # تایید توکن (باز هم از طریق پروکسی)
+    id_info = await run_in_threadpool(
+        id_token.verify_oauth2_token,
         id_token=credentials.id_token,
-        request=google_requests.Request(),
+        request=proxy_request,
         audience=settings.google_client_id
     )
 
@@ -322,13 +335,11 @@ async def google_callback(code: str, db: AsyncSession = Depends(get_db)):
     user = await db.scalar(select(models.User).where(models.User.email == email))
 
     if not user:
-        # اگر کاربر وجود ندارد، یک کاربر جدید ایجاد کن
         free_plan_result = await db.execute(select(models.Plan).where(models.Plan.name == "Free"))
         free_plan = free_plan_result.scalar_one()
-
         new_user = models.User(
             email=email,
-            hashed_password=security.get_password_hash("a_default_strong_password"),  # یک رمز پیش‌فرض امن
+            hashed_password=security.get_password_hash("a_default_strong_password"),
             is_verified=True,
             plan_id=free_plan.id,
             subscription_start_date=date.today(),
@@ -340,7 +351,6 @@ async def google_callback(code: str, db: AsyncSession = Depends(get_db)):
         user = new_user
 
     app_token = security.create_access_token(data={"sub": user.email})
-
     return RedirectResponse(url=f"{settings.frontend_url}/pages/auth/callback?token={app_token}")
 
 
@@ -369,7 +379,6 @@ async def send_otp_code(phone: PhoneRequest, request: Request):
 async def verify_otp_from_store(phone: str, code: str, request: Request):
     saved_code = await request.app.state.redis.get(f"otp:{phone}")
     return saved_code == code
-
 
 
 class VerifyOtpRequest(schemas.BaseModel):

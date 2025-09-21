@@ -1,1 +1,0 @@
-DELETE FROM users WHERE id IN (7, 9, 6, 5);
