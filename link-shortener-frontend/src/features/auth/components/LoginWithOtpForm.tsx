@@ -25,6 +25,8 @@ export function LoginWithOtpForm() {
   // --- ارسال OTP ---
   const sendOtpMutation = useMutation({
     mutationFn: (phone: string) => authService.sendOtp(phone),
+
+
     onSuccess: () => {
       setStep("verify");
       startResendTimer();
@@ -33,6 +35,9 @@ export function LoginWithOtpForm() {
       (error as any).customMessage = getOtpErrorMessage(error, "phone");
     }
   });
+
+  console.log(i18n.t("otp.phoneLabel"));
+
 
   // --- تایید OTP ---
   const verifyOtpMutation = useMutation({
@@ -101,7 +106,7 @@ export function LoginWithOtpForm() {
             <TextField
               fullWidth
               label={i18n.t("otp.phoneLabel") || "شماره موبایل"}
-              placeholder="مثال: 09123456789"
+              placeholder="مثال: 09922768848"
               value={phone}
               onChange={handlePhoneChange}
               helperText={i18n.t("otp.phoneHelper") || "شماره موبایل خود را بدون فاصله وارد کنید"}
