@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {Suspense} from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App.tsx';
 import theme from './styles/theme.ts';
@@ -28,7 +28,10 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <QueryClientProvider client={queryClient}>
           {/* ریست کردن استایل‌های پیش‌فرض مرورگر */}
           <CssBaseline />
-          <App />
+          <Suspense fallback={<div>بارگیری...</div>}>
+              <App />
+           </Suspense>
+
         </QueryClientProvider>
       </ThemeProvider>
     </CacheProvider>
