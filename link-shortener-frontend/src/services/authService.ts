@@ -3,6 +3,11 @@ import type { UserResponse, TokenResponse } from '../types/api';
 import type { LoginCredentials, RegisterCredentials, UpdateProfilePayload, ChangePasswordPayload } from '../types/auth';
 
 
+export interface OtpResponse {
+  access_token: string;
+  token_type: "bearer";
+}
+
 export const authService = {
   login: async (credentials: LoginCredentials): Promise<TokenResponse> => {
     // fastapi.security.OAuth2PasswordRequestForm به صورت x-www-form-urlencoded داده ارسال می‌کند
@@ -67,26 +72,48 @@ export const authService = {
   },
 
 
+  // -------------------------
+  // OTP for Login/Register
+  // -------------------------
+
+
   sendOtp: async (phone: string): Promise<{ message: string }> => {
-    const response = await apiClient.post('/auth/send-otp', { phone }, {
+    const response = await apiClient.post("/auth/send-otp", { phone });
+    return response.data;
+  },
+
+  verifyOtp: async (phone: string, code: string): Promise<OtpResponse> => {
+    const response = await apiClient.post("/auth/verify-otp", { phone, code });
+    return response.data;
+  },
+
+  registerWithOtp: async (phone: string, code: string, first_name?: string, last_name?: string): Promise<OtpResponse> => {
+    const response = await apiClient.post("/auth/register-otp", { phone, code, first_name, last_name });
+    return response.data;
+  },
+
+
+  // ارسال OTP برای ورود (شماره باید موجود باشد)
+  sendOtpLogin: async (phone: string): Promise<{ message: string }> => {
+    const response = await apiClient.post('/auth/send-otp-login', { phone }, {
       headers: { Authorization: '' }
     });
     return response.data;
   },
 
-  verifyOtp: async (phone: string, code: string): Promise<{ message: string, access_token: string }> => {
-    const response = await apiClient.post('/auth/verify-otp', { phone, code }, {
+  // تایید OTP ورود
+  verifyOtpLogin: async (phone: string, code: string): Promise<{ message?: string, access_token: string, token_type: string }> => {
+    const response = await apiClient.post('/auth/verify-otp-login', { phone, code }, {
       headers: { Authorization: '' }
     });
     return response.data;
   },
 
-  registerWithOtp: async (phone: string, code: string): Promise<{ message: string; access_token: string }> => {
-    const response = await apiClient.post('/auth/register-otp', { phone, code }, {
+  // ارسال OTP برای ثبت‌نام (شماره نباید موجود باشد)
+  sendOtpRegister: async (phone: string): Promise<{ message: string }> => {
+    const response = await apiClient.post('/auth/send-otp-register', { phone }, {
       headers: { Authorization: '' }
     });
     return response.data;
-  }
-
-
+  },
 };

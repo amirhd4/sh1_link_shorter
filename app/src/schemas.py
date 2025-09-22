@@ -129,3 +129,9 @@ class RegisterOtpRequest(BaseModel):
     code: str
     first_name: Optional[str] = None
     last_name: Optional[str] = None
+
+
+
+class UserWithToken(BaseModel):
+    access_token: str
+    token_type: str = "bearer"

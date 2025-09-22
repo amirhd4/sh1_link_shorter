@@ -364,32 +364,8 @@ async def google_callback(code: str, db: AsyncSession = Depends(get_db)):
     return RedirectResponse(url=f"{settings.frontend_url}/pages/auth/callback?token={app_token}")
 
 
-# OTP
 class PhoneRequest(schemas.BaseModel):
     phone: str
-
-
-@router.post("/send-otp")
-@limiter.limit("3/minute")
-async def send_otp_code(phone: PhoneRequest, request: Request):
-    phone = phone.phone
-    try:
-        pn = phonenumbers.parse(phone, "IR")
-        if not phonenumbers.is_valid_number(pn):
-            raise ValueError()
-    except Exception:
-        raise HTTPException(status_code=400, detail="شماره موبایل نامعتبر")
-
-    code = str(random.randint(100000, 999999))
-    logger.info(code)
-    await request.app.state.redis.setex(f"otp:{phone}", 120, code)
-    send_otp(phone, code)
-    return {"message": "کد تایید ارسال شد."}
-
-
-async def verify_otp_from_store(phone: str, code: str, request: Request):
-    saved_code = await request.app.state.redis.get(f"otp:{phone}")
-    return saved_code == code
 
 
 class VerifyOtpRequest(schemas.BaseModel):
@@ -397,43 +373,25 @@ class VerifyOtpRequest(schemas.BaseModel):
     code: str
 
 
-@router.post("/verify-otp")
-async def verify_otp(payload: VerifyOtpRequest, request: Request, db: AsyncSession = Depends(get_db)):
-    phone = payload.phone
-    code = payload.code
+async def store_otp(phone: str, code: str, request: Request, expire_seconds: int = 120):
+    """ذخیره OTP در Redis"""
+    await request.app.state.redis.setex(f"otp:{phone}", expire_seconds, code)
 
+
+async def verify_otp_from_store(phone: str, code: str, request: Request) -> bool:
+    """بررسی OTP"""
     saved_code = await request.app.state.redis.get(f"otp:{phone}")
-    if saved_code != code:
-        raise HTTPException(status_code=400, detail="کد اشتباه است.")
-
-    user = await db.scalar(select(models.User).where(models.User.phone_number == phone))
-    if not user:
-        raise HTTPException(status_code=404, detail="کاربری با این شماره یافت نشد.")
+    return saved_code == code
 
 
-    identifier = user.email or user.phone_number
-    access_token = security.create_access_token(data={"sub": identifier})
-
-    # access_token = security.create_access_token(data={"sub": user.email})
-    # await request.app.state.redis.delete(f"otp:{phone}")
-    return {"access_token": access_token, "token_type": "bearer"}
-
-
-class UserWithToken(schemas.UserResponse):
-    access_token: str
-    token_type: str
-
-
-@router.post("/register-otp", response_model=UserWithToken, status_code=status.HTTP_201_CREATED)
-async def register_with_otp(
-    payload: RegisterOtpRequest,
-    request: Request,
-    db: AsyncSession = Depends(get_db)
-):
+@router.post("/send-otp-login")
+@limiter.limit("3/minute")
+async def send_otp_for_login(payload: PhoneRequest, request: Request, db: AsyncSession = Depends(get_db)):
+    """
+    ارسال OTP برای ورود.
+    شماره باید قبلاً در سیستم ثبت شده باشد.
+    """
     phone = payload.phone
-    code = payload.code
-
-    # اعتبارسنجی شماره موبایل
     try:
         pn = phonenumbers.parse(phone, "IR")
         if not phonenumbers.is_valid_number(pn):
@@ -441,42 +399,105 @@ async def register_with_otp(
     except Exception:
         raise HTTPException(status_code=400, detail="شماره موبایل نامعتبر")
 
-    # بررسی صحت OTP
-    if not await verify_otp_from_store(phone, code, request):
-        raise HTTPException(status_code=400, detail="کد اشتباه است.")
+    user = await db.scalar(select(models.User).where(models.User.phone_number == phone))
+    if not user:
+        raise HTTPException(status_code=404, detail="این شماره در سیستم موجود نیست. ابتدا ثبت‌نام کنید.")
 
-    # بررسی اینکه کاربر با این شماره قبلا وجود نداشته باشه
+    code = str(random.randint(100000, 999999))
+    logger.info(f"OTP for {phone}: {code}")
+    await store_otp(phone, code, request)
+    send_otp(phone, code)
+
+    return {"message": "کد تایید به شماره شما ارسال شد."}
+
+
+@router.post("/send-otp-register")
+@limiter.limit("3/minute")
+async def send_otp_for_register(payload: PhoneRequest, request: Request, db: AsyncSession = Depends(get_db)):
+    """
+    ارسال OTP برای ثبت‌نام.
+    شماره نباید قبلاً ثبت شده باشد.
+    """
+    phone = payload.phone
+    try:
+        pn = phonenumbers.parse(phone, "IR")
+        if not phonenumbers.is_valid_number(pn):
+            raise ValueError()
+    except Exception:
+        raise HTTPException(status_code=400, detail="شماره موبایل نامعتبر")
+
     existing_user = await db.scalar(select(models.User).where(models.User.phone_number == phone))
     if existing_user:
-        raise HTTPException(status_code=400, detail="شماره موبایل قبلاً ثبت شده است.")
+        raise HTTPException(status_code=400, detail="این شماره قبلاً ثبت شده است. لطفاً وارد شوید.")
 
-    # گرفتن پلن پیش‌فرض Free
-    free_plan_result = await db.execute(select(models.Plan).where(models.Plan.name == "Free"))
-    free_plan = free_plan_result.scalar_one_or_none()
+    code = str(random.randint(100000, 999999))
+    logger.info(f"OTP for registration {phone}: {code}")
+    await store_otp(phone, code, request)
+    send_otp(phone, code)
+
+    return {"message": "کد تایید به شماره شما ارسال شد."}
+
+
+@router.post("/verify-otp-login")
+async def verify_otp_login(payload: VerifyOtpRequest, request: Request, db: AsyncSession = Depends(get_db)):
+    """
+    تایید OTP برای ورود.
+    """
+    phone = payload.phone
+    code = payload.code
+
+    if not await verify_otp_from_store(phone, code, request):
+        raise HTTPException(status_code=400, detail="کد اشتباه یا منقضی شده است.")
+
+    user = await db.scalar(select(models.User).where(models.User.phone_number == phone))
+    if not user:
+        raise HTTPException(status_code=404, detail="کاربری با این شماره یافت نشد.")
+
+    # حذف OTP پس از استفاده
+    await request.app.state.redis.delete(f"otp:{phone}")
+
+    access_token = security.create_access_token(data={"sub": user.email or user.phone_number})
+    return {"access_token": access_token, "token_type": "bearer"}
+
+
+@router.post("/register-otp", response_model=schemas.UserWithToken, status_code=status.HTTP_201_CREATED)
+async def register_with_otp(payload: schemas.RegisterOtpRequest, request: Request, db: AsyncSession = Depends(get_db)):
+    """
+    ثبت‌نام با OTP.
+    """
+    phone = payload.phone
+    code = payload.code
+
+    if not await verify_otp_from_store(phone, code, request):
+        raise HTTPException(status_code=400, detail="کد اشتباه یا منقضی شده است.")
+
+    existing_user = await db.scalar(select(models.User).where(models.User.phone_number == phone))
+    if existing_user:
+        raise HTTPException(status_code=400, detail="این شماره قبلاً ثبت شده است. لطفاً وارد شوید.")
+
+    free_plan = await db.scalar(select(models.Plan).where(models.Plan.name == "Free"))
     if not free_plan:
-        raise HTTPException(status_code=500, detail="Default 'Free' plan not found.")
+        raise HTTPException(status_code=500, detail="پلن پیش‌فرض 'Free' یافت نشد.")
 
-    # ایجاد کاربر جدید
     new_user = models.User(
         email=None,
-        hashed_password=security.get_password_hash(phone),  # رمز موقت با شماره
         phone_number=phone,
+        hashed_password=security.get_password_hash(phone),
         first_name=payload.first_name,
         last_name=payload.last_name,
-        is_verified=True,  # چون OTP تایید شد
+        is_verified=True,
         plan_id=free_plan.id,
         subscription_start_date=date.today(),
         subscription_end_date=date.today() + timedelta(days=free_plan.duration_days)
     )
-
     db.add(new_user)
     await db.commit()
     await db.refresh(new_user)
 
-    # صدور JWT با شماره موبایل به عنوان identifier
-    access_token = security.create_access_token(data={"sub": new_user.phone_number})
-    logger.info(access_token)
+    # حذف OTP پس از استفاده
     await request.app.state.redis.delete(f"otp:{phone}")
+
+    access_token = security.create_access_token(data={"sub": new_user.phone_number})
 
     return {
         **schemas.UserResponse.model_validate(new_user).dict(),
