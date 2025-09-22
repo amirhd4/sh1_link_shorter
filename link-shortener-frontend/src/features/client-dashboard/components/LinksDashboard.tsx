@@ -197,7 +197,7 @@ export function LinksDashboard() {
 
 
     useEffect(() => {
-        const msgStr = localStorage.getItem("welcome_msg");
+        const msgStr = JSON.parse(localStorage.getItem("welcome_msg") || "");
         if (msgStr) {
             const msg = JSON.parse(msgStr);
             setSnackbarMessage(msg);

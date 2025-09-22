@@ -45,7 +45,7 @@ export function RegisterWithOtpForm() {
     onSuccess: async (data) => {
       localStorage.setItem("access_token", data.access_token);
       localStorage.setItem(
-        "snackbar",
+        "welcome_msg",
         JSON.stringify({
           message: "ثبت‌نام موفق 🎉 رمز عبور شما، شماره شماست، لطفا آن را تغییر دهید.",
           severity: "success"
