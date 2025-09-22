@@ -25,7 +25,7 @@ export function LoginWithOtpForm() {
 
   // --- ارسال OTP ---
   const sendOtpMutation = useMutation({
-    mutationFn: (phone: string) => authService.sendOtp(phone),
+    mutationFn: (phone: string) => authService.sendOtpLogin(phone),
     onSuccess: () => {
       setStep("verify");
       startResendTimer();
@@ -40,7 +40,7 @@ export function LoginWithOtpForm() {
   // --- تایید OTP و ورود ---
   const verifyOtpMutation = useMutation({
     mutationFn: ({ phone, code }: { phone: string; code: string }) =>
-      authService.verifyOtp(phone, code),
+      authService.verifyOtpLogin(phone, code),
     onSuccess: async (data) => {
       localStorage.setItem("access_token", data.access_token);
       try {
