@@ -62,7 +62,7 @@ export function PublicLayout({ children }: PublicLayoutProps) {
             style={{ textDecoration: "none", color: "inherit" }}
             sx={{ fontWeight: 800, letterSpacing: "-0.5px" }}
           >
-           ال وان اس
+           سرویس کوتاه کننده لینک(L1s)
           </Typography>
 
           <Box sx={{ flexGrow: 1 }} />
@@ -175,10 +175,10 @@ export function PublicLayout({ children }: PublicLayoutProps) {
     }}
   >
     <Link
-      href="tel:09396092135"
+      href="tel:09960074607"
       sx={{ color: "#6b21a8", fontWeight: 500, textDecoration: "none" }}
     >
-      تبلیغات: 09396092135
+      تبلیغات: 09960074607
     </Link>
     <div dangerouslySetInnerHTML={{ __html: enamadCode }} />
   </Box>

@@ -8,20 +8,28 @@ import { useNavigate } from "react-router-dom";
 import { useUserStore } from '../../../store/userStore';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import { getOtpErrorMessage } from "../../../utils/otpErrorHandler";
+
 
 export function RegisterWithOtpForm() {
   const navigate = useNavigate();
   const { setUser } = useUserStore();
+
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
   const [step, setStep] = useState<"phone" | "verify">("phone");
   const [showCode, setShowCode] = useState(false);
 
+  // --- ارسال OTP
   const sendOtpMutation = useMutation({
     mutationFn: (phone: string) => authService.sendOtp(phone),
     onSuccess: () => setStep("verify"),
+    onError: (error) => {
+      (error as any).customMessage = getOtpErrorMessage(error, "phone");
+    }
   });
 
+  // --- تایید OTP
   const verifyOtpMutation = useMutation({
     mutationFn: ({ phone, code }: { phone: string; code: string }) =>
       authService.registerWithOtp(phone, code),
@@ -30,7 +38,7 @@ export function RegisterWithOtpForm() {
       localStorage.setItem(
         "welcome_msg",
         JSON.stringify({
-          text: "ثبت‌نام موفقیت‌آمیز بود 🎉 رمز عبور شما شماره موبایل است! لطفاً آن را تغییر دهید.",
+          text: "ثبت‌نام موفق 🎉 رمز عبور شما شماره موبایل است! لطفاً آن را تغییر دهید.",
           severity: "success"
         })
       );
@@ -43,6 +51,9 @@ export function RegisterWithOtpForm() {
         console.error("خطا در واکشی اطلاعات کاربر:", err);
       }
     },
+    onError: (error) => {
+      (error as any).customMessage = getOtpErrorMessage(error, "verify");
+    }
   });
 
   const toggleShowCode = () => setShowCode(prev => !prev);
@@ -64,6 +75,7 @@ export function RegisterWithOtpForm() {
       </Typography>
 
       <Stack spacing={2}>
+        {/* --- مرحله وارد کردن شماره موبایل --- */}
         {step === "phone" && (
           <>
             <TextField
@@ -78,6 +90,7 @@ export function RegisterWithOtpForm() {
                 startAdornment: <InputAdornment position="start">📱</InputAdornment>
               }}
             />
+
             <Button
               fullWidth
               variant="contained"
@@ -89,14 +102,16 @@ export function RegisterWithOtpForm() {
             >
               {sendOtpMutation.isPending ? "در حال ارسال..." : "ارسال کد تایید"}
             </Button>
+
             {sendOtpMutation.isError && (
-              <Alert severity="error" sx={{ mt: 1 }}>
-                {sendOtpMutation.error instanceof Error ? sendOtpMutation.error.message : "خطا در ارسال کد. دوباره تلاش کنید."}
+              <Alert severity="error" variant="filled" sx={{ mt: 2, borderRadius: 2 }}>
+                {(sendOtpMutation.error as any)?.customMessage}
               </Alert>
             )}
           </>
         )}
 
+        {/* --- مرحله وارد کردن کد تایید --- */}
         {step === "verify" && (
           <>
             <TextField
@@ -118,6 +133,7 @@ export function RegisterWithOtpForm() {
                 ),
               }}
             />
+
             <Button
               fullWidth
               variant="contained"
@@ -129,11 +145,13 @@ export function RegisterWithOtpForm() {
             >
               {verifyOtpMutation.isPending ? "در حال بررسی..." : "تایید و ثبت‌نام"}
             </Button>
+
             {verifyOtpMutation.isError && (
-              <Alert severity="error" sx={{ mt: 1 }}>
-                {verifyOtpMutation.error instanceof Error ? verifyOtpMutation.error.message : "کد وارد شده صحیح نیست."}
+              <Alert severity="error" variant="outlined" sx={{ mt: 2, borderRadius: 2 }}>
+                {(verifyOtpMutation.error as any)?.customMessage}
               </Alert>
             )}
+
             <Button
               variant="text"
               size="small"

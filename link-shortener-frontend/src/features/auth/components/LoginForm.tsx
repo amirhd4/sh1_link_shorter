@@ -160,7 +160,7 @@ export function LoginForm() {
 
             {loginMutation.isError && !verificationError && (
               <Alert severity="error" sx={{ borderRadius: 2 }}>
-                ایمیل یا رمز عبور اشتباهه 😅
+                نام کاربری یا رمز عبور اشتباهه 😅
               </Alert>
             )}
 
