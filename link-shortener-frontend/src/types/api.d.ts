@@ -85,3 +85,13 @@ export interface TransactionResponse {
     name: string;
   };
 }
+
+export interface OtpLoginResponse {
+  access_token: string;
+  token_type: "bearer";
+}
+
+export interface UserWithToken extends UserResponse {
+  access_token: string;
+  token_type: "bearer";
+}
