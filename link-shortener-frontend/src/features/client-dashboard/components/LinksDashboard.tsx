@@ -196,14 +196,20 @@ export function LinksDashboard() {
     });
 
 
-    useEffect(() => {
-        const msgStr = JSON.parse(localStorage.getItem("welcome_msg") || "");
+   useEffect(() => {
+    try {
+        const msgStr = localStorage.getItem("welcome_msg");
         if (msgStr) {
-            const msg = JSON.parse(msgStr);
-            setSnackbarMessage(msg);
-            localStorage.removeItem("welcome_msg");
+        const msg = JSON.parse(msgStr);
+        setSnackbarMessage(msg);
+        localStorage.removeItem("welcome_msg");
         }
+    } catch (e) {
+        console.error("Invalid welcome_msg JSON:", e);
+        localStorage.removeItem("welcome_msg");
+    }
     }, []);
+
 
 
 
