@@ -16,13 +16,6 @@ interface User {
 
 interface UserState {
   user: User | null;
-  setUser: (user: User | null) => void;
-  isAuthenticated: () => boolean;
-}
-
-
-interface UserState {
-  user: User | null;
   isLoading: boolean;
   quota: { remaining: number; limit: number } | null;   // 👈 اضافه شد
   setUser: (user: User | null) => void;
