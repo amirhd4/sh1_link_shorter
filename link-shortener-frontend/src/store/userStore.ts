@@ -23,16 +23,21 @@ interface UserState {
 
 interface UserState {
   user: User | null;
-  isLoading: boolean; // وضعیت جدید
+  isLoading: boolean;
+  quota: { remaining: number; limit: number } | null;   // 👈 اضافه شد
   setUser: (user: User | null) => void;
-  setIsLoading: (loading: boolean) => void; // متد جدید
+  setIsLoading: (loading: boolean) => void;
+  setQuota: (quota: { remaining: number; limit: number } | null) => void;  // 👈 متد جدید
   isAuthenticated: () => boolean;
 }
 
+
 export const useUserStore = create<UserState>((set, get) => ({
   user: null,
-  isLoading: true, // در ابتدا در حال بارگذاری هستیم
+  isLoading: true,
+  quota: null,
   setUser: (user) => set({ user }),
   setIsLoading: (loading) => set({ isLoading: loading }),
+  setQuota: (quota) => set({ quota }),
   isAuthenticated: () => !!get().user,
 }));

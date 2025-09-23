@@ -10,9 +10,9 @@ export interface LinkStatsResponse {
 export interface PlanResponse {
   id: number;
   name: string;
-  price: int;
-  link_limit_per_month: int;
-  duration_days: int;
+  price: number;
+  link_limit_per_month: number;
+  duration_days: number;
 }
 
 export interface UserResponse {
