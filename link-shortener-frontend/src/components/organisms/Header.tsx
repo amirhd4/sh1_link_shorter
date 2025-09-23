@@ -21,6 +21,11 @@ interface HeaderProps {
 export function Header({ onMenuClick }: HeaderProps) {
   const navigate = useNavigate();
   const { user, quota, setUser } = useUserStore();
+  const displayRemaining = quota?.remaining ?? 0;
+  const displayLimit = quota?.limit ?? user?.plan?.link_limit_per_month ?? 0;
+
+  console.log('user from store:', user);
+  console.log('quota from store:', quota);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
@@ -118,21 +123,19 @@ export function Header({ onMenuClick }: HeaderProps) {
                     />
                   )}
 
-                  {quota && (
-                    <Chip
-                      icon={<LinkIcon fontSize="small" />}
-                      label={`لینک‌های باقی‌مانده: ${quota.remaining} از ${quota.limit}`}
-                      size="small"
-                      color={
-                        quota.remaining === 0
-                          ? 'error'
-                          : quota.remaining < 5
-                          ? 'warning'
-                          : 'success'
-                      }
-                      variant="outlined"
-                    />
-                  )}
+                  <Chip
+  icon={<LinkIcon fontSize="small" />}
+  label={`لینک‌های باقی‌مانده: ${displayRemaining} از ${displayLimit}`}
+  size="small"
+  color={
+    displayRemaining === 0
+      ? 'error'
+      : displayRemaining < 5
+      ? 'warning'
+      : 'success'
+  }
+  variant="outlined"
+/>
                 </Box>
               )}
 
