@@ -315,7 +315,14 @@ async def google_login():
 
 @router.get("/google/callback")
 async def google_callback(code: str, db: AsyncSession = Depends(get_db)):
-    proxy_client = httpx.Client(proxy="socks5://172.17.0.1:10808")
+    # proxy_client = httpx.Client(proxy="socks5://172.17.0.1:10808")
+    proxy_client = httpx.Client(proxy="socks5h://xray:10808")
+
+
+    # with httpx.Client(proxies="socks5h://172.17.0.1:10808") as proxy_client:
+    #     r = proxy_client.get("https://ifconfig.me")
+    #     logger.info(r.text)
+
     proxy_request = google_request(session=proxy_client)
 
     flow = Flow.from_client_config(

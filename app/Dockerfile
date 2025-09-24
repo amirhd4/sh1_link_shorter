@@ -8,6 +8,9 @@ COPY ./requirements.txt /app/requirements.txt
 RUN pip install --upgrade pip && \
     pip install -r requirements.txt
 
+RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
+USER appuser
+
 COPY ./src /app/src
 
 EXPOSE 8000

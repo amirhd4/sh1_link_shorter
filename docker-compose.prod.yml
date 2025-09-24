@@ -4,19 +4,43 @@ services:
       context: ./app
       dockerfile: Dockerfile.prod
     env_file: .env
+    environment:
+      - SOCKS5_PROXY=172.17.0.1:10808
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
     depends_on:
       db:
         condition: service_healthy
       cache:
         condition: service_healthy
+      xray:
+        condition: service_started
+
+      
+  xray:
+    build: ./xray
+    container_name: xray
+    ports:
+      - "10808:10808"
+      - "10809:10809"
+    restart: unless-stopped
 
   db:
     image: docker.arvancloud.ir/postgres:16-alpine
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     env_file: .env
-    ports:
-      - "5432:5432"  # Add this line to expose the port
+    # ports:
+    #   - "5432:5432"  # Add this line to expose the port
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 10s
@@ -25,6 +49,11 @@ services:
 
   cache:
     image: docker.arvancloud.ir/redis:latest
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -33,6 +62,11 @@ services:
 
   nginx:
     image: docker.arvancloud.ir/nginx:1.25-alpine
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
     ports:
       - "80:80"
       - "443:443"
@@ -42,8 +76,8 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
       # - ./nginx/conf.d:/etc/nginx/conf.d
       - /etc/letsencrypt:/etc/letsencrypt:ro
-      - ./link-shortener-frontend/dist/locales:/usr/share/nginx/html/pages/locales
-      - ./link-shortener-frontend/dist/fonts:/usr/share/nginx/html/pages/fonts
+      # - ./link-shortener-frontend/dist/locales:/usr/share/nginx/html/pages/locales
+      # - ./link-shortener-frontend/dist/fonts:/usr/share/nginx/html/pages/fonts
       
     networks:
       - 1sl_default

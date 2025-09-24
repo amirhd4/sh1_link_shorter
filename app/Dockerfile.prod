@@ -10,6 +10,9 @@ COPY ./alembic /app/alembic
 COPY ./requirements.txt /app/requirements.txt
 RUN pip install --upgrade pip && pip install -r requirements.txt
 
+RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
+USER appuser
+
 # کپی سورس کد
 COPY ./src /app/src
 
