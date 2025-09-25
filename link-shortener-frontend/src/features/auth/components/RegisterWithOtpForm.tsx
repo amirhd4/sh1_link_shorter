@@ -43,15 +43,17 @@ export function RegisterWithOtpForm() {
     mutationFn: ({ phone, code, firstName, lastName }: { phone: string; code: string; firstName: string; lastName: string }) =>
       authService.registerWithOtp(phone, code, firstName, lastName),
     onSuccess: async (data) => {
-      localStorage.setItem("access_token", data.access_token);
-      localStorage.setItem(
-        "welcome_msg",
-        JSON.stringify({
-          text: "ثبت‌نام موفق 🎉 رمز عبور شما، شماره شماست، لطفا آن را تغییر دهید.",
-          severity: "success"
-        })
-      );
+        if (typeof window !== "undefined") {
 
+            localStorage.setItem("access_token", data.access_token);
+            localStorage.setItem(
+                "welcome_msg",
+                JSON.stringify({
+                    text: "ثبت‌نام موفق 🎉 رمز عبور شما، شماره شماست، لطفا آن را تغییر دهید.",
+                    severity: "success"
+                })
+            );
+            }
 
       try {
         const user = await authService.getMe();
@@ -76,7 +78,10 @@ export function RegisterWithOtpForm() {
   useEffect(() => {
     let timer: number;
     if (resendTimer > 0) {
+        if (typeof window !== "undefined" && resendTimer > 0) {
+
       timer = window.setTimeout(() => setResendTimer(resendTimer - 1), 1000);
+            }
     } else if (resendTimer === 0 && step === "verify") {
       setCanResend(true);
     }

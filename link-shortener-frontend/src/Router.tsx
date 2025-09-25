@@ -8,9 +8,9 @@ import { ClientLayout } from './layouts/ClientLayout';
 import { AdminLayout } from './layouts/AdminLayout';
 
 // Public Pages
-import { HomePage } from './features/showcase/pages/HomePage';
-import { LoginPage } from './features/auth/pages/LoginPage';
-import { RegisterPage } from './features/auth/pages/RegisterPage';
+import { HomePage } from './pages/home.page.tsx';
+import { LoginPage } from './pages/login.page.tsx';
+import { RegisterPage } from './pages/register.page.tsx';
 
 // Client (User) Pages
 import { LinksDashboard } from './features/client-dashboard/components/LinksDashboard';
@@ -24,15 +24,13 @@ import { PaymentStatusPage } from './features/billing/pages/PaymentStatusPage';
 import { AdminDashboardPage } from './features/admin-dashboard/pages/AdminDashboardPage';
 import { UserManagementPage } from './features/admin-dashboard/pages/UserManagementPage';
 import { LinkManagementPage } from './features/admin-dashboard/pages/LinkManagementPage';
-import { ForgotPasswordPage } from './features/auth/pages/ForgotPasswordPage';
-import { ResetPasswordPage } from './features/auth/pages/ResetPasswordPage';
-import { VerifyEmailPage } from './features/auth/pages/VerifyEmailPage';
-import { EmailSentPage } from './features/auth/pages/EmailSentPage';
-import {AuthCallbackPage} from "./features/auth/pages/AuthCallbackPage.tsx";
-import { LoginOtpPage } from './features/auth/pages/LoginOtpPage.tsx';
-import {RegisterOtpPage} from "./features/auth/pages/RegisterOtpPage.tsx";
-
-
+import { ForgotPasswordPage } from './pages/forgot-password.page.tsx';
+import { ResetPasswordPage } from './pages/reset-password.page.tsx';
+import { VerifyEmailPage } from './pages/verify-email.page.tsx';
+import { EmailSentPage } from './pages/email-sent.page.tsx';
+import { AuthCallbackPage } from "./pages/auth-callback-auth.page.tsx";
+import { LoginOtpPage } from './pages/login-otp.page.tsx';
+import { RegisterOtpPage } from "./pages/register-otp.page.tsx";
 
 
 const router = createBrowserRouter([

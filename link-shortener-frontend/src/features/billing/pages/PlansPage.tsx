@@ -20,7 +20,9 @@ export function PlansPage() {
   const paymentMutation = useMutation({
     mutationFn: paymentService.createPaymentLink,
     onSuccess: (data) => {
-      if (data.payment_url) window.location.href = data.payment_url;
+      if (typeof window !== "undefined" && data.payment_url) {
+    window.location.href = data.payment_url;
+  }
     },
   });
 

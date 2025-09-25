@@ -1,5 +1,5 @@
-import { RegisterForm } from "../components/RegisterForm";
-import { Helmet } from "react-helmet-async";
+import { RegisterForm } from "../features/auth/components/RegisterForm.tsx";
+import { Helmet, HelmetProvider } from 'react-helmet-async';
 
 
 export function RegisterPage() {
@@ -11,7 +11,7 @@ export function RegisterPage() {
           name="description"
           content="اکانت رایگان خود را بسازید و لینک‌هایتان را کوتاه و مدیریت کنید."
         />
-        <link rel="canonical" href="https://l1s.ir/register" />
+        <link rel="canonical" href="https://l1s.ir/pages/register" />
       </Helmet>
   <RegisterForm />;
     </>

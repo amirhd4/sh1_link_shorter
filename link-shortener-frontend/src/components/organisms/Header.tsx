@@ -22,7 +22,11 @@ interface HeaderProps {
 export function Header({ onMenuClick }: HeaderProps) {
   const navigate = useNavigate();
   const { user, setUser } = useUserStore();
-  const { data: quota, isLoading: isLoadingQuota } = useLinkQuota();
+
+  const isClient = typeof window !== 'undefined';
+  const { data: quota, isLoading: isLoadingQuota } = useLinkQuota(isClient ? undefined : null);
+
+  // const { data: quota, isLoading: isLoadingQuota } = useLinkQuota();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 

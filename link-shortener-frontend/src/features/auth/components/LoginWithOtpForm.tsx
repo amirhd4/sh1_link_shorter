@@ -12,6 +12,8 @@ import { getOtpErrorMessage } from "../../../utils/otpErrorHandler";
 import i18n from "../../../i18n";
 
 export function LoginWithOtpForm() {
+  const isClient = typeof window !== "undefined";
+
   const navigate = useNavigate();
   const { setUser } = useUserStore();
 
@@ -42,6 +44,8 @@ export function LoginWithOtpForm() {
     mutationFn: ({ phone, code }: { phone: string; code: string }) =>
       authService.verifyOtpLogin(phone, code),
     onSuccess: async (data) => {
+    if (!isClient) return;
+
       localStorage.setItem("access_token", data.access_token);
       try {
         const user = await authService.getMe();
@@ -56,6 +60,8 @@ export function LoginWithOtpForm() {
       }
     },
     onError: (error) => {
+        if (!isClient) return;
+
       (error as any).customMessage = getOtpErrorMessage(error, "verify");
       setSnackbar({ message: (error as any).customMessage, severity: "error" });
     }
@@ -68,6 +74,8 @@ export function LoginWithOtpForm() {
   };
 
   useEffect(() => {
+    if (!isClient) return;
+
     let timer: number;
     if (resendTimer > 0) {
       timer = window.setTimeout(() => setResendTimer(resendTimer - 1), 1000);

@@ -48,6 +48,8 @@ export function LoginForm() {
   const [verificationError, setVerificationError] = useState(false);
   const [resendSuccess, setResendSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const isClient = typeof window !== "undefined";
+
 
   const { control, handleSubmit, getValues, formState: { errors } } = useForm<LoginFormInputs>({
     resolver: zodResolver(emailOrPhoneSchema),
@@ -57,6 +59,8 @@ export function LoginForm() {
   const loginMutation = useMutation({
     mutationFn: (credentials: any) => authService.login(credentials),
     onSuccess: async (data) => {
+          if (!isClient) return;
+
       localStorage.setItem("access_token", data.access_token);
       try {
         const user = await authService.getMe();
@@ -67,6 +71,8 @@ export function LoginForm() {
       }
     },
     onError: (error: any) => {
+    if (!isClient) return;
+
       if (
         error.response?.status === 403 &&
         error.response?.data?.detail?.includes("Email not verified")
@@ -79,6 +85,8 @@ export function LoginForm() {
   });
 
   const resendMutation = useMutation({
+
+
     mutationFn: authService.resendVerificationEmail,
     onSuccess: () => {
       setResendSuccess(true);

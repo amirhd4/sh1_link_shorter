@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { linkService } from '../services/linkService';
 import { useUserStore } from '../store/userStore';
 
-export function useLinkQuota() {
+export function useLinkQuota(p0: any) {
   const { user, setQuota } = useUserStore();
 
   return useQuery({
