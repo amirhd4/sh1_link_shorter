@@ -11,6 +11,8 @@ import {
   CssBaseline,
 } from "@mui/material";
 import { motion, useScroll, useTransform } from "framer-motion";
+import { Helmet } from 'react-helmet-async';
+
 
 interface PublicLayoutProps {
   children?: ReactNode;
@@ -26,6 +28,46 @@ export function PublicLayout({ children }: PublicLayoutProps) {
 
   return (
     <>
+
+    <Helmet>
+      {/* عنوان */}
+      <title>کوتاه‌کننده لینک L1s | سریع، امن و حرفه‌ای</title>
+
+      {/* توضیحات */}
+      <meta
+        name="description"
+        content="L1s یک سرویس کوتاه‌کننده لینک سریع و امن است که به شما کمک می‌کند لینک‌های خود را کوتاه، قابل‌مدیریت و قابل‌ردیابی کنید. مناسب برای کسب‌وکارها، شبکه‌های اجتماعی و بازاریابی دیجیتال."
+      />
+
+      {/* Canonical */}
+      <link rel="canonical" href="https://l1s.ir/" />
+
+      {/* Open Graph */}
+      <meta property="og:title" content="کوتاه‌کننده لینک L1s | سریع و امن" />
+      <meta
+        property="og:description"
+        content="با L1s لینک‌های خود را کوتاه، زیبا و قابل ردیابی کنید. بهترین ابزار کوتاه‌سازی لینک برای کاربران و کسب‌وکارها."
+      />
+      <meta property="og:type" content="website" />
+      <meta property="og:url" content="https://l1s.ir/" />
+      <meta property="og:image" content="https://l1s.ir/images/l1s_preview.png" />
+      <meta property="og:locale" content="fa_IR" />
+
+      {/* Twitter Card */}
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:title" content="کوتاه‌کننده لینک L1s" />
+      <meta
+        name="twitter:description"
+        content="لینک‌های خود را با L1s کوتاه و قابل‌مدیریت کنید."
+      />
+      <meta
+        name="twitter:image"
+        content="https://l1s.ir/images/l1s_preview.png"
+      />
+    </Helmet>
+
+
+
       <CssBaseline />
 
       {/* 🔝 Progress Bar (همیشه بالای صفحه) */}

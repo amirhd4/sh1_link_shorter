@@ -2,6 +2,8 @@ import React from 'react';
 import { Box, Typography, Button, Container, Grid, Paper, keyframes, GlobalStyles, SvgIcon, useTheme, useMediaQuery } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { motion, useScroll, useTransform } from 'framer-motion';
+import { Helmet } from "react-helmet-async";
+
 
 // --- Type Definitions for TypeScript ---
 interface Feature {
@@ -94,6 +96,16 @@ export const HomePage: React.FC = () => {
 
   return (
     <>
+
+    <Helmet>
+        <title>کوتاه‌کننده لینک L1s | سریع، امن و حرفه‌ای</title>
+        <meta
+          name="description"
+          content="سرویس کوتاه‌کننده لینک L1s برای مدیریت و ردیابی لینک‌ها. سریع، امن و مناسب کسب‌وکارها."
+        />
+        <link rel="canonical" href="https://l1s.ir/" />
+      </Helmet>
+
       <GlobalStyles styles={{
         body: {
           backgroundColor: '#020617', // رنگ پس‌زمینه بسیار تیره

@@ -11,6 +11,7 @@ import createCache from '@emotion/cache';
 import rtlPlugin from 'stylis-plugin-rtl';
 import { QueryClientProvider } from '@tanstack/react-query';
 import queryClient from './lib/queryClient.ts';
+import { HelmetProvider } from 'react-helmet-async';
 
 
 const cacheRtl = createCache({
@@ -28,9 +29,12 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <QueryClientProvider client={queryClient}>
           {/* ریست کردن استایل‌های پیش‌فرض مرورگر */}
           <CssBaseline />
+    <HelmetProvider>
+          
           <Suspense fallback={<div>بارگیری...</div>}>
               <App />
            </Suspense>
+    </HelmetProvider>
 
         </QueryClientProvider>
       </ThemeProvider>
