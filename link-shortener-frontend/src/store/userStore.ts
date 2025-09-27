@@ -10,6 +10,7 @@ interface User {
   last_name?: string | null;
   phone_number?: string | null;
   plan?: PlanResponse | null; // <<<< پراپرتی plan اضافه شد
+  subscription_start_date?: string | null;
   subscription_end_date?: string | null; // <<<< این پراپرتی هم اضافه شد
 }
 
