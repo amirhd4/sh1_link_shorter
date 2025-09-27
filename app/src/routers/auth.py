@@ -26,6 +26,7 @@ from .. import schemas, models
 from ..config import settings
 from ..database import get_db
 from ..services import security
+from ..services.turnstile import verify_turnstile
 from ..rate_limiter import limiter
 from ..services import email_service
 from ..schemas import ResetPasswordRequest, ChangePasswordRequest, EmailSchema
@@ -41,6 +42,12 @@ router = APIRouter(
 )
 
 
+class RegisterRequest(schemas.UserCreate):
+    captcha_token: str
+
+class LoginRequest(OAuth2PasswordRequestForm):
+    captcha_token: str
+    
 async def send_verification_email(
     request: Request,
     user: models.User,
@@ -60,12 +67,16 @@ async def send_verification_email(
 @limiter.limit("5/minute")
 async def register_user(
         request: Request,
-        user_create: schemas.UserCreate,
+        # user_create: schemas.UserCreate,
+        user_create: RegisterRequest,
         db: AsyncSession = Depends(get_db)
 ):
     """
     Registers a new user and correctly assigns them the default 'Free' plan.
     """
+    # ✅ Captcha check
+    await verify_turnstile(request, user_create.captcha_token)
+
     # 1. Check if user already exists
     result = await db.execute(select(models.User).where(models.User.email == user_create.email))
     if result.scalar_one_or_none():
@@ -112,7 +123,9 @@ async def register_user(
 
 
 @router.post("/token", response_model=schemas.Token)
-async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
+async def login_for_access_token(form_data: LoginRequest = Depends(), db: AsyncSession = Depends(get_db)):
+    await verify_turnstile(request, form_data.captcha_token)
+
     # result = await db.execute(select(models.User).where(models.User.email == form_data.username))
     result = await db.execute(
     select(models.User).where(

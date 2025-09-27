@@ -37,6 +37,10 @@ class Settings(BaseSettings):
     smtp_starttls: str
     smtp_from_name: str
     smtp_from: str
+
+    # Cloudflare Trunstile
+    ct_site_key: str
+    ct_secret_key: str
     
     @property
     def database_url_sync(self) -> str:
