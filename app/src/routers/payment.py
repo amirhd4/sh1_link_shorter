@@ -78,6 +78,12 @@ async def verify_zarinpal_payment(
     failure_url = f"{settings.frontend_url}/pages/payment/failure"
 
     if Status != "OK":
+        # پیدا کردن تراکنش
+        tx_result = await db.execute(select(models.Transaction).where(models.Transaction.authority == Authority))
+        transaction = tx_result.scalar_one_or_none()
+        if transaction and transaction.status == models.TransactionStatus.PENDING:
+            transaction.status = models.TransactionStatus.FAILED
+            await db.commit()
         return RedirectResponse(failure_url)
 
     tx_result = await db.execute(select(models.Transaction).where(models.Transaction.authority == Authority))

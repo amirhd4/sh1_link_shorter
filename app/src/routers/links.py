@@ -140,7 +140,8 @@ async def get_user_links(
 async def delete_link(
         short_code: str,
         current_user: models.User = Depends(security.get_current_user),
-        db: AsyncSession = Depends(get_db)
+        db: AsyncSession = Depends(get_db),
+        redis_client: redis.Redis = Depends(get_redis_client)
 ):
     """
     یک لینک را بر اساس کد کوتاه آن حذف می‌کند.
@@ -162,6 +163,9 @@ async def delete_link(
     # حذف لینک از دیتابیس
     await db.delete(db_link)
     await db.commit()
+
+
+    await redis_client.delete(f"link:{short_code}")
 
     # نیازی به برگرداندن محتوا نیست، چون حذف شده
     return None
@@ -199,8 +203,6 @@ async def update_link(
     await redis_client.delete(f"link:{short_code}")
 
     return db_link
-
-
 
 
 @router.get("/{short_code}/stats", response_model=schemas.LinkStatsResponse)
