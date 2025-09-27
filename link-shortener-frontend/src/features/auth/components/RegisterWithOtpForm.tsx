@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { 
-  Button, TextField, Box, Typography, Alert, Stack, CircularProgress, InputAdornment, IconButton, Snackbar 
+  Button, TextField, Box, Typography, Alert, Stack, CircularProgress, InputAdornment, IconButton, Snackbar, Paper
 } from "@mui/material";
 import { useMutation } from "@tanstack/react-query";
 import { authService } from "../../../services/authService";
@@ -9,6 +9,7 @@ import { useUserStore } from '../../../store/userStore';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { getOtpErrorMessage } from "../../../utils/otpErrorHandler";
+import { Turnstile } from "@marsidev/react-turnstile";
 
 export function RegisterWithOtpForm() {
   const navigate = useNavigate();
@@ -22,11 +23,12 @@ export function RegisterWithOtpForm() {
   const [showCode, setShowCode] = useState(false);
   const [canResend, setCanResend] = useState(false);
   const [resendTimer, setResendTimer] = useState(0);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [snackbar, setSnackbar] = useState<{ message: string; severity: "success" | "error" } | null>(null);
 
   // --- ارسال OTP ---
   const sendOtpMutation = useMutation({
-    mutationFn: (phone: string) => authService.sendOtpRegister(phone),
+    mutationFn: (payload: { phone: string; captcha_token: string }) => authService.sendOtpRegister(payload.phone, payload.captcha_token),
     onSuccess: () => {
       setStep("verify");
       startResendTimer();
@@ -43,18 +45,16 @@ export function RegisterWithOtpForm() {
     mutationFn: ({ phone, code, firstName, lastName }: { phone: string; code: string; firstName: string; lastName: string }) =>
       authService.registerWithOtp(phone, code, firstName, lastName),
     onSuccess: async (data) => {
-        if (typeof window !== "undefined") {
-
-            localStorage.setItem("access_token", data.access_token);
-            localStorage.setItem(
-                "welcome_msg",
-                JSON.stringify({
-                    text: "ثبت‌نام موفق 🎉 رمز عبور شما، شماره شماست، لطفا آن را تغییر دهید.",
-                    severity: "success"
-                })
-            );
-            }
-
+      if (typeof window !== "undefined") {
+        localStorage.setItem("access_token", data.access_token);
+        localStorage.setItem(
+          "welcome_msg",
+          JSON.stringify({
+            text: "ثبت‌نام موفق 🎉 رمز عبور شما، شماره شماست، لطفا آن را تغییر دهید.",
+            severity: "success"
+          })
+        );
+      }
       try {
         const user = await authService.getMe();
         setUser(user);
@@ -78,10 +78,7 @@ export function RegisterWithOtpForm() {
   useEffect(() => {
     let timer: number;
     if (resendTimer > 0) {
-        if (typeof window !== "undefined" && resendTimer > 0) {
-
       timer = window.setTimeout(() => setResendTimer(resendTimer - 1), 1000);
-            }
     } else if (resendTimer === 0 && step === "verify") {
       setCanResend(true);
     }
@@ -92,7 +89,8 @@ export function RegisterWithOtpForm() {
 
   return (
     <>
-      <Box
+      <Paper
+        elevation={8}
         sx={{
           maxWidth: 420,
           mx: "auto",
@@ -109,7 +107,7 @@ export function RegisterWithOtpForm() {
         </Typography>
 
         <Stack spacing={3}>
-
+          {/* --- مرحله شماره موبایل و کپچا --- */}
           {step === "phone" && (
             <>
               <TextField
@@ -122,12 +120,27 @@ export function RegisterWithOtpForm() {
                 error={sendOtpMutation.isError}
                 InputProps={{ startAdornment: <InputAdornment position="start">📱</InputAdornment> }}
               />
+
+              <Turnstile
+                siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
+                onSuccess={(token) => setCaptchaToken(token)}
+                onError={() => setCaptchaToken(null)}
+                onExpire={() => setCaptchaToken(null)}
+                options={{ theme: "light", size: "normal" }}
+              />
+
               <Button
                 fullWidth
                 variant="contained"
                 color="primary"
                 size="large"
-                onClick={() => sendOtpMutation.mutate(phone)}
+                onClick={() => {
+                  if (!captchaToken) {
+                    setSnackbar({ message: "لطفاً کپچا را کامل کنید 🛡️", severity: "error" });
+                    return;
+                  }
+                  sendOtpMutation.mutate({ phone, captcha_token: captchaToken });
+                }}
                 disabled={!phone || sendOtpMutation.isPending}
                 startIcon={sendOtpMutation.isPending ? <CircularProgress size={20} /> : null}
               >
@@ -136,6 +149,7 @@ export function RegisterWithOtpForm() {
             </>
           )}
 
+          {/* --- مرحله وارد کردن کد و اطلاعات کاربری --- */}
           {step === "verify" && (
             <>
               <TextField
@@ -184,10 +198,7 @@ export function RegisterWithOtpForm() {
                 <Button
                   variant="text"
                   size="small"
-                  onClick={() => {
-                    setStep("phone");
-                    setCode("");
-                  }}
+                  onClick={() => { setStep("phone"); setCode(""); }}
                 >
                   تغییر شماره موبایل
                 </Button>
@@ -196,7 +207,11 @@ export function RegisterWithOtpForm() {
                   size="small"
                   disabled={!canResend}
                   onClick={() => {
-                    sendOtpMutation.mutate(phone);
+                    if (!captchaToken) {
+                      setSnackbar({ message: "لطفاً کپچا را کامل کنید 🛡️", severity: "error" });
+                      return;
+                    }
+                    sendOtpMutation.mutate({ phone, captcha_token: captchaToken });
                     startResendTimer();
                   }}
                 >
@@ -206,7 +221,7 @@ export function RegisterWithOtpForm() {
             </>
           )}
         </Stack>
-      </Box>
+      </Paper>
 
       <Snackbar
         open={!!snackbar}

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { 
-  Button, TextField, Box, Typography, Alert, Stack, CircularProgress, InputAdornment, IconButton, Snackbar
+  Button, TextField, Box, Typography, Alert, Stack, CircularProgress, InputAdornment, IconButton, Snackbar, Paper
 } from "@mui/material";
 import { useMutation } from "@tanstack/react-query";
 import { authService } from "../../../services/authService";
@@ -9,11 +9,11 @@ import { useUserStore } from '../../../store/userStore';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { getOtpErrorMessage } from "../../../utils/otpErrorHandler";
+import { Turnstile } from "@marsidev/react-turnstile";
 import i18n from "../../../i18n";
 
 export function LoginWithOtpForm() {
   const isClient = typeof window !== "undefined";
-
   const navigate = useNavigate();
   const { setUser } = useUserStore();
 
@@ -23,11 +23,12 @@ export function LoginWithOtpForm() {
   const [showCode, setShowCode] = useState(false);
   const [canResend, setCanResend] = useState(false);
   const [resendTimer, setResendTimer] = useState(0);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [snackbar, setSnackbar] = useState<{ message: string; severity: "success" | "error" } | null>(null);
 
   // --- ارسال OTP ---
   const sendOtpMutation = useMutation({
-    mutationFn: (phone: string) => authService.sendOtpLogin(phone),
+    mutationFn: (payload: { phone: string; captcha_token: string }) => authService.sendOtpLogin(payload.phone, payload.captcha_token),
     onSuccess: () => {
       setStep("verify");
       startResendTimer();
@@ -42,9 +43,9 @@ export function LoginWithOtpForm() {
   // --- تایید OTP و ورود ---
   const verifyOtpMutation = useMutation({
     mutationFn: ({ phone, code }: { phone: string; code: string }) =>
-      authService.verifyOtpLogin(phone, code),
+      authService.verifyOtpLogin(phone, code, captchaToken),
     onSuccess: async (data) => {
-    if (!isClient) return;
+      if (!isClient) return;
 
       localStorage.setItem("access_token", data.access_token);
       try {
@@ -60,8 +61,7 @@ export function LoginWithOtpForm() {
       }
     },
     onError: (error) => {
-        if (!isClient) return;
-
+      if (!isClient) return;
       (error as any).customMessage = getOtpErrorMessage(error, "verify");
       setSnackbar({ message: (error as any).customMessage, severity: "error" });
     }
@@ -75,7 +75,6 @@ export function LoginWithOtpForm() {
 
   useEffect(() => {
     if (!isClient) return;
-
     let timer: number;
     if (resendTimer > 0) {
       timer = window.setTimeout(() => setResendTimer(resendTimer - 1), 1000);
@@ -89,7 +88,8 @@ export function LoginWithOtpForm() {
 
   return (
     <>
-      <Box
+      <Paper
+        elevation={8}
         sx={{
           maxWidth: 400,
           mx: "auto",
@@ -98,7 +98,6 @@ export function LoginWithOtpForm() {
           borderRadius: 3,
           boxShadow: 4,
           backgroundColor: "background.paper",
-          transition: "all 0.3s ease-in-out",
         }}
       >
         <Typography variant="h4" sx={{ mb: 3, textAlign: "center", fontWeight: "bold" }}>
@@ -119,12 +118,27 @@ export function LoginWithOtpForm() {
                 error={sendOtpMutation.isError}
                 InputProps={{ startAdornment: <InputAdornment position="start">📱</InputAdornment> }}
               />
+
+              <Turnstile
+                siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
+                onSuccess={(token) => setCaptchaToken(token)}
+                onError={() => setCaptchaToken(null)}
+                onExpire={() => setCaptchaToken(null)}
+                options={{ theme: "light", size: "normal" }}
+              />
+
               <Button
                 fullWidth
                 variant="contained"
                 color="primary"
                 size="large"
-                onClick={() => sendOtpMutation.mutate(phone)}
+                onClick={() => {
+                  if (!captchaToken) {
+                    setSnackbar({ message: "لطفاً کپچا را کامل کنید 🛡️", severity: "error" });
+                    return;
+                  }
+                  sendOtpMutation.mutate({ phone, captcha_token: captchaToken });
+                }}
                 disabled={!phone || sendOtpMutation.isPending}
                 startIcon={sendOtpMutation.isPending ? <CircularProgress size={20} /> : null}
               >
@@ -180,7 +194,11 @@ export function LoginWithOtpForm() {
                   size="small"
                   disabled={!canResend}
                   onClick={() => {
-                    sendOtpMutation.mutate(phone);
+                    if (!captchaToken) {
+                      setSnackbar({ message: "لطفاً کپچا را کامل کنید 🛡️", severity: "error" });
+                      return;
+                    }
+                    sendOtpMutation.mutate({ phone, captcha_token: captchaToken });
                     startResendTimer();
                   }}
                 >
@@ -190,7 +208,7 @@ export function LoginWithOtpForm() {
             </>
           )}
         </Stack>
-      </Box>
+      </Paper>
 
       {/* --- Snackbar پیام‌ها --- */}
       <Snackbar

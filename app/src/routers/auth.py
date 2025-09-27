@@ -45,9 +45,23 @@ router = APIRouter(
 class RegisterRequest(schemas.UserCreate):
     captcha_token: str
 
+
 class LoginRequest(OAuth2PasswordRequestForm):
     captcha_token: str
-    
+
+
+class EmailRequest(EmailSchema):
+    captcha_token: str
+
+class PhoneRequest(schemas.BaseModel):
+    phone: str
+
+
+class VerifyOtpRequest(schemas.BaseModel):
+    phone: str
+    code: str
+
+
 async def send_verification_email(
     request: Request,
     user: models.User,
@@ -123,7 +137,7 @@ async def register_user(
 
 
 @router.post("/token", response_model=schemas.Token)
-async def login_for_access_token(form_data: LoginRequest = Depends(), db: AsyncSession = Depends(get_db)):
+async def login_for_access_token(request: Request, form_data: LoginRequest = Depends(), db: AsyncSession = Depends(get_db)):
     await verify_turnstile(request, form_data.captcha_token)
 
     # result = await db.execute(select(models.User).where(models.User.email == form_data.username))
@@ -175,6 +189,8 @@ async def forgot_password(
     db: AsyncSession = Depends(get_db),
     request: Request = None
 ):
+    await verify_turnstile(request, form.captcha_token)
+
     user_result = await db.execute(
         select(models.User).where(models.User.email == form.email)
     )
@@ -195,15 +211,16 @@ async def forgot_password(
     }
 
 
-class ResetPasswordRequest(schemas.BaseModel):
-    token: str
-    new_password: str
+class ResetPasswordRequestCaptcha(ResetPasswordRequest):
+    captcha_token: str
 
 
 @router.post("/reset-password", status_code=status.HTTP_200_OK)
-async def reset_password(request: ResetPasswordRequest, db: AsyncSession = Depends(get_db)):
+async def reset_password(request: Request, request_data: ResetPasswordRequestCaptcha, db: AsyncSession = Depends(get_db)):
+    await verify_turnstile(request, request_data.captcha_token)
+
     try:
-        payload = jwt.decode(request.token, settings.secret_key, algorithms=[settings.algorithm])
+        payload = jwt.decode(request_data.token, settings.secret_key, algorithms=[settings.algorithm])
 
         if payload.get("type") != "password_reset":
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token type")
@@ -218,7 +235,7 @@ async def reset_password(request: ResetPasswordRequest, db: AsyncSession = Depen
         if user is None:
             raise HTTPException(status_code=404, detail="User not found")
 
-        user.hashed_password = security.get_password_hash(request.new_password)
+        user.hashed_password = security.get_password_hash(request_data.new_password)
         await db.commit()
 
         return {"message": "Password has been reset successfully."}
@@ -240,11 +257,6 @@ async def update_user_me(
     await db.commit()
     await db.refresh(current_user)
     return current_user
-
-
-class ChangePasswordRequest(schemas.BaseModel):
-    current_password: str
-    new_password: str
 
 
 @router.post("/users/me/change-password")
@@ -271,7 +283,7 @@ async def change_current_user_password(
 @router.post("/resend-verification-email", status_code=status.HTTP_200_OK)
 @limiter.limit("5/minute")
 async def resend_verification_email(
-        payload: schemas.EmailSchema,
+        payload: EmailSchema,
         request: Request,
         db: AsyncSession = Depends(get_db)
     ):
@@ -384,15 +396,6 @@ async def google_callback(code: str, db: AsyncSession = Depends(get_db)):
     return RedirectResponse(url=f"{settings.frontend_url}/pages/auth/callback?token={app_token}")
 
 
-class PhoneRequest(schemas.BaseModel):
-    phone: str
-
-
-class VerifyOtpRequest(schemas.BaseModel):
-    phone: str
-    code: str
-
-
 async def store_otp(phone: str, code: str, request: Request, expire_seconds: int = 120):
     """ذخیره OTP در Redis"""
     await request.app.state.redis.setex(f"otp:{phone}", expire_seconds, code)
@@ -404,13 +407,19 @@ async def verify_otp_from_store(phone: str, code: str, request: Request) -> bool
     return saved_code == code
 
 
+
+class PhoneRequestCaptcha(PhoneRequest):
+    captcha_token: str
+
+
 @router.post("/send-otp-login")
 @limiter.limit("3/minute")
-async def send_otp_for_login(payload: PhoneRequest, request: Request, db: AsyncSession = Depends(get_db)):
+async def send_otp_for_login(payload: PhoneRequestCaptcha, request: Request, db: AsyncSession = Depends(get_db)):
     """
     ارسال OTP برای ورود.
     شماره باید قبلاً در سیستم ثبت شده باشد.
     """
+    await verify_turnstile(request, payload.captcha_token)
     phone = payload.phone
     try:
         pn = phonenumbers.parse(phone, "IR")
@@ -433,11 +442,12 @@ async def send_otp_for_login(payload: PhoneRequest, request: Request, db: AsyncS
 
 @router.post("/send-otp-register")
 @limiter.limit("3/minute")
-async def send_otp_for_register(payload: PhoneRequest, request: Request, db: AsyncSession = Depends(get_db)):
+async def send_otp_for_register(payload: PhoneRequestCaptcha, request: Request, db: AsyncSession = Depends(get_db)):
     """
     ارسال OTP برای ثبت‌نام.
     شماره نباید قبلاً ثبت شده باشد.
     """
+    await verify_turnstile(request, payload.captcha_token)
     phone = payload.phone
     try:
         pn = phonenumbers.parse(phone, "IR")
@@ -458,11 +468,17 @@ async def send_otp_for_register(payload: PhoneRequest, request: Request, db: Asy
     return {"message": "کد تایید به شماره شما ارسال شد."}
 
 
+class VerifyOtpRequestCaptcha(VerifyOtpRequest):
+    captcha_token: str
+
+
 @router.post("/verify-otp-login")
-async def verify_otp_login(payload: VerifyOtpRequest, request: Request, db: AsyncSession = Depends(get_db)):
+async def verify_otp_login(payload: VerifyOtpRequestCaptcha, request: Request, db: AsyncSession = Depends(get_db)):
     """
     تایید OTP برای ورود.
     """
+    await verify_turnstile(request, payload.captcha_token)
+
     phone = payload.phone
     code = payload.code
 
@@ -480,11 +496,18 @@ async def verify_otp_login(payload: VerifyOtpRequest, request: Request, db: Asyn
     return {"access_token": access_token, "token_type": "bearer"}
 
 
+
+class RegisterOtpRequestCaptcha(RegisterOtpRequest):
+    captcha_token: str
+
+
 @router.post("/register-otp", response_model=schemas.UserWithToken, status_code=status.HTTP_201_CREATED)
-async def register_with_otp(payload: schemas.RegisterOtpRequest, request: Request, db: AsyncSession = Depends(get_db)):
+async def register_with_otp(payload: RegisterOtpRequestCaptcha, request: Request, db: AsyncSession = Depends(get_db)):
     """
     ثبت‌نام با OTP.
     """
+    await verify_turnstile(request, payload.captcha_token)
+
     phone = payload.phone
     code = payload.code
 
