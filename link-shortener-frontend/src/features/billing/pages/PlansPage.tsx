@@ -51,16 +51,36 @@ export function PlansPage() {
                 sx={isCurrentPlan ? { borderColor: 'primary.main', borderWidth: 2, borderStyle: 'solid' } : {}}
               >
                 <CardContent>
-                  <Typography variant="h5" component="div">{plan.name}</Typography>
-                  <Typography sx={{ mb: 1.5 }} color="text.secondary">
-                    {plan.price === 0 ? "رایگان" : `${(plan.price / 10).toLocaleString('fa-IR')} تومان`}
-                  </Typography>
-                  <Typography variant="body2">
-                    - محدودیت {plan.link_limit_per_month} لینک در ماه
-                    <br />
-                    - اعتبار {plan.duration_days} روزه
-                  </Typography>
-                </CardContent>
+  <Typography variant="h5" component="div">{plan.name}</Typography>
+  <Typography sx={{ mb: 1.5 }} color="text.secondary">
+    {plan.price === 0 ? "رایگان" : `${(plan.price / 10).toLocaleString('fa-IR')} تومان`}
+  </Typography>
+  <Typography variant="body2" sx={{ mb: 1 }}>
+    - محدودیت {plan.link_limit_per_month} لینک در ماه
+    <br />
+    - اعتبار {plan.duration_days} روزه
+  </Typography>
+
+  {isCurrentPlan && user?.subscription_start_date && user?.subscription_end_date && (
+    <Box mt={1}>
+      <Typography variant="body2" color="text.secondary">
+        <strong>شروع اشتراک:</strong> {new Date(user.subscription_start_date).toLocaleDateString('fa-IR', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        })}
+      </Typography>
+      <Typography variant="body2" color="text.secondary">
+        <strong>پایان اشتراک:</strong> {new Date(user.subscription_end_date).toLocaleDateString('fa-IR', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        })}
+      </Typography>
+    </Box>
+  )}
+</CardContent>
+
                 <CardActions>
                   <Button
                     size="small"

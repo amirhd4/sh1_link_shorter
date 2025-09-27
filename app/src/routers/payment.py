@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from datetime import date, timedelta, datetime
-
+import asyncio
 from sqlalchemy.orm import selectinload
 
 from .. import models, schemas
@@ -21,6 +21,17 @@ router = APIRouter(
     prefix="/payments",
     tags=["Payments"],
 )
+
+
+async def mark_transaction_failed_if_pending(transaction_id: int, delay_minutes: int = 15):
+    await asyncio.sleep(delay_minutes * 60)  # صبر برای ۳۰ دقیقه
+    async with AsyncSession(bind=get_db().bind) as db:
+        result = await db.execute(select(models.Transaction).where(models.Transaction.id == transaction_id))
+        tx = result.scalar_one_or_none()
+        if tx and tx.status == models.TransactionStatus.PENDING:
+            tx.status = models.TransactionStatus.FAILED
+            await db.commit()
+
 
 
 class CreatePaymentRequest(schemas.BaseModel):
@@ -64,6 +75,7 @@ async def create_payment(
     )
     db.add(new_transaction)
     await db.commit()
+    asyncio.create_task(mark_transaction_failed_if_pending(new_transaction.id, delay_minutes=15))
 
     return {"payment_url": payment_url}
 
