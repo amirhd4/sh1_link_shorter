@@ -7,7 +7,10 @@ import { Box, CircularProgress } from '@mui/material';
 // این کامپوننت فرزندان خود (کل برنامه) را دریافت می‌کند
 export function AppInitializer({ children }: { children: React.ReactNode }) {
   const { setUser, setIsLoading, isLoading } = useUserStore();
-  const token = localStorage.getItem('access_token');
+  // const token = localStorage.getItem('access_token');
+
+  const isClient = typeof window !== 'undefined';
+  const token = isClient ? localStorage.getItem('access_token') : null;
 
   // استفاده از TanStack Query برای واکشی اطلاعات کاربر
   // این کوئری فقط زمانی اجرا می‌شود که توکن وجود داشته باشد
@@ -19,6 +22,8 @@ export function AppInitializer({ children }: { children: React.ReactNode }) {
   });
 
   useEffect(() => {
+   if (!isClient) return; // Node: هیچ کاری انجام نده
+
     if (!token) {
       // اگر توکنی وجود ندارد، بارگذاری تمام شده است و کاربری وجود ندارد
       setIsLoading(false);

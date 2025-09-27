@@ -11,7 +11,7 @@ import {
   CssBaseline,
 } from "@mui/material";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { Helmet } from 'react-helmet-async';
+import { Helmet, HelmetProvider } from 'react-helmet-async';
 
 
 interface PublicLayoutProps {

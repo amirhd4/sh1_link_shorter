@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useSearchParams, useNavigate, Link as RouterLink } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
-import { authService } from '../../../services/authService';
+import { authService } from '../services/authService.ts';
 import { Box, Typography, CircularProgress, Alert, Button } from '@mui/material';
 
 export function VerifyEmailPage() {

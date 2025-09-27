@@ -1,5 +1,5 @@
-import { Helmet } from "react-helmet-async";
-import { LoginForm } from "../components/LoginForm";
+import { LoginForm } from "../features/auth/components/LoginForm.tsx";
+import { Helmet, HelmetProvider } from 'react-helmet-async';
 
 
 export function LoginPage() {

@@ -2,7 +2,7 @@ import React from 'react';
 import { Box, Typography, Button, Container, Grid, Paper, keyframes, GlobalStyles, SvgIcon, useTheme, useMediaQuery } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { Helmet } from "react-helmet-async";
+import { Helmet, HelmetProvider } from 'react-helmet-async';
 
 
 // --- Type Definitions for TypeScript ---

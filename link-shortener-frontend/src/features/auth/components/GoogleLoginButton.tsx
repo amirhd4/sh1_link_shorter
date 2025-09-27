@@ -5,7 +5,10 @@ import config from '../../../config';
 export function GoogleLoginButton() {
   const handleGoogleLogin = () => {
     // کاربر را به اندپوینت بک‌اند برای شروع فرآیند OAuth هدایت می‌کنیم
-    window.location.href = `${config.backendBaseUrl}/auth/google/login`;
+      if (typeof window !== "undefined") {
+  window.location.href = `${config.backendBaseUrl}/auth/google/login`;
+}
+
   };
 
   return (
