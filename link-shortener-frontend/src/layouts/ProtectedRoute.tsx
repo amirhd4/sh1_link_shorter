@@ -10,10 +10,10 @@ export function ProtectedRoute() {
     return <Navigate to="/home" replace />;
   }
 
-  // اگر کاربر ادمین است، او را به داشبورد ادمین هدایت کن
-  if (user?.role === 'admin') {
-    return <Navigate to="/admin/dashboard" replace />;
-  }
+  // // اگر کاربر ادمین است، او را به داشبورد ادمین هدایت کن
+  // if (user?.role === 'admin') {
+  //   return <Navigate to="/admin/dashboard" replace />;
+  // }
 
   // در غیر این صورت، کاربر کلاینت است → نمایش کامپوننت‌های فرزند
   return <Outlet />;
