@@ -14,11 +14,14 @@ import {
   Paper,
   InputAdornment,
   IconButton,
-  Stack
+  Stack,
+  Snackbar
 } from '@mui/material';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { useState } from 'react';
+import {Turnstile} from "@marsidev/react-turnstile";
+
 
 const registerSchema = z.object({
   email: z.string().email('آدرس ایمیل معتبر نیست.'),
@@ -30,17 +33,31 @@ type RegisterFormInputs = z.infer<typeof registerSchema>;
 export function RegisterForm() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+
   const { control, handleSubmit, formState: { errors } } = useForm<RegisterFormInputs>({
     resolver: zodResolver(registerSchema),
     defaultValues: { email: '', password: '' },
   });
 
   const registerMutation = useMutation({
-    mutationFn: (credentials: RegisterCredentials) => authService.register(credentials),
+    mutationFn: (credentials: any) => authService.register(credentials),
     onSuccess: (data) => navigate('/email-sent', { state: { email: data.email } }),
   });
 
-  const onSubmit = (data: RegisterFormInputs) => registerMutation.mutate(data);
+  const onSubmit = (data: RegisterFormInputs) => {
+      if (!captchaToken) {
+        // alert("لطفاً کپچا را کامل کنید 🛡️");
+        setSnackbarMessage("لطفاً کپچا را کامل کنید 🛡️");
+        return;
+      }
+      registerMutation.mutate({
+      ...data,
+      captcha_token: captchaToken!,
+    });
+
+  };
 
   return (
     <Paper
@@ -138,7 +155,13 @@ export function RegisterForm() {
               />
             )}
           />
-
+            <Turnstile
+              siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
+              onSuccess={(token) => setCaptchaToken(token)}
+              onError={() => setCaptchaToken(null)}
+              options={{ theme: "light", size: "normal" }}
+              onExpire={() => setCaptchaToken(null)}
+            />
           <Button
             type="submit"
             fullWidth

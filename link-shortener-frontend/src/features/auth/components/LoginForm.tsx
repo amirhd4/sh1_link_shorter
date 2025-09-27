@@ -15,6 +15,7 @@ import {
   IconButton,
   InputAdornment,
   Stack,
+  Snackbar
 } from "@mui/material";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
@@ -26,6 +27,8 @@ import { authService } from "../../../services/authService";
 import { useUserStore } from "../../../store/userStore";
 import { Link as RouterLink, useNavigate, useSearchParams } from "react-router-dom";
 import { GoogleLoginButton } from "./GoogleLoginButton";
+import {Turnstile} from "@marsidev/react-turnstile";
+
 
 const emailOrPhoneSchema = z.object({
   emailOrPhone: z.string().refine(
@@ -49,7 +52,8 @@ export function LoginForm() {
   const [resendSuccess, setResendSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const isClient = typeof window !== "undefined";
-
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
 
   const { control, handleSubmit, getValues, formState: { errors } } = useForm<LoginFormInputs>({
     resolver: zodResolver(emailOrPhoneSchema),
@@ -104,11 +108,18 @@ export function LoginForm() {
   };
 
   const onSubmit = (data: LoginFormInputs) => {
+  if (!captchaToken) {
+    // alert("لطفاً کپچا را کامل کنید 🛡️");
+    setSnackbarMessage("لطفاً کپچا را کامل کنید 🛡️");
+    return;
+  }
     setVerificationError(false);
     setResendSuccess(false);
     loginMutation.mutate({
       email: data.emailOrPhone,
       password: data.password,
+      captcha_token: captchaToken,
+
     });
   };
 
@@ -271,6 +282,14 @@ export function LoginForm() {
                   }}
                 />
               )}
+            />
+
+            <Turnstile
+              siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
+              onSuccess={(token) => setCaptchaToken(token)}
+              onError={() => setCaptchaToken(null)}
+              options={{ theme: "light", size: "normal" }}
+              onExpire={() => setCaptchaToken(null)}
             />
 
             {/* Submit Button */}
