@@ -1,46 +1,16 @@
 {
+  "log": {
+    "loglevel": "warning"
+  },
   "dns": {
     "hosts": {
-      "domain:googleapis.cn": "googleapis.com",
-      "dns.alidns.com": [
-        "223.5.5.5",
-        "223.6.6.6",
-        "2400:3200::1",
-        "2400:3200:baba::1"
-      ],
-      "one.one.one.one": [
-        "1.1.1.1",
-        "1.0.0.1",
-        "2606:4700:4700::1111",
-        "2606:4700:4700::1001"
-      ],
-      "dot.pub": [
-        "1.12.12.12",
-        "120.53.53.53"
-      ],
-      "dns.google": [
-        "8.8.8.8",
-        "8.8.4.4",
-        "2001:4860:4860::8888",
-        "2001:4860:4860::8844"
-      ],
-      "dns.quad9.net": [
-        "9.9.9.9",
-        "149.112.112.112",
-        "2620:fe::fe",
-        "2620:fe::9"
-      ],
-      "common.dot.dns.yandex.net": [
-        "77.88.8.8",
-        "77.88.8.1",
-        "2a02:6b8::feed:0ff",
-        "2a02:6b8:0:1::feed:0ff"
-      ]
+      "dns.google": "8.8.8.8",
+      "proxy.example.com": "127.0.0.1"
     },
     "servers": [
-      "1.1.1.1",
       {
         "address": "1.1.1.1",
+        "skipFallback": true,
         "domains": [
           "domain:googleapis.cn",
           "domain:gstatic.com"
@@ -48,51 +18,43 @@
       },
       {
         "address": "223.5.5.5",
+        "skipFallback": true,
         "domains": [
-          "domain:alidns.com",
-          "domain:doh.pub",
-          "domain:dot.pub",
-          "domain:360.cn",
-          "domain:onedns.net",
           "geosite:cn"
         ],
         "expectIPs": [
           "geoip:cn"
-        ],
-        "skipFallback": true
-      }
+        ]
+      },
+      "1.1.1.1",
+      "8.8.8.8",
+      "https://dns.google/dns-query"
     ]
   },
   "inbounds": [
     {
-      "listen": "0.0.0.0",
+      "tag": "socks",
       "port": 10808,
+      "listen": "0.0.0.0",
       "protocol": "socks",
-      "settings": {
-        "auth": "noauth",
-        "udp": true,
-        "userLevel": 8
-      },
       "sniffing": {
+        "enabled": true,
         "destOverride": [
           "http",
           "tls"
         ],
-        "enabled": true,
         "routeOnly": false
       },
-      "tag": "socks"
+      "settings": {
+        "auth": "noauth",
+        "udp": true,
+        "allowTransparent": false
+      }
     }
   ],
-  "log": {
-    "loglevel": "warning"
-  },
   "outbounds": [
     {
-      "mux": {
-        "concurrency": -1,
-        "enabled": false
-      },
+      "tag": "proxy",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -101,9 +63,10 @@
             "port": 443,
             "users": [
               {
-                "encryption": "none",
                 "id": "536c344e-b352-41df-8907-21f9c99ea242",
-                "level": 8
+                "email": "t@t.tt",
+                "security": "auto",
+                "encryption": "none"
               }
             ]
           }
@@ -114,85 +77,72 @@
         "security": "tls",
         "tlsSettings": {
           "allowInsecure": false,
-          "fingerprint": "randomized",
           "serverName": "anten.ir",
-          "show": false
+          "fingerprint": "randomized"
         },
         "wsSettings": {
+          "path": "/?ed=443",
+          "host": "anten.ir.oadeflantrogmnl7.mapircloud.com",
           "headers": {
-            "Host": "anten.ir.oadeflantrogmuk6.irmahandata.com"
-          },
-          "path": "/?ed=443"
+            "Host": "anten.ir.oadeflantrogmnl7.mapircloud.com"
+          }
         }
       },
-      "tag": "proxy"
+      "mux": {
+        "enabled": false,
+        "concurrency": -1
+      }
     },
     {
-      "protocol": "freedom",
-      "settings": {
-        "domainStrategy": "UseIP"
-      },
-      "tag": "direct"
+      "tag": "direct",
+      "protocol": "freedom"
     },
     {
-      "protocol": "blackhole",
-      "settings": {
-        "response": {
-          "type": "http"
-        }
-      },
-      "tag": "block"
+      "tag": "block",
+      "protocol": "blackhole"
     }
   ],
-  "remarks": "🇬🇧 UK-6-NB-MMDLeecher-v",
   "routing": {
-    "domainStrategy": "IPIfNonMatch",
+    "domainStrategy": "AsIs",
     "rules": [
       {
-        "ip": [
-          "1.1.1.1"
+        "type": "field",
+        "inboundTag": [
+          "api"
         ],
+        "outboundTag": "api"
+      },
+      {
+        "type": "field",
         "outboundTag": "proxy",
-        "port": "53",
-        "type": "field"
-      },
-      {
-        "ip": [
-          "223.5.5.5"
-        ],
-        "outboundTag": "direct",
-        "port": "53",
-        "type": "field"
-      },
-      {
         "domain": [
           "domain:googleapis.cn",
           "domain:gstatic.com"
-        ],
-        "outboundTag": "proxy",
-        "type": "field"
+        ]
       },
       {
-        "network": "udp",
-        "outboundTag": "block",
+        "type": "field",
         "port": "443",
-        "type": "field"
+        "network": "udp",
+        "outboundTag": "block"
       },
       {
+        "type": "field",
+        "outboundTag": "direct",
         "ip": [
           "geoip:private"
-        ],
-        "outboundTag": "direct",
-        "type": "field"
+        ]
       },
       {
+        "type": "field",
+        "outboundTag": "direct",
         "domain": [
           "geosite:private"
-        ],
-        "outboundTag": "direct",
-        "type": "field"
+        ]
       },
       {
+        "type": "field",
+        "outboundTag": "direct",
         "ip": [
           "223.5.5.5",
           "223.6.6.6",
@@ -229,34 +179,32 @@
           "2404:c2c0:85d8:901::8",
           "117.50.60.30",
           "52.80.60.30"
-        ],
-        "outboundTag": "direct",
-        "type": "field"
+        ]
       },
       {
+        "type": "field",
+        "outboundTag": "direct",
         "domain": [
           "domain:alidns.com",
           "domain:doh.pub",
           "domain:dot.pub",
           "domain:360.cn",
           "domain:onedns.net"
-        ],
-        "outboundTag": "direct",
-        "type": "field"
+        ]
       },
       {
+        "type": "field",
+        "outboundTag": "direct",
         "ip": [
           "geoip:cn"
-        ],
-        "outboundTag": "direct",
-        "type": "field"
+        ]
       },
       {
+        "type": "field",
+        "outboundTag": "direct",
         "domain": [
           "geosite:cn"
-        ],
-        "outboundTag": "direct",
-        "type": "field"
+        ]
       }
     ]
   }

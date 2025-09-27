@@ -8,7 +8,7 @@ export function LoginPage() {
       <Helmet>
         <title>ورود به حساب کاربری | L1s</title>
         <meta name="description" content="وارد حساب کاربری خود شوید و لینک‌های کوتاه خود را مدیریت کنید." />
-        <link rel="canonical" href="https://l1s.ir/login" />
+        <link rel="canonical" href="https://l1s.ir/pages/login" />
       </Helmet>
 
       <LoginForm />

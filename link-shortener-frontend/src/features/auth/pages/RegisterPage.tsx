@@ -11,7 +11,7 @@ export function RegisterPage() {
           name="description"
           content="اکانت رایگان خود را بسازید و لینک‌هایتان را کوتاه و مدیریت کنید."
         />
-        <link rel="canonical" href="https://l1s.ir/register" />
+        <link rel="canonical" href="https://l1s.ir/pages/register" />
       </Helmet>
   <RegisterForm />;
     </>
