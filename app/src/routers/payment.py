@@ -1,20 +1,23 @@
-from typing import List
-
+from fastapi import BackgroundTasks
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from fastapi.responses import RedirectResponse
+
+from typing import List
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from datetime import date, timedelta, datetime
-import asyncio
 from sqlalchemy.orm import selectinload
+from apscheduler.triggers.date import DateTrigger
 
+from ..scheduler import scheduler
 from .. import models, schemas
 from ..database import get_db
 from ..schemas import PlanResponse
 from ..services import security
 from ..services.zarinpal_gateway import ZarinpalGateway
 from ..config import settings
+from ..database import async_session_factory
 
 
 router = APIRouter(
@@ -23,11 +26,10 @@ router = APIRouter(
 )
 
 
-async def mark_transaction_failed_if_pending(transaction_id: int, delay_minutes: int = 15):
-    await asyncio.sleep(delay_minutes * 60)  # صبر برای ۳۰ دقیقه
-    async with AsyncSession(bind=get_db().bind) as db:
-        result = await db.execute(select(models.Transaction).where(models.Transaction.id == transaction_id))
-        tx = result.scalar_one_or_none()
+async def mark_transaction_failed(transaction_id: int):
+    # async with AsyncSession(bind=get_db().bind) as db:
+    async with async_session_factory() as db:
+        tx = await db.get(models.Transaction, transaction_id)
         if tx and tx.status == models.TransactionStatus.PENDING:
             tx.status = models.TransactionStatus.FAILED
             await db.commit()
@@ -75,7 +77,17 @@ async def create_payment(
     )
     db.add(new_transaction)
     await db.commit()
-    asyncio.create_task(mark_transaction_failed_if_pending(new_transaction.id, delay_minutes=15))
+
+
+    # زمان اجرای job = الان + 15 دقیقه
+    run_time = datetime.utcnow() + timedelta(minutes=15)
+    scheduler.add_job(
+        mark_transaction_failed,
+        trigger=DateTrigger(run_date=run_time),
+        args=[new_transaction.id],
+        id=f"fail_tx_{new_transaction.id}",
+        replace_existing=True
+    )
 
     return {"payment_url": payment_url}
 

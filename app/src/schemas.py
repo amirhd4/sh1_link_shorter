@@ -74,6 +74,7 @@ class UserResponse(BaseModel):
     is_active: bool
     plan: Optional[PlanResponse] = None
     subscription_end_date: Optional[date] = None
+    subscription_start_date: Optional[date] = None
 
     class Config:
         from_attributes = True

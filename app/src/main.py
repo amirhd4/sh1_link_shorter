@@ -13,11 +13,13 @@ from .routers import auth, links, admin, payment, stats, plans, redirect
 from .rate_limiter import limiter
 from .models import Plan
 from .config import settings
+from .scheduler import scheduler
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     app.state.redis = redis.from_url("redis://cache", encoding="utf-8", decode_responses=True)
+    scheduler.start()
 
     # SMTP
     app.state.smtp = SMTP(
@@ -51,6 +53,7 @@ async def lifespan(app: FastAPI):
     print("✅ Tables created. Redis client connected. Rate limiter is active.")
     yield
 
+    scheduler.shutdown()
     try:
         await app.state.smtp.quit()
     except Exception:

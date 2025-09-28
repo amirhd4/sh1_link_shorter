@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi import APIRouter, Depends, HTTPException, status, Request, Form, APIRouter, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.responses import RedirectResponse
-from fastapi import APIRouter, HTTPException
+
 from fastapi.concurrency import run_in_threadpool
 
 from jose import JWTError, jwt
@@ -10,7 +10,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from sqlalchemy.future import select
 from sqlalchemy import or_
-from datetime import date, timedelta
 from google_auth_oauthlib.flow import Flow
 from google.oauth2 import id_token
 from datetime import date, timedelta
@@ -137,8 +136,8 @@ async def register_user(
 
 
 @router.post("/token", response_model=schemas.Token)
-async def login_for_access_token(request: Request, form_data: LoginRequest = Depends(), db: AsyncSession = Depends(get_db)):
-    await verify_turnstile(request, form_data.captcha_token)
+async def login_for_access_token(request: Request, form_data: OAuth2PasswordRequestForm = Depends(), captcha_token: str = Form(...), db: AsyncSession = Depends(get_db)):
+    await verify_turnstile(request, captcha_token)
 
     # result = await db.execute(select(models.User).where(models.User.email == form_data.username))
     result = await db.execute(
@@ -185,7 +184,7 @@ async def read_users_me(current_user: models.User = Depends(security.get_current
 
 @router.post("/forgot-password", status_code=status.HTTP_200_OK)
 async def forgot_password(
-    form: EmailSchema,
+    form: EmailRequest,
     db: AsyncSession = Depends(get_db),
     request: Request = None
 ):

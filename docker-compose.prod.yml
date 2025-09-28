@@ -71,22 +71,36 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      # - ./link-shortener-frontend/dist:/usr/share/nginx/html
-      - ./link-shortener-frontend/dist:/usr/share/nginx/html/pages
-      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
-      # - ./nginx/conf.d:/etc/nginx/conf.d
-      - /etc/letsencrypt:/etc/letsencrypt:ro
-      # - ./link-shortener-frontend/dist/locales:/usr/share/nginx/html/pages/locales
-      # - ./link-shortener-frontend/dist/fonts:/usr/share/nginx/html/pages/fonts
-      
+    - ./link-shortener-frontend/dist:/usr/share/nginx/html/pages
+    - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+    # - ./nginx/conf.d:/etc/nginx/conf.d
+    # - ./nginx/conf:/etc/nginx/conf.d
+    - /etc/letsencrypt:/etc/letsencrypt:ro
+    - /var/www/letsencrypt:/var/www/letsencrypt:ro
+
     networks:
       - 1sl_default
       - mailcowdockerized_mailcow-network
     depends_on:
       - app
   
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: app_pgadmin
+    env_file: .env
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - 1sl_default # مهم: قرار دادن در شبکه مشترک با Nginx و DB
+    # مهم: پورت‌ها را اینجا expose نکنید. Nginx مدیریت را انجام می‌دهد.
+  
 volumes:
   postgres_data:
+  pgadmin_data: # اضافه کردن Volume جدید برای pgAdmin
 
 networks:
   1sl_default:
