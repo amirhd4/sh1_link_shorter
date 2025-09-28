@@ -14,7 +14,8 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import ToggleOnIcon from '@mui/icons-material/ToggleOn';
 import ToggleOffIcon from '@mui/icons-material/ToggleOff';
 import theme from "../../../styles/theme.ts";
-import { CustomNoRowsOverlay } from '../../../components/molecules/CustomNoRowsOverlay.tsx'; // <<< بهبود ۱: ایمپورت کامپوننت حالت خالی
+import { CustomNoRowsOverlay } from '../../../components/molecules/CustomNoRowsOverlay.tsx';
+
 
 export function UserManagementPage() {
   const queryClient = useQueryClient();
@@ -61,7 +62,7 @@ export function UserManagementPage() {
   // Column definitions for the DataGrid
   const columns: GridColDef[] = [
     { field: 'id', headerName: 'ID', width: 90 },
-    { field: 'email', headerName: 'ایمیل', flex: 1, minWidth: 200 },
+    { field: 'email', headerName: 'ایمیل', flex: 1, minWidth: 200, valueGetter: (value, row) => row.phone_number || row.email},
     {
       field: 'plan',
       headerName: 'پلن فعلی',
