@@ -29,11 +29,13 @@ async def get_redis_client(request: Request) -> redis.Redis:
 @limiter.limit("100/minute")
 @api_router.post("/shorten", response_model=schemas.URLResponse)
 async def api_shorten_url(
+    request: Request,
     url_data: schemas.URLCreate,
     user: models.User = Depends(get_user_by_api_key),
     db: AsyncSession = Depends(get_db),
-    redis_client: redis.Redis = Depends(get_redis_client)
+    redis_client: redis.Redis = Depends(get_redis_client),
 ):
+
     if not user.plan:
         raise HTTPException(status_code=403, detail="No active plan found for user.")
 
