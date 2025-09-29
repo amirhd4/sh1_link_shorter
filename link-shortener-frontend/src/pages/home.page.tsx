@@ -332,7 +332,7 @@ const HomePage: React.FC = () => {
           <Box sx={{ pb: { xs: 6, md: 10 } }}>
             <Grid container spacing={isMobile ? 2 : 4}>
               {features.map((f, idx) => (
-                <Grid item xs={12} sm={6} md={3} key={f.title}>
+                <Grid size={{xs: 12, sm: 6, md: 3}} key={f.title}>
                   <motion.div
                     whileHover={{ translateY: -8 }}
                     transition={{ type: "spring", stiffness: 200, damping: 18 }}
@@ -390,7 +390,7 @@ const HomePage: React.FC = () => {
 
             <Grid container spacing={3} mb={3}>
               {/* KPIs */}
-              <Grid item xs={12} sm={6} md={3}>
+              <Grid size={{xs: 12, sm: 6, md: 3}}>
                 <Paper sx={{ p: 3, borderRadius: 3, background: "#0b1220" }}>
                   <Typography sx={{ fontSize: 13, color: "#93a6bf" }}>کل لینک‌ها</Typography>
                   <Typography sx={{ fontSize: 28, fontWeight: 900, mt: 1 }}>
@@ -402,7 +402,7 @@ const HomePage: React.FC = () => {
                 </Paper>
               </Grid>
 
-              <Grid item xs={12} sm={6} md={3}>
+              <Grid size={{xs: 12, sm: 6, md: 3}}>
                 <Paper sx={{ p: 3, borderRadius: 3, background: "#0b1220" }}>
                   <Typography sx={{ fontSize: 13, color: "#93a6bf" }}>کلیک‌ها</Typography>
                   <Typography sx={{ fontSize: 28, fontWeight: 900, mt: 1 }}>
@@ -414,7 +414,7 @@ const HomePage: React.FC = () => {
                 </Paper>
               </Grid>
 
-              <Grid item xs={12} sm={6} md={3}>
+              <Grid size={{xs: 12, sm: 6, md: 3}}>
                 <Paper sx={{ p: 3, borderRadius: 3, background: "#0b1220" }}>
                   <Typography sx={{ fontSize: 13, color: "#93a6bf" }}>کاربران فعال</Typography>
                   <Typography sx={{ fontSize: 28, fontWeight: 900, mt: 1 }}>{activeUsers >= 1000 ? `${Math.floor(activeUsers / 1000)}K+` : activeUsers}</Typography>
@@ -424,7 +424,7 @@ const HomePage: React.FC = () => {
                 </Paper>
               </Grid>
 
-              <Grid item xs={12} sm={6} md={3}>
+              <Grid size={{xs: 12, sm: 6, md: 3}}>
                 <Paper sx={{ p: 3, borderRadius: 3, background: "#0b1220" }}>
                   <Typography sx={{ fontSize: 13, color: "#93a6bf" }}>Uptime</Typography>
                   <Typography sx={{ fontSize: 28, fontWeight: 900, mt: 1 }}>{(uptime / 10).toFixed(1)}%</Typography>
@@ -466,7 +466,7 @@ const HomePage: React.FC = () => {
           {/* API Examples */}
           <Box sx={{ py: { xs: 4, md: 6 } }}>
             <Grid container spacing={4} alignItems="center">
-              <Grid item xs={12} md={6}>
+              <Grid size={{xs: 12, md: 6}}>
                 <Typography variant="h6" fontWeight={900} mb={1}>
                   API برای توسعه‌دهندگان
                 </Typography>
@@ -527,7 +527,7 @@ const HomePage: React.FC = () => {
 
           {/* Tech Stack + CTA */}
           <Grid container spacing={4} alignItems="center" sx={{ mt: { xs: 4, md: 8 }, mb: { xs: 6, md: 12 } }}>
-            <Grid item xs={12} md={6}>
+            <Grid size={{xs: 12, md: 6}}>
               <Typography variant="h6" fontWeight={900} mb={2}>
                 تکنولوژی‌هایی که دوست داریم
               </Typography>
@@ -540,7 +540,7 @@ const HomePage: React.FC = () => {
               </Box>
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            <Grid size={{xs: 12, md: 6}}>
               <Paper sx={{ p: 3, borderRadius: 3, background: "#071427" }}>
                 <Typography fontWeight={900} mb={1}>
                   آماده‌اید لینک‌ها را کوتاه کنید؟
