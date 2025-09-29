@@ -9,7 +9,7 @@ from aiosmtplib import SMTP
 import ssl
 
 from .database import engine, Base, async_session_factory
-from .routers import auth, links, admin, payment, stats, plans, redirect
+from .routers import auth, links, admin, payment, stats, plans, redirect, api
 from .rate_limiter import limiter
 from .models import Plan
 from .config import settings
@@ -66,9 +66,11 @@ app = FastAPI(lifespan=lifespan)
 app.state.limiter = limiter
 from slowapi import _rate_limit_exceeded_handler
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 origins = [
     settings.frontend_url,
 ]
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -84,6 +86,7 @@ app.include_router(admin.router, prefix="/api")
 app.include_router(payment.router, prefix="/api")
 app.include_router(stats.router, prefix="/api")
 app.include_router(plans.router, prefix="/api")
+app.include_router(api.api_router, prefix="/api")
 app.include_router(redirect.router)
 
 

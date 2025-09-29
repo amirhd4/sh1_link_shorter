@@ -546,3 +546,19 @@ async def register_with_otp(payload: RegisterOtpRequestCaptcha, request: Request
         "access_token": access_token,
         "token_type": "bearer"
     }
+
+
+@router.post("/generate-api-key")
+async def generate_api_key(
+    current_user: models.User = Depends(security.get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    current_user.generate_api_key()
+    await db.commit()
+    await db.refresh(current_user)
+    return {"api_key": current_user.api_key}
+
+
+@router.get("/api-key")
+async def get_api_key(current_user: models.User = Depends(security.get_current_user)):
+    return {"api_key": current_user.api_key}

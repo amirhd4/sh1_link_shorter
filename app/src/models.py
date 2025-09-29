@@ -1,3 +1,5 @@
+from secrets import token_urlsafe
+
 from sqlalchemy import Column, Integer, String, BigInteger, ForeignKey, Date, Enum as SQLAlchemyEnum, DateTime, func, \
     Boolean
 
@@ -25,6 +27,8 @@ class Plan(Base):
 class User(Base):
     __tablename__ = "users"
 
+    api_key = Column(String, unique=True, index=True, nullable=True)
+
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String, unique=True, index=True, nullable=True)
     is_verified = Column(Boolean, default=False, nullable=False)
@@ -50,6 +54,8 @@ class User(Base):
     last_name = Column(String, nullable=True)
     phone_number = Column(String, nullable=True)
 
+    def generate_api_key(self):
+        self.api_key = "sk_" + token_urlsafe(32)
 
 class Link(Base):
     __tablename__ = "links"

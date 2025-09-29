@@ -14,6 +14,7 @@ from sqlalchemy.orm import selectinload
 from .. import models
 from ..database import get_db
 from ..config import settings
+from fastapi import Header
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -84,3 +85,20 @@ def get_current_admin_user(current_user: models.User = Depends(get_current_user)
             detail="The user does not have administrative privileges"
         )
     return current_user
+
+
+async def get_user_by_api_key(
+        api_key: str = Header(None),
+        db: AsyncSession = Depends(get_db)
+) -> models.User:
+    if not api_key:
+        raise HTTPException(status_code=401, detail="API key missing")
+
+    user = await db.scalar(select(models.User).where(models.User.api_key == api_key))
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid API key")
+
+    if not(user.is_active and user.is_verified):
+        raise HTTPException(status_code=403, detail="User is inactive or unverified")
+
+    return user

@@ -24,9 +24,6 @@ from ..services import url_checker
 from ..rate_limiter import limiter
 
 
-
-router = APIRouter(tags=["Redirect"])
-
 router = APIRouter(
     prefix="/links",
     tags=["Links Management"]
@@ -99,7 +96,6 @@ async def create_short_url(
             # short_url_full = f"{settings.origin_backend_url}/{short_code}"
 
             short_url_full = f"{settings.origin_backend_url}/{db_link.short_code}"
-
 
             return schemas.URLResponse(long_url=db_link.long_url, short_url=short_url_full)
 

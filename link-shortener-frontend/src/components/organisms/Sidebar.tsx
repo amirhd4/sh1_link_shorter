@@ -7,6 +7,7 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import SupervisorAccountIcon from '@mui/icons-material/SupervisorAccount';
+import ApiIcon from '@mui/icons-material/Api';
 import { Link as RouterLink } from 'react-router-dom';
 import { useUserStore } from '../../store/userStore';
 
@@ -25,6 +26,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     { text: 'پروفایل من', icon: <AccountCircleIcon />, path: '/profile', roles: ['user', 'admin'] },
     { text: 'پلن‌ها و اشتراک', icon: <WorkspacePremiumIcon />, path: '/plans', roles: ['user', 'admin'] },
     { text: 'تاریخچه صورتحساب', icon: <ReceiptLongIcon />, path: '/billing', roles: ['user', 'admin'] },
+    { text: 'مدیریت API', icon: <ApiIcon />, path: '/api', roles: ['user','admin'] },
+
   ];
 
   const adminNavItems = [
@@ -106,8 +109,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           <Link href="mailto:support@l1s.ir" sx={{ display: 'block', fontSize: 13, color: '#6b21a8' }}>
             support@l1s.ir
           </Link>
-          <Link href="tel:09396092135" sx={{ display: 'block', fontSize: 13, color: '#6b21a8' }}>
-            09396092135
+          <Link href="tel:09960074607" sx={{ display: 'block', fontSize: 13, color: '#6b21a8' }}>
+            09960074607
           </Link>
         </Box>
       </Box>

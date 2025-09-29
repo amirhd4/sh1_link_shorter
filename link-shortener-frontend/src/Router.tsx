@@ -27,6 +27,7 @@ import { EmailSentPage } from './pages/email-sent.page.tsx';
 import { AuthCallbackPage } from "./pages/auth-callback-auth.page.tsx";
 import { LoginOtpPage } from './pages/login-otp.page.tsx';
 import { RegisterOtpPage } from "./pages/register-otp.page.tsx";
+import {ApiPage} from "./features/api/pages/ApiPage.tsx";
 
 const router = createBrowserRouter([
   // --- روت‌های عمومی ---
@@ -61,6 +62,8 @@ const router = createBrowserRouter([
           { path: 'plans', element: <PlansPage /> },
           { path: 'billing', element: <BillingHistoryPage /> },
           { path: 'links/:shortCode', element: <LinkDetailsPage /> },
+          { path: 'api', element: <ApiPage /> },
+
         ],
       },
       // مسیر ادمین
