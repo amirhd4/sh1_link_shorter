@@ -4,6 +4,7 @@ class Settings(BaseSettings):
     # Database and Redis
     database_url: str
     redis_url: str
+    DEBUG: bool = False
 
     frontend_url: str
     backend_url: str

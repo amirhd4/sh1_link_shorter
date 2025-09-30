@@ -21,7 +21,7 @@ from google.auth.transport.requests import Request as google_request
 
 from ..schemas import RegisterOtpRequest
 from ..services.sms_service import send_otp
-from .. import schemas, models
+from .. import schemas, models, config
 from ..config import settings
 from ..database import get_db
 from ..services import security
@@ -88,7 +88,8 @@ async def register_user(
     Registers a new user and correctly assigns them the default 'Free' plan.
     """
     # ✅ Captcha check
-    await verify_turnstile(request, user_create.captcha_token)
+    if not settings.DEBUG:
+        await verify_turnstile(request, user_create.captcha_token)
 
     # 1. Check if user already exists
     result = await db.execute(select(models.User).where(models.User.email == user_create.email))
@@ -137,7 +138,8 @@ async def register_user(
 
 @router.post("/token", response_model=schemas.Token)
 async def login_for_access_token(request: Request, form_data: OAuth2PasswordRequestForm = Depends(), captcha_token: str = Form(...), db: AsyncSession = Depends(get_db)):
-    await verify_turnstile(request, captcha_token)
+    if not settings.DEBUG:
+        await verify_turnstile(request, captcha_token)
 
     # result = await db.execute(select(models.User).where(models.User.email == form_data.username))
     result = await db.execute(

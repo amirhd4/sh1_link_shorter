@@ -6,6 +6,7 @@ services:
     env_file: .env
     environment:
       - SOCKS5_PROXY=172.17.0.1:10808
+      - DEBUG=False
     restart: unless-stopped
     deploy:
       resources:

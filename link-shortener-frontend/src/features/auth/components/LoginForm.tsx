@@ -28,6 +28,7 @@ import { useUserStore } from "../../../store/userStore";
 import { Link as RouterLink, useNavigate, useSearchParams } from "react-router-dom";
 import { GoogleLoginButton } from "./GoogleLoginButton";
 import { Turnstile } from "@marsidev/react-turnstile";
+import config from "../../../config";
 
 const emailOrPhoneSchema = z.object({
   emailOrPhone: z.string().refine(
@@ -105,7 +106,7 @@ export function LoginForm() {
   };
 
   const onSubmit = (data: LoginFormInputs) => {
-    if (!captchaToken) {
+    if (!captchaToken && !config.debug) {
       setSnackbarMessage("لطفاً کپچا را کامل کنید 🛡️");
       return;
     }

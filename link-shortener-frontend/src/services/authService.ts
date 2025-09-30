@@ -18,10 +18,22 @@ export const authService = {
     return response.data;
   },
 
-  register: async (credentials: RegisterCredentials & { captcha_token: string }): Promise<UserResponse> => {
-    const response = await apiClient.post('/auth/register', credentials);
-    return response.data;
-  },
+  // register: async (credentials: RegisterCredentials & { captcha_token: string }): Promise<UserResponse> => {
+  //   const response = await apiClient.post('/auth/register', credentials);
+  //   return response.data;
+  // },
+
+   register: async (credentials: RegisterCredentials & { captcha_token: string }): Promise<UserResponse> => {
+  const payload = {
+    email: credentials.email,
+    password: credentials.password,
+    captcha_token: credentials.captcha_token || "dummy-token",
+  };
+  const response = await apiClient.post('/auth/register', payload);
+  return response.data;
+},
+
+
 
   getMe: async (): Promise<UserResponse> => {
     const response = await apiClient.get('/auth/users/me');

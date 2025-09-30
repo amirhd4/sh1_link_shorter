@@ -1,39 +1,71 @@
 services:
+  # -----------------------------------------------------------------
+  # 1. App Service (Backend) - Optimized for Local Development
+  # -----------------------------------------------------------------
   app:
     build:
       context: ./app
+      # IMPORTANT: Use a dedicated development Dockerfile (e.g., installs dev dependencies, runs dev server)
       dockerfile: Dockerfile
-    ports:
-      - "8000:8000"
+    env_file: .env
+    # Map local code into the container for hot-reloading
     volumes:
       - ./app:/app
-    env_file:
-      - .env
+    # Expose the application port directly
+    ports:
+      - "8000:8000" # Assuming your app runs on port 8000 in the container
+    environment:
+      # SOCKS5_PROXY is kept as it's a core dependency
+#      - SOCKS5_PROXY=xray:10808
+      - DEBUG=True
+
+    restart: on-failure # Changed from unless-stopped for dev environment
+
     depends_on:
+      # Use service_healthy for robustness in dev too
       db:
         condition: service_healthy
       cache:
         condition: service_healthy
-    command: [ "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload" ]
+      xray:
+        condition: service_started
 
+  # -----------------------------------------------------------------
+  # 2. Proxy Service (Kept as a core dependency)
+  # -----------------------------------------------------------------
+  xray:
+    build: ./xray
+    container_name: xray
+    # Expose internal ports only if needed for testing, otherwise leave them for app access
+    ports:
+      - "10808:10808"
+    restart: unless-stopped
 
-
+  # -----------------------------------------------------------------
+  # 3. Database Service (Postgres) - Exposed Port
+  # -----------------------------------------------------------------
   db:
-    image: postgres:16-alpine
+    image: docker.arvancloud.ir/postgres:16-alpine
     volumes:
       - postgres_data:/var/lib/postgresql/data/
+    env_file: .env
+    # Exposed port for local tools (e.g., DBeaver, VS Code extensions)
     ports:
       - "5432:5432"
-    env_file:
-      - .env
+    restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 10s
       timeout: 5s
       retries: 5
 
+  # -----------------------------------------------------------------
+  # 4. Cache Service (Redis) - Exposed Port
+  # -----------------------------------------------------------------
   cache:
-    image: redis:7-alpine
+    image: docker.arvancloud.ir/redis:latest
+    restart: unless-stopped
+    # Exposed port for local Redis inspection/tools
     ports:
       - "6379:6379"
     healthcheck:
@@ -41,10 +73,32 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  # -----------------------------------------------------------------
+  # 5. PGAdmin (Database Management GUI) - Exposed Port
+  # -----------------------------------------------------------------
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: app_pgadmin
+    env_file: .env
     volumes:
-      - redis_data:/data
-    command: redis-server --save 60 1 --appendonly yes
+      - pgadmin_data:/var/lib/pgadmin
+    restart: unless-stopped
+    # Expose port 5050 to access pgAdmin locally via http://localhost:5050
+    ports:
+      - "5050:80"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # -----------------------------------------------------------------
+  # 6. Nginx Service (Removed for Dev)
+  # -----------------------------------------------------------------
+  # The Nginx service has been removed. You should run your frontend
+  # development server (e.g., npm run dev) separately on your host machine.
 
 volumes:
   postgres_data:
-  redis_data:
+  pgadmin_data:
+
+# Networks section removed/simplified: Compose will create a default bridge network for all services automatically.

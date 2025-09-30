@@ -21,6 +21,7 @@ import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { useState } from 'react';
 import {Turnstile} from "@marsidev/react-turnstile";
+import config from "../../../config";
 
 
 const registerSchema = z.object({
@@ -47,7 +48,7 @@ export function RegisterForm() {
   });
 
   const onSubmit = (data: RegisterFormInputs) => {
-      if (!captchaToken) {
+      if (!captchaToken && !config.debug) {
         // alert("لطفاً کپچا را کامل کنید 🛡️");
         setSnackbarMessage("لطفاً کپچا را کامل کنید 🛡️");
         return;
