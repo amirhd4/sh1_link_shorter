@@ -130,14 +130,7 @@ export function LoginWithOtpForm() {
                 InputProps={{ startAdornment: <InputAdornment position="start">📱</InputAdornment> }}
               />
 
-              <Turnstile
-                siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
-                ref={turnstileRef}
-                onSuccess={(token) => setCaptchaToken(token)}
-                onError={() => setCaptchaToken(null)}
-                onExpire={() => setCaptchaToken(null)}
-                options={{ theme: "light", size: "normal" }}
-              />
+              
 
               <Button
                 fullWidth
@@ -219,6 +212,17 @@ export function LoginWithOtpForm() {
               </Stack>
             </>
           )}
+
+          {(step === "phone" || step === "verify") && (
+  <Turnstile
+    siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
+    ref={turnstileRef}
+    onSuccess={(token) => setCaptchaToken(token)}
+    onError={() => setCaptchaToken(null)}
+    onExpire={() => setCaptchaToken(null)}
+    options={{ theme: "light", size: "normal" }}
+  />
+)}
         </Stack>
       </Paper>
 
