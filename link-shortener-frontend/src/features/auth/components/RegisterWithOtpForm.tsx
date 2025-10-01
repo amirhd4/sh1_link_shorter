@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { 
-  Button, TextField, Box, Typography, Stack, CircularProgress, InputAdornment, IconButton, Snackbar, Paper
+  Button, TextField, Typography, Stack, CircularProgress, 
+  InputAdornment, IconButton, Snackbar, Paper
 } from "@mui/material";
 import { useMutation } from "@tanstack/react-query";
 import { authService } from "../../../services/authService";
@@ -23,20 +24,25 @@ export function RegisterWithOtpForm() {
   const [showCode, setShowCode] = useState(false);
   const [canResend, setCanResend] = useState(false);
   const [resendTimer, setResendTimer] = useState(0);
-  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+
+  // 🔑 دو توکن جدا برای هر مرحله
+  const [captchaTokenSend, setCaptchaTokenSend] = useState<string | null>(null);
+  const [captchaTokenVerify, setCaptchaTokenVerify] = useState<string | null>(null);
+
   const [snackbar, setSnackbar] = useState<{ message: string; severity: "success" | "error" } | null>(null);
   const turnstileRef = useRef<any>(null);
 
   // --- ارسال OTP ---
   const sendOtpMutation = useMutation({
-    mutationFn: (payload: { phone: string; captcha_token: string }) => authService.sendOtpRegister(payload.phone, payload.captcha_token),
+    mutationFn: (payload: { phone: string; captcha_token: string }) => 
+      authService.sendOtpRegister(payload.phone, payload.captcha_token),
     onSuccess: () => {
       setStep("verify");
       startResendTimer();
       setSnackbar({ message: "کد تایید ارسال شد 📩", severity: "success" });
-      // Reset captcha token after sending OTP
+      // ریست کپچا برای مرحله بعد
       turnstileRef.current?.reset();
-      setCaptchaToken(null);
+      setCaptchaTokenSend(null);
     },
     onError: (error) => {
       (error as any).customMessage = getOtpErrorMessage(error, "phone");
@@ -46,7 +52,8 @@ export function RegisterWithOtpForm() {
 
   // --- تایید OTP و ثبت‌نام ---
   const verifyOtpMutation = useMutation({
-    mutationFn: ({ phone, code, firstName, lastName, captchaToken }: { phone: string; code: string; firstName: string; lastName: string; captchaToken: string }) =>
+    mutationFn: ({ phone, code, firstName, lastName, captchaToken }: 
+      { phone: string; code: string; firstName: string; lastName: string; captchaToken: string }) =>
       authService.registerWithOtp(phone, code, firstName, lastName, captchaToken),
     onSuccess: async (data) => {
       localStorage.setItem("access_token", data.access_token);
@@ -109,7 +116,7 @@ export function RegisterWithOtpForm() {
         </Typography>
 
         <Stack spacing={3}>
-          {/* --- مرحله شماره موبایل و کپچا --- */}
+          {/* --- مرحله شماره موبایل --- */}
           {step === "phone" && (
             <>
               <TextField
@@ -123,19 +130,17 @@ export function RegisterWithOtpForm() {
                 InputProps={{ startAdornment: <InputAdornment position="start">📱</InputAdornment> }}
               />
 
-              
-
               <Button
                 fullWidth
                 variant="contained"
                 color="primary"
                 size="large"
                 onClick={() => {
-                  if (!captchaToken) {
+                  if (!captchaTokenSend) {
                     setSnackbar({ message: "لطفاً کپچا را کامل کنید 🛡️", severity: "error" });
                     return;
                   }
-                  sendOtpMutation.mutate({ phone, captcha_token: captchaToken });
+                  sendOtpMutation.mutate({ phone, captcha_token: captchaTokenSend });
                 }}
                 disabled={!phone || sendOtpMutation.isPending}
                 startIcon={sendOtpMutation.isPending ? <CircularProgress size={20} /> : null}
@@ -145,7 +150,7 @@ export function RegisterWithOtpForm() {
             </>
           )}
 
-          {/* --- مرحله وارد کردن کد و اطلاعات کاربری --- */}
+          {/* --- مرحله تایید کد --- */}
           {step === "verify" && (
             <>
               <TextField
@@ -185,13 +190,13 @@ export function RegisterWithOtpForm() {
                 color="success"
                 size="large"
                 onClick={() => {
-                  if (!captchaToken) {
-                    setSnackbar({ message: "توکن کپچا منقضی شده، دوباره ارسال کد بزنید 🛡️", severity: "error" });
+                  if (!captchaTokenVerify) {
+                    setSnackbar({ message: "لطفاً کپچا را کامل کنید 🛡️", severity: "error" });
                     return;
                   }
-                  verifyOtpMutation.mutate({ phone, code, firstName, lastName, captchaToken });
+                  verifyOtpMutation.mutate({ phone, code, firstName, lastName, captchaToken: captchaTokenVerify });
                 }}
-                disabled={!code || !firstName || !lastName || verifyOtpMutation.isPending || !captchaToken}
+                disabled={!code || !firstName || !lastName || verifyOtpMutation.isPending || !captchaTokenVerify}
                 startIcon={verifyOtpMutation.isPending ? <CircularProgress size={20} /> : null}
               >
                 {verifyOtpMutation.isPending ? "در حال بررسی..." : "تایید و ثبت‌نام"}
@@ -210,12 +215,9 @@ export function RegisterWithOtpForm() {
                   size="small"
                   disabled={!canResend}
                   onClick={() => {
-                                        if (!captchaToken) {
-                      setSnackbar({ message: "لطفاً کپچا را کامل کنید 🛡️", severity: "error" });
-                      return;
-                    }
-                    sendOtpMutation.mutate({ phone, captcha_token: captchaToken });
-                    startResendTimer();
+                    turnstileRef.current?.reset();
+                    setCaptchaTokenVerify(null);
+                    // کاربر باید کپچای جدید رو بگیره
                   }}
                 >
                   {canResend ? "ارسال دوباره کد" : `ارسال دوباره در ${resendTimer} ثانیه`}
@@ -224,13 +226,23 @@ export function RegisterWithOtpForm() {
             </>
           )}
 
-           {(step === "phone" || step === "verify") && (
+          {/* کپچا */}
+          {(step === "phone" || step === "verify") && (
             <Turnstile
               siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
               ref={turnstileRef}
-              onSuccess={(token) => setCaptchaToken(token)}
-              onError={() => setCaptchaToken(null)}
-              onExpire={() => setCaptchaToken(null)}
+              onSuccess={(token) => {
+                if (step === "phone") setCaptchaTokenSend(token);
+                if (step === "verify") setCaptchaTokenVerify(token);
+              }}
+              onError={() => {
+                if (step === "phone") setCaptchaTokenSend(null);
+                if (step === "verify") setCaptchaTokenVerify(null);
+              }}
+              onExpire={() => {
+                if (step === "phone") setCaptchaTokenSend(null);
+                if (step === "verify") setCaptchaTokenVerify(null);
+              }}
               options={{ theme: "light", size: "normal" }}
             />
           )}
