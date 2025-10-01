@@ -6,6 +6,8 @@ __pycache__/
 # C extensions
 *.so
 
+app/GeoLite2-City.mmdb
+
 # Distribution / packaging
 .Python
 .idea/
