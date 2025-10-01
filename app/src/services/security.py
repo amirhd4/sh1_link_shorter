@@ -89,7 +89,7 @@ def get_current_admin_user(current_user: models.User = Depends(get_current_user)
 
 
 async def get_user_by_api_key(
-        api_key: str = Header(None, alias="api_key"),
+        api_key: str = Header(None),
         db: AsyncSession = Depends(get_db)
 ) -> models.User:
     if not api_key:

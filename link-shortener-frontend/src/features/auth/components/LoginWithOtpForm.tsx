@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { 
   Button, TextField, Box, Typography, Alert, Stack, CircularProgress, InputAdornment, IconButton, Snackbar, Paper
 } from "@mui/material";
@@ -26,24 +26,31 @@ export function LoginWithOtpForm() {
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [snackbar, setSnackbar] = useState<{ message: string; severity: "success" | "error" } | null>(null);
 
+  const turnstileRef = useRef<any>(null);
+
   // --- ارسال OTP ---
   const sendOtpMutation = useMutation({
-    mutationFn: (payload: { phone: string; captcha_token: string }) => authService.sendOtpLogin(payload.phone, payload.captcha_token),
+    mutationFn: (payload: { phone: string; captcha_token: string }) =>
+      authService.sendOtpLogin(payload.phone, payload.captcha_token),
     onSuccess: () => {
       setStep("verify");
       startResendTimer();
       setSnackbar({ message: "کد تایید ارسال شد 📩", severity: "success" });
+      setCaptchaToken(null); // پاک کردن توکن بعد از استفاده
+      turnstileRef.current?.reset(); // توکن جدید بساز
     },
     onError: (error) => {
       (error as any).customMessage = getOtpErrorMessage(error, "phone");
       setSnackbar({ message: (error as any).customMessage, severity: "error" });
+      setCaptchaToken(null);
+      turnstileRef.current?.reset();
     }
   });
 
   // --- تایید OTP و ورود ---
   const verifyOtpMutation = useMutation({
     mutationFn: ({ phone, code }: { phone: string; code: string }) =>
-      authService.verifyOtpLogin(phone, code, captchaToken),
+      authService.verifyOtpLogin(phone, code, captchaToken || ""),
     onSuccess: async (data) => {
       if (!isClient) return;
 
@@ -59,11 +66,15 @@ export function LoginWithOtpForm() {
       } catch (err) {
         console.error("خطا در واکشی اطلاعات کاربر:", err);
       }
+      setCaptchaToken(null);
+      turnstileRef.current?.reset();
     },
     onError: (error) => {
       if (!isClient) return;
       (error as any).customMessage = getOtpErrorMessage(error, "verify");
       setSnackbar({ message: (error as any).customMessage, severity: "error" });
+      setCaptchaToken(null);
+      turnstileRef.current?.reset();
     }
   });
 
@@ -121,6 +132,7 @@ export function LoginWithOtpForm() {
 
               <Turnstile
                 siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
+                ref={turnstileRef}
                 onSuccess={(token) => setCaptchaToken(token)}
                 onError={() => setCaptchaToken(null)}
                 onExpire={() => setCaptchaToken(null)}
@@ -192,7 +204,7 @@ export function LoginWithOtpForm() {
                 <Button
                   variant="text"
                   size="small"
-                  disabled={!canResend}
+                  disabled={!canResend || !captchaToken}
                   onClick={() => {
                     if (!captchaToken) {
                       setSnackbar({ message: "لطفاً کپچا را کامل کنید 🛡️", severity: "error" });

@@ -149,7 +149,7 @@ class ReferrerStat(BaseModel):
 
 
 class UserAgentStat(BaseModel):
-    user_agent: str
+    user_agent: str = "Unknown"
     clicks: int
 
 

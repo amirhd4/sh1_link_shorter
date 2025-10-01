@@ -1,6 +1,10 @@
 import httpx
 from fastapi import HTTPException, Request, status
 from ..config import settings
+import logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
 
 async def verify_turnstile(request: Request, token: str):
     """
@@ -22,6 +26,9 @@ async def verify_turnstile(request: Request, token: str):
             },
         )
         result = resp.json()
+
+
+    logger.info(f"Turnstile response: {result}")  # <--- اینو اضافه کن
 
     if not result.get("success", False):
         raise HTTPException(

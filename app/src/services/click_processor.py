@@ -10,7 +10,7 @@ from sqlalchemy.orm import sessionmaker
 from ua_parser import user_agent_parser
 from geoip2.database import Reader
 
-from app.src import models
+from .. import models
 from ..config import settings
 from ..models import ClickEvent, Link
 

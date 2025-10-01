@@ -80,7 +80,7 @@ export function ApiPage() {
           </Typography>
 
           <Typography variant="body2" sx={{ mb: 1 }}>
-            برای استفاده از API در درخواست‌های خود باید هدر <code>api_key</code> را ارسال کنید.
+            برای استفاده از API در درخواست‌های خود باید هدر <code>Api-Key</code> را ارسال کنید.
           </Typography>
 
           <Divider sx={{ my: 2 }} />
@@ -88,7 +88,7 @@ export function ApiPage() {
           <Typography variant="subtitle1" sx={{ mb: 1 }}>مثال Curl:</Typography>
           <pre style={{ background: "#f3f4f6", padding: "10px", borderRadius: "8px" }}>
 {`curl -X POST "https://l1s.ir/api/v1/shorten" \\
--H "api_key: ${apiKey || "YOUR_API_KEY"}" \\
+-H "Api-Key: ${apiKey || "YOUR_API_KEY"}" \\
 -H "Content-Type: application/json" \\
 -d '{"long_url": "https://google.com"}'`}
           </pre>
@@ -99,7 +99,7 @@ export function ApiPage() {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
-    "api_key": "${apiKey || "YOUR_API_KEY"}"
+    "Api-Key": "${apiKey || "YOUR_API_KEY"}"
   },
   body: JSON.stringify({ long_url: "https://google.com" })
 })
@@ -113,7 +113,7 @@ export function ApiPage() {
 
 res = requests.post(
     "https://l1s.ir/api/v1/shorten",
-    headers={"api_key": "${apiKey || "YOUR_API_KEY"}"},
+    headers={"Api-Key": "${apiKey || "YOUR_API_KEY"}"},
     json={"long_url": "https://google.com"}
 )
 print(res.json())`}

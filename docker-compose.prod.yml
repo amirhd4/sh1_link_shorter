@@ -39,8 +39,10 @@ services:
     build: ./xray
     container_name: xray
     ports:
-      - "10808:10808"
-      - "10809:10809"
+      # - "10808:10808"
+      # - "10809:10809"
+      - "127.0.0.1:10808:10808"  # فقط localhost کانتینر میزبان
+
     restart: unless-stopped
 
   db:
