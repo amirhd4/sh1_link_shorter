@@ -462,7 +462,7 @@ async def send_otp_for_register(payload: PhoneRequestCaptcha, request: Request, 
         raise HTTPException(status_code=400, detail="این شماره قبلاً ثبت شده است. لطفاً وارد شوید.")
 
     code = str(random.randint(100000, 999999))
-    # logger.info(f"OTP for registration {phone}: {code}")
+    logger.info(f"OTP for registration {phone}: {code}")
     await store_otp(phone, code, request)
     send_otp(phone, code)
 

@@ -123,14 +123,7 @@ export function RegisterWithOtpForm() {
                 InputProps={{ startAdornment: <InputAdornment position="start">📱</InputAdornment> }}
               />
 
-              <Turnstile
-                siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
-                ref={turnstileRef}
-                onSuccess={(token) => setCaptchaToken(token)}
-                onError={() => setCaptchaToken(null)}
-                onExpire={() => setCaptchaToken(null)}
-                options={{ theme: "light", size: "normal" }}
-              />
+              
 
               <Button
                 fullWidth
@@ -186,17 +179,6 @@ export function RegisterWithOtpForm() {
                 }}
               />
 
-              {/* Turnstile مخفی برای ایجاد توکن معتبر در مرحله verify */}
-              <Turnstile
-                siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
-                ref={turnstileRef}
-                style={{ display: "none" }}
-                onSuccess={(token) => setCaptchaToken(token)}
-                onError={() => setCaptchaToken(null)}
-                onExpire={() => setCaptchaToken(null)}
-                options={{ theme: "light", size: "normal" }}
-              />
-
               <Button
                 fullWidth
                 variant="contained"
@@ -240,6 +222,17 @@ export function RegisterWithOtpForm() {
                 </Button>
               </Stack>
             </>
+          )}
+
+           {(step === "phone" || step === "verify") && (
+            <Turnstile
+              siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
+              ref={turnstileRef}
+              onSuccess={(token) => setCaptchaToken(token)}
+              onError={() => setCaptchaToken(null)}
+              onExpire={() => setCaptchaToken(null)}
+              options={{ theme: "light", size: "normal" }}
+            />
           )}
         </Stack>
       </Paper>
