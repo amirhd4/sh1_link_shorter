@@ -478,7 +478,6 @@ async def verify_otp_login(payload: VerifyOtpRequestCaptcha, request: Request, d
     """
     تایید OTP برای ورود.
     """
-    logger.info(payload)
     await verify_turnstile(request, payload.captcha_token)
 
     phone = payload.phone
@@ -508,6 +507,7 @@ async def register_with_otp(payload: RegisterOtpRequestCaptcha, request: Request
     """
     ثبت‌نام با OTP.
     """
+    logger.info(payload)
     await verify_turnstile(request, payload.captcha_token)
 
     phone = payload.phone
