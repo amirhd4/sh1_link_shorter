@@ -111,9 +111,10 @@ export const authService = {
     registerWithOtp: async (
       phone: string,
       code: string,
-      captchaToken: string,
       first_name?: string,
-      last_name?: string
+      last_name?: string,
+      captchaToken: string
+
     ) => {
       const res = await apiClient.post('/auth/register-otp', { phone, code, first_name, last_name, captcha_token: captchaToken });
       return res.data as UserWithToken;
