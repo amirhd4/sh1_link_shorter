@@ -28,8 +28,6 @@ async def verify_turnstile(request: Request, token: str):
         result = resp.json()
 
 
-    logger.info(f"Turnstile response: {result}")  # <--- اینو اضافه کن
-
     if not result.get("success", False):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

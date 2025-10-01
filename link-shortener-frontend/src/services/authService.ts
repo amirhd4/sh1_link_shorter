@@ -113,10 +113,9 @@ export const authService = {
       code: string,
       first_name?: string,
       last_name?: string,
-      captchaToken: string
-
+      captchaToken?: string
     ) => {
-      const res = await apiClient.post('/auth/register-otp', { phone, code, first_name, last_name, captcha_token: captchaToken });
+      const res = await apiClient.post('/auth/register-otp', { phone, code, first_name, last_name, captcha_token: captchaToken || "test" });
       return res.data as UserWithToken;
     },
 
