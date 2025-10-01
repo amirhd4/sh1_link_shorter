@@ -434,7 +434,7 @@ async def send_otp_for_login(payload: PhoneRequestCaptcha, request: Request, db:
         raise HTTPException(status_code=404, detail="این شماره در سیستم موجود نیست. ابتدا ثبت‌نام کنید.")
 
     code = str(random.randint(100000, 999999))
-    logger.info(f"OTP for {phone}: {code}")
+    # logger.info(f"OTP for {phone}: {code}")
     await store_otp(phone, code, request)
     send_otp(phone, code)
 
@@ -462,7 +462,7 @@ async def send_otp_for_register(payload: PhoneRequestCaptcha, request: Request, 
         raise HTTPException(status_code=400, detail="این شماره قبلاً ثبت شده است. لطفاً وارد شوید.")
 
     code = str(random.randint(100000, 999999))
-    logger.info(f"OTP for registration {phone}: {code}")
+    # logger.info(f"OTP for registration {phone}: {code}")
     await store_otp(phone, code, request)
     send_otp(phone, code)
 
@@ -507,7 +507,6 @@ async def register_with_otp(payload: RegisterOtpRequestCaptcha, request: Request
     """
     ثبت‌نام با OTP.
     """
-    logger.info(payload)
     await verify_turnstile(request, payload.captcha_token)
 
     phone = payload.phone
