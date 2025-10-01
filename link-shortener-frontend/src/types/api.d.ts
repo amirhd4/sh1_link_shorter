@@ -95,3 +95,29 @@ export interface UserWithToken extends UserResponse {
   access_token: string;
   token_type: "bearer";
 }
+
+
+export interface CountryStat {
+  country?: string | null;
+  clicks: number;
+}
+
+export interface ReferrerStat {
+  referer?: string | null;
+  clicks: number;
+}
+
+export interface UserAgentStat {
+  user_agent: string;
+  clicks: number;
+}
+
+export interface AdvancedLinkStats {
+  total_clicks: number;
+  unique_ips: number;
+  bot_clicks: number;
+  countries: CountryStat[];
+  top_referrers: ReferrerStat[];
+  user_agents: UserAgentStat[];
+  clicks_last_7_days: LinkStatDay[];
+}

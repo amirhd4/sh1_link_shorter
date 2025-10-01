@@ -21,6 +21,19 @@ services:
       xray:
         condition: service_started
 
+  worker:
+    build:
+      context: ./app
+    command: python src/services/click_processor.py
+    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
+    volumes:
+      - ./app/src:/app/src
+
       
   xray:
     build: ./xray

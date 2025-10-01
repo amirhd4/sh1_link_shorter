@@ -12,6 +12,8 @@ class Settings(BaseSettings):
     zarinpal_merchant_id: str = ""
     zarinpal_sandbox_mode: bool = False
 
+    ip_hash_secret: str
+
     # Google Web Risk
     google_api_key: str
     google_client_secret: str
@@ -42,7 +44,9 @@ class Settings(BaseSettings):
     # Cloudflare Trunstile
     ct_site_key: str
     ct_secret_key: str
-    
+
+    geoip_db_path: str = "/app/GeoLite2-City.mmdb"
+
     @property
     def database_url_sync(self) -> str:
         return self.database_url.replace("+asyncpg", "")

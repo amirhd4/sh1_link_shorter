@@ -31,3 +31,7 @@ requests
 httpx[socks]
 dnspython
 apscheduler
+geoip2
+user-agents
+ua-parser
+httpx

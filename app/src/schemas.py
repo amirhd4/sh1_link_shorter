@@ -136,3 +136,28 @@ class RegisterOtpRequest(BaseModel):
 class UserWithToken(BaseModel):
     access_token: str
     token_type: str = "bearer"
+
+
+class CountryStat(BaseModel):
+    country: Optional[str]
+    clicks: int
+
+
+class ReferrerStat(BaseModel):
+    referer: Optional[str]
+    clicks: int
+
+
+class UserAgentStat(BaseModel):
+    user_agent: str
+    clicks: int
+
+
+class AdvancedLinkStats(BaseModel):
+    total_clicks: int
+    unique_ips: int
+    bot_clicks: int
+    countries: List[CountryStat]
+    top_referrers: List[ReferrerStat]
+    user_agents: List[UserAgentStat]
+    clicks_last_7_days: List[LinkStatDay]

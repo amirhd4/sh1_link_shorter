@@ -160,10 +160,11 @@ async def delete_link(
     await db.delete(db_link)
     await db.commit()
 
+    pattern = f"link:{db_link.id}:*"
+    async for key in redis_client.scan_iter(match=pattern):
+        await redis_client.delete(key)
+    # await redis_client.delete(f"link:{short_code}")
 
-    await redis_client.delete(f"link:{short_code}")
-
-    # نیازی به برگرداندن محتوا نیست، چون حذف شده
     return None
 
 
@@ -201,17 +202,14 @@ async def update_link(
     return db_link
 
 
-@router.get("/{short_code}/stats", response_model=schemas.LinkStatsResponse)
 @limiter.limit("30/minute")
-async def get_link_stats(
+@router.get("/{short_code}/stats", response_model=schemas.AdvancedLinkStats)
+async def get_link_analytics(
     request: Request,
     short_code: str,
     db: AsyncSession = Depends(get_db),
     current_user: models.User = Depends(security.get_current_user)
 ):
-    """
-    آمار کلیک‌های یک لینک در ۷ روز گذشته را به صورت دقیق و آگاه از منطقه زمانی محاسبه می‌کند.
-    """
     link_result = await db.execute(
         select(models.Link.id)
         .where(models.Link.short_code == short_code, models.Link.owner_id == current_user.id)
@@ -220,6 +218,61 @@ async def get_link_stats(
     if not link_id:
         raise HTTPException(status_code=404, detail="Link not found or permission denied")
 
+    # مجموع کلیک‌ها
+    total_clicks_result = await db.execute(
+        select(func.count(models.ClickEvent.id)).where(models.ClickEvent.link_id == link_id)
+    )
+    total_clicks = total_clicks_result.scalar() or 0
+
+    # آی‌پی یونیک
+    unique_ips_result = await db.execute(
+        select(func.count(func.distinct(models.ClickEvent.ip_hash))).where(models.ClickEvent.link_id == link_id)
+    )
+    unique_ips = unique_ips_result.scalar() or 0
+
+    # کلیک‌های بات
+    bot_clicks_result = await db.execute(
+        select(func.count(models.ClickEvent.id))
+        .where(models.ClickEvent.link_id == link_id, models.ClickEvent.is_bot == True)
+    )
+    bot_clicks = bot_clicks_result.scalar() or 0
+
+    # کشورها
+    countries_result = await db.execute(
+        select(models.ClickEvent.country, func.count(models.ClickEvent.id))
+        .where(models.ClickEvent.link_id == link_id)
+        .group_by(models.ClickEvent.country)
+        .order_by(func.count(models.ClickEvent.id).desc())
+    )
+    countries = [
+        schemas.CountryStat(country=row[0], clicks=row[1]) for row in countries_result.all()
+    ]
+
+    # ریفررها
+    referrers_result = await db.execute(
+        select(models.ClickEvent.referer, func.count(models.ClickEvent.id))
+        .where(models.ClickEvent.link_id == link_id)
+        .group_by(models.ClickEvent.referer)
+        .order_by(func.count(models.ClickEvent.id).desc())
+        .limit(10)
+    )
+    referrers = [
+        schemas.ReferrerStat(referer=row[0], clicks=row[1]) for row in referrers_result.all()
+    ]
+
+    # User-Agent
+    ua_result = await db.execute(
+        select(models.ClickEvent.user_agent, func.count(models.ClickEvent.id))
+        .where(models.ClickEvent.link_id == link_id)
+        .group_by(models.ClickEvent.user_agent)
+        .order_by(func.count(models.ClickEvent.id).desc())
+        .limit(10)
+    )
+    user_agents = [
+        schemas.UserAgentStat(user_agent=row[0], clicks=row[1]) for row in ua_result.all()
+    ]
+
+    # آمار ۷ روز گذشته
     end_date_utc = datetime.now(timezone.utc)
     start_date_utc = (end_date_utc - timedelta(days=6)).replace(hour=0, minute=0, second=0, microsecond=0)
 
@@ -246,8 +299,16 @@ async def get_link_stats(
                 clicks=clicks_by_date.get(current_date, 0)
             )
         )
-    return schemas.LinkStatsResponse(clicks_last_7_days=stats_last_7_days)
 
+    return schemas.AdvancedLinkStats(
+        total_clicks=total_clicks,
+        unique_ips=unique_ips,
+        bot_clicks=bot_clicks,
+        countries=countries,
+        top_referrers=referrers,
+        user_agents=user_agents,
+        clicks_last_7_days=stats_last_7_days
+    )
 
 @router.get("/{short_code}", response_model=schemas.LinkDetails)
 @limiter.limit("30/minute")

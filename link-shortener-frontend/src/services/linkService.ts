@@ -1,5 +1,5 @@
 import apiClient from "../lib/axios";
-import type {LinkDetails, LinkStatsResponse, URLResponse} from "../types/api";
+import type {AdvancedLinkStats, LinkDetails, LinkStatsResponse, URLResponse} from "../types/api";
 
 export const linkService = {
   getMyLinks: async (): Promise<LinkDetails[]> => {
@@ -26,7 +26,7 @@ export const linkService = {
     return response.data;
   },
 
-  getLinkStats: async (shortCode: string): Promise<LinkStatsResponse> => {
+  getLinkStats: async (shortCode: string): Promise<AdvancedLinkStats> => {
     const response = await apiClient.get(`/links/${shortCode}/stats`);
     return response.data;
   },

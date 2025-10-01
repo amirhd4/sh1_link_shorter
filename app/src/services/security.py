@@ -15,6 +15,7 @@ from .. import models
 from ..database import get_db
 from ..config import settings
 from fastapi import Header
+import hmac, hashlib, base64
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -107,3 +108,10 @@ async def get_user_by_api_key(
         raise HTTPException(status_code=403, detail="User is inactive or unverified")
 
     return user
+
+
+
+def hash_ip(ip: str, secret: str) -> str:
+    # استفاده از HMAC-SHA256 و خروجی base64 urlsafe کوتاه‌شده
+    dig = hmac.new(secret.encode(), ip.encode(), hashlib.sha256).digest()
+    return base64.urlsafe_b64encode(dig).decode()[:43]  # طول سفارشی

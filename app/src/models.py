@@ -1,7 +1,7 @@
 from secrets import token_urlsafe
 
 from sqlalchemy import Column, Integer, String, BigInteger, ForeignKey, Date, Enum as SQLAlchemyEnum, DateTime, func, \
-    Boolean
+    Boolean, Text
 
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
@@ -57,6 +57,7 @@ class User(Base):
     def generate_api_key(self):
         self.api_key = "sk_" + token_urlsafe(32)
 
+
 class Link(Base):
     __tablename__ = "links"
 
@@ -103,3 +104,16 @@ class ClickEvent(Base):
     timestamp = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     link = relationship("Link", back_populates="click_events")
+
+    ip_hash = Column(String(128), nullable=True, index=True)
+
+    user_agent = Column(Text, nullable=True)
+    accept_language = Column(String(128), nullable=True)
+    referer = Column(String(2048), nullable=True)
+
+    country = Column(String(64), nullable=True, index=True)
+    region = Column(String(128), nullable=True, index=True)
+    city = Column(String(128), nullable=True, index=True)
+    is_bot = Column(Boolean, default=False, nullable=True, index=True)
+    fingerprint = Column(String(128), nullable=True, index=True)  # اگر frontend fingerprint ارسال کند
+
