@@ -159,7 +159,7 @@ class AdvancedLinkStats(BaseModel):
     total_clicks: int
     unique_ips: int
     bot_clicks: int
-    countries: List[GeoStat]
+    geos: List[GeoStat]
     top_referrers: List[ReferrerStat]
     user_agents: List[UserAgentStat]
     clicks_last_7_days: List[LinkStatDay]
