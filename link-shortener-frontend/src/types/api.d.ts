@@ -96,12 +96,6 @@ export interface UserWithToken extends UserResponse {
   token_type: "bearer";
 }
 
-
-export interface CountryStat {
-  country?: string | null;
-  clicks: number;
-}
-
 export interface ReferrerStat {
   referer?: string | null;
   clicks: number;
@@ -112,11 +106,18 @@ export interface UserAgentStat {
   clicks: number;
 }
 
+export interface GeoStat {
+  country?: string | null;
+  region?: string | null;
+  city?: string | null;
+  clicks: number;
+}
+
 export interface AdvancedLinkStats {
   total_clicks: number;
   unique_ips: number;
   bot_clicks: number;
-  countries: CountryStat[];
+  geos: GeoStat[];
   top_referrers: ReferrerStat[];
   user_agents: UserAgentStat[];
   clicks_last_7_days: LinkStatDay[];

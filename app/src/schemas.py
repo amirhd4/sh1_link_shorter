@@ -138,8 +138,10 @@ class UserWithToken(BaseModel):
     token_type: str = "bearer"
 
 
-class CountryStat(BaseModel):
+class GeoStat(BaseModel):
     country: Optional[str]
+    region: Optional[str]
+    city: Optional[str]
     clicks: int
 
 
@@ -157,7 +159,7 @@ class AdvancedLinkStats(BaseModel):
     total_clicks: int
     unique_ips: int
     bot_clicks: int
-    countries: List[CountryStat]
+    countries: List[GeoStat]
     top_referrers: List[ReferrerStat]
     user_agents: List[UserAgentStat]
     clicks_last_7_days: List[LinkStatDay]

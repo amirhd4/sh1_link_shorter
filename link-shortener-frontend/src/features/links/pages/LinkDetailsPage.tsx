@@ -176,18 +176,32 @@ export function LinkDetailsPage() {
 
       {/* جدول کشورها */}
       <Box mt={4}>
-        <Typography variant="h6" gutterBottom>توزیع جغرافیایی کلیک‌ها</Typography>
-        <Grid container spacing={2}>
-          {analytics.countries.map((c, idx) => (
-            <Grid key={idx} size={{xs: 6, sm: 4, md: 3}}>
-              <Paper sx={{ p: 1, textAlign: 'center' }}>
-                <Typography variant="subtitle2">{c.country || 'نامشخص'}</Typography>
-                <Typography variant="h6">{c.clicks}</Typography>
-              </Paper>
-            </Grid>
-          ))}
-        </Grid>
-      </Box>
+      <Typography variant="h6" gutterBottom>توزیع جغرافیایی کلیک‌ها</Typography>
+      <Paper sx={{ p: 2 }}>
+        {analytics.geos.length > 0 ? (
+          <Grid container spacing={2}>
+            {analytics.geos.map((g, idx) => (
+              <Grid key={idx} size={{xs: 12, sm: 6, md: 4, lg:3 }}>
+                <Paper sx={{ p: 2, textAlign: 'center', borderRadius: 2, boxShadow: 2 }}>
+                  <Typography variant="subtitle1" fontWeight="bold">
+                    {g.country || 'نامشخص'}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {g.region || 'ناشناخته'} {g.city ? `- ${g.city}` : ''}
+                  </Typography>
+                  <Typography variant="h5" color="primary" fontWeight="bold" mt={1}>
+                    {g.clicks.toLocaleString('fa-IR')}
+                  </Typography>
+                </Paper>
+              </Grid>
+            ))}
+          </Grid>
+        ) : (
+          <Typography variant="body2" color="text.secondary">داده‌ای موجود نیست.</Typography>
+        )}
+      </Paper>
+    </Box>
+
 
         {/* جدول ارجاع‌دهنده‌ها */}
         <Box mt={4}>

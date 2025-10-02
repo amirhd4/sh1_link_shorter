@@ -238,14 +238,21 @@ async def get_link_analytics(
     bot_clicks = bot_clicks_result.scalar() or 0
 
     # کشورها
-    countries_result = await db.execute(
-        select(models.ClickEvent.country, func.count(models.ClickEvent.id))
+    geo_result = await db.execute(
+        select(
+            models.ClickEvent.country,
+            models.ClickEvent.region,
+            models.ClickEvent.city,
+            func.count(models.ClickEvent.id)
+        )
         .where(models.ClickEvent.link_id == link_id)
-        .group_by(models.ClickEvent.country)
+        .group_by(models.ClickEvent.country, models.ClickEvent.region, models.ClickEvent.city)
         .order_by(func.count(models.ClickEvent.id).desc())
     )
-    countries = [
-        schemas.CountryStat(country=row[0], clicks=row[1]) for row in countries_result.all()
+
+    geos = [
+        schemas.GeoStat(country=row[0], region=row[1], city=row[2], clicks=row[3])
+        for row in geo_result.all()
     ]
 
     # ریفررها
@@ -304,7 +311,7 @@ async def get_link_analytics(
         total_clicks=total_clicks,
         unique_ips=unique_ips,
         bot_clicks=bot_clicks,
-        countries=countries,
+        countries=geos,
         top_referrers=referrers,
         user_agents=user_agents,
         clicks_last_7_days=stats_last_7_days
