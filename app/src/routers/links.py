@@ -311,7 +311,7 @@ async def get_link_analytics(
         total_clicks=total_clicks,
         unique_ips=unique_ips,
         bot_clicks=bot_clicks,
-        countries=geos,
+        geos=geos,
         top_referrers=referrers,
         user_agents=user_agents,
         clicks_last_7_days=stats_last_7_days
