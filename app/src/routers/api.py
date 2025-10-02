@@ -9,6 +9,7 @@ import redis.asyncio as redis
 from datetime import date, timedelta
 
 from ..rate_limiter import limiter
+from ..services import url_checker
 from ..services.security import get_user_by_api_key
 from .. import models, schemas
 from ..config import settings
@@ -53,21 +54,48 @@ async def api_shorten_url(
     if link_count_result.scalar_one() >= user.plan.link_limit_per_month:
         raise HTTPException(403, "Monthly link limit reached.")
 
+    if await url_checker.is_url_malicious(str(url_data.long_url)):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="The provided URL is flagged as malicious and cannot be shortened."
+        )
+
+    if url_data.domain_id:
+        domain = await db.scalar(
+            select(models.Domain).where(
+                models.Domain.id == url_data.domain_id,
+                models.Domain.user_id == user.id,
+                models.Domain.is_verified == True
+            )
+        )
+        if not domain:
+            raise HTTPException(403, "دامنه معتبر نیست یا تایید نشده")
+    else:
+        domain = await db.scalar(
+            select(models.Domain).where(models.Domain.name == settings.origin_backend_url)
+        )
+        if not domain:
+            raise HTTPException(500, "Default domain not found")
+
     # ساخت لینک کوتاه
     for _ in range(5):
         short_code = await generate_unique_short_key(redis_client)
         new_link = models.Link(
             long_url=str(url_data.long_url),
             short_code=short_code,
-            owner_id=user.id
+            owner_id=user.id,
+            domain_id=domain.id
         )
+
         db.add(new_link)
         try:
             await db.commit()
             await db.refresh(new_link)
             return schemas.URLResponse(
                 long_url=new_link.long_url,
-                short_url=f"{settings.origin_backend_url}/{new_link.short_code}"
+                # short_url=f"{settings.origin_backend_url}/{new_link.short_code}",
+                short_url=f"https://{domain.name}/{new_link.short_code}"
+
             )
         except IntegrityError:
             await db.rollback()

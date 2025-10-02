@@ -122,3 +122,17 @@ export interface AdvancedLinkStats {
   user_agents: UserAgentStat[];
   clicks_last_7_days: LinkStatDay[];
 }
+
+
+export interface DomainResponse {
+  id: number;
+  name: string;
+  is_verified: boolean;
+  is_primary: boolean;
+  created_at: string;
+}
+
+export interface URLCreate {
+  long_url: string;
+  domain_id?: number | null;
+}
