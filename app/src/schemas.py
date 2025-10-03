@@ -78,8 +78,11 @@ class UserResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
 class URLCreate(BaseModel):
     long_url: HttpUrl
+    domain_id: Optional[int] = None
 
 
 class URLResponse(BaseModel):
@@ -163,3 +166,17 @@ class AdvancedLinkStats(BaseModel):
     top_referrers: List[ReferrerStat]
     user_agents: List[UserAgentStat]
     clicks_last_7_days: List[LinkStatDay]
+
+
+class DomainCreate(BaseModel):
+    name: str
+    is_primary: bool = False
+
+class DomainResponse(BaseModel):
+    id: int
+    name: str
+    is_primary: bool
+    created_at: datetime
+
+    class Config:
+        orm_mode = True

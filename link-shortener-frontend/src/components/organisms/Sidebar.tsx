@@ -27,6 +27,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     { text: 'پلن‌ها و اشتراک', icon: <WorkspacePremiumIcon />, path: '/plans', roles: ['user', 'admin'] },
     { text: 'تاریخچه صورتحساب', icon: <ReceiptLongIcon />, path: '/billing', roles: ['user', 'admin'] },
     { text: 'مدیریت API', icon: <ApiIcon />, path: '/api', roles: ['user','admin'] },
+    { text: 'دامنه‌ها', icon: <WorkspacePremiumIcon />, path: '/domains', roles: ['user','admin'] }, // ✅ اضافه شد
 
   ];
 

@@ -15,6 +15,8 @@ from sqlalchemy import text
 from sqlalchemy import text
 from datetime import date, timedelta
 
+from sqlalchemy.orm import selectinload
+
 from .. import models, schemas
 from ..config import settings
 from ..database import get_db
@@ -36,6 +38,9 @@ async def get_redis_client(request: Request) -> redis.Redis:
     return request.app.state.redis
 
 
+def make_cache_key(domain_name: str, short_code: str) -> str:
+    return f"link:{domain_name}:{short_code}"
+
 @router.post("/shorten", response_model=schemas.URLResponse)
 @limiter.limit("30/minute")
 async def create_short_url(
@@ -55,62 +60,62 @@ async def create_short_url(
     link_count_result = await db.execute(
         select(func.count(models.Link.id))
         .where(models.Link.owner_id == current_user.id)
-        .where(models.Link.created_at >= thirty_days_ago)  # <--- فیلتر دقیق بر اساس تاریخ ساخت
+        .where(models.Link.created_at >= thirty_days_ago)
     )
     links_in_last_30_days = link_count_result.scalar_one()
 
     if links_in_last_30_days >= current_user.plan.link_limit_per_month:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail=f"You have reached your monthly limit of {current_user.plan.link_limit_per_month} links."
-        )
+        raise HTTPException(status_code=403, detail=f"You have reached your monthly limit of {current_user.plan.link_limit_per_month} links.")
 
     if await url_checker.is_url_malicious(str(url_data.long_url)):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="The provided URL is flagged as malicious and cannot be shortened."
+        raise HTTPException(status_code=400, detail="The provided URL is flagged as malicious and cannot be shortened.")
+
+    # domain selection (fix: use settings.default_domain consistently)
+    if url_data.domain_id:
+        domain = await db.scalar(
+            select(models.Domain).where(
+                models.Domain.id == url_data.domain_id,
+                models.Domain.user_id == current_user.id,
+                models.Domain.is_verified == True
+            )
         )
+        if not domain:
+            raise HTTPException(status_code=403, detail="دامنه معتبر نیست یا تایید نشده")
+    else:
+        domain = await db.scalar(
+            select(models.Domain).where(models.Domain.name == settings.origin_backend_url)
+        )
+        if not domain:
+            raise HTTPException(status_code=500, detail="Default domain not found")
 
-    short_code = await generate_unique_short_key(redis_client)
-
-    
-    # --- START of the new resilient logic ---
-    MAX_RETRIES = 5  # Set a limit to prevent infinite loops
+    MAX_RETRIES = 5
     for _ in range(MAX_RETRIES):
         short_code = await generate_unique_short_key(redis_client)
 
         db_link = models.Link(
             long_url=str(url_data.long_url),
             short_code=short_code,
-            owner_id=current_user.id
+            owner_id=current_user.id,
+            domain_id=domain.id
         )
-        
+
         db.add(db_link)
 
         try:
-            # Try to save the new link to the database
             await db.commit()
             await db.refresh(db_link)
 
-            # If successful, create the full URL and exit the loop
-            # short_url_full = f"{settings.origin_backend_url}/{short_code}"
-
-            short_url_full = f"{settings.origin_backend_url}/{db_link.short_code}"
+            short_url_full = f"https://{domain.name}/{db_link.short_code}"
+            # Optionally warm the cache:
+            await redis_client.set(make_cache_key(domain.name, db_link.short_code), db_link.long_url, ex=3600)
 
             return schemas.URLResponse(long_url=db_link.long_url, short_url=short_url_full)
 
         except IntegrityError:
-            # This error happens if the short_code was a duplicate.
-            # We roll back the failed transaction and the loop will try again.
             await db.rollback()
             continue
-    # --- END of the new resilient logic ---
 
-    # If the loop finishes without success, something is very wrong.
-    raise HTTPException(
-        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        detail="Could not generate a unique short link. Please try again later."
-    )
+    raise HTTPException(status_code=500, detail="Could not generate a unique short link. Please try again later.")
 
 
 @router.get("/my-links", response_model=List[schemas.LinkDetails])
@@ -139,31 +144,24 @@ async def delete_link(
         db: AsyncSession = Depends(get_db),
         redis_client: redis.Redis = Depends(get_redis_client)
 ):
-    """
-    یک لینک را بر اساس کد کوتاه آن حذف می‌کند.
-    فقط صاحب لینک می‌تواند آن را حذف کند.
-    """
-    # ابتدا لینک را پیدا کن
     result = await db.execute(
-        select(models.Link).where(models.Link.short_code == short_code)
+        select(models.Link).options(selectinload(models.Link.domain))
+        .where(models.Link.short_code == short_code, models.Link.owner_id == current_user.id)
     )
     db_link = result.scalar_one_or_none()
 
-    # بررسی اینکه لینک وجود دارد و متعلق به کاربر فعلی است
     if db_link is None:
         raise HTTPException(status_code=404, detail="Link not found")
 
-    if db_link.owner_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Not authorized to delete this link")
-
-    # حذف لینک از دیتابیس
     await db.delete(db_link)
     await db.commit()
 
-    pattern = f"link:{db_link.id}:*"
-    async for key in redis_client.scan_iter(match=pattern):
-        await redis_client.delete(key)
-    # await redis_client.delete(f"link:{short_code}")
+    # حذف کش برای دامنهٔ مرتبط یا برای هر دامنه‌ای که کلید مشابه دارد
+    if db_link.domain and db_link.domain.name:
+        await redis_client.delete(make_cache_key(db_link.domain.name, db_link.short_code))
+    else:
+        async for key in redis_client.scan_iter(match=f"link:*:{short_code}"):
+            await redis_client.delete(key)
 
     return None
 
@@ -176,30 +174,27 @@ async def update_link(
     db: AsyncSession = Depends(get_db),
     redis_client: redis.Redis = Depends(get_redis_client)
 ):
-    """
-    URL مقصد یک لینک را بروزرسانی می‌کند.
-    فقط صاحب لینک می‌تواند آن را ویرایش کند.
-    """
     result = await db.execute(
-        select(models.Link).where(models.Link.short_code == short_code)
+        select(models.Link).options(selectinload(models.Link.domain))
+        .where(models.Link.short_code == short_code, models.Link.owner_id == current_user.id)
     )
     db_link = result.scalar_one_or_none()
 
     if db_link is None:
         raise HTTPException(status_code=404, detail="Link not found")
 
-    if db_link.owner_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Not authorized to edit this link")
-
-    # بروزرسانی URL
     db_link.long_url = str(link_update.long_url)
     await db.commit()
     await db.refresh(db_link)
 
-    # **مهم**: کش را پاک کن تا در درخواست بعدی، مقدار جدید خوانده شود
-    await redis_client.delete(f"link:{short_code}")
+    if db_link.domain and db_link.domain.name:
+        await redis_client.delete(make_cache_key(db_link.domain.name, db_link.short_code))
+    else:
+        async for key in redis_client.scan_iter(match=f"link:*:{short_code}"):
+            await redis_client.delete(key)
 
     return db_link
+
 
 
 @limiter.limit("30/minute")
@@ -336,17 +331,22 @@ async def get_link_details(
 
 
 @router.get("/{short_code}/qr", tags=["QR Codes"])
-async def get_qr_code(short_code: str, request: Request):
-    """
-    برای یک لینک کوتاه شده، یک تصویر QR Code تولید و برمی‌گرداند.
-    """
-    base_url = str(request.base_url)
-    full_short_url = f"{base_url}{short_code}"
+async def get_qr_code(short_code: str, request: Request, db: AsyncSession = Depends(get_db)):
+    host = request.headers.get("host")
+    if not host:
+        raise HTTPException(status_code=400, detail="Host header required")
 
+    result = await db.execute(
+        select(models.Link).join(models.Domain)
+        .where(models.Link.short_code == short_code, models.Domain.name == host)
+    )
+    link = result.scalar_one_or_none()
+    if not link:
+        raise HTTPException(status_code=404, detail="Link not found")
+
+    full_short_url = f"https://{link.domain.name}/{link.short_code}"
     img = qrcode.make(full_short_url)
-
     buf = io.BytesIO()
     img.save(buf, "PNG")
     buf.seek(0)
-
     return StreamingResponse(buf, media_type="image/png")

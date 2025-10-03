@@ -1,9 +1,11 @@
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { TextField, Button, Box, Typography, Alert, Modal, CircularProgress } from '@mui/material';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { TextField, Button, Box, Typography, Alert, Modal, CircularProgress, Autocomplete } from '@mui/material';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { linkService } from '../../../services/linkService';
+import { domainService } from '../../../services/domainService';
+import type { DomainResponse } from '../../../types/api';
 
 // استایل برای قرارگیری مودال در مرکز صفحه
 const modalStyle = {
@@ -21,17 +23,34 @@ const modalStyle = {
 // تعریف Schema برای اعتبارسنجی با Zod
 const createLinkSchema = z.object({
   longUrl: z.string().url('لطفاً یک آدرس اینترنتی معتبر وارد کنید.'),
+  domain: z
+    .object({
+      id: z.number(),
+      name: z.string(),
+      is_verified: z.boolean(),
+      is_primary: z.boolean(),
+      created_at: z.string(),
+    })
+    .optional()
+    .nullable(),
 });
 
 type CreateLinkFormInputs = z.infer<typeof createLinkSchema>;
 
 interface CreateLinkFormProps {
-    isOpen: boolean;
-    onClose: () => void;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 export function CreateLinkForm({ isOpen, onClose }: CreateLinkFormProps) {
   const queryClient = useQueryClient();
+
+  // const { data: domains } = useQuery(['domains'], domainService.getDomains);
+
+  const { data: domains } = useQuery<DomainResponse[]>({
+      queryKey: ['domains'],
+      queryFn: domainService.getDomains,
+    });
 
   const {
     control,
@@ -40,36 +59,33 @@ export function CreateLinkForm({ isOpen, onClose }: CreateLinkFormProps) {
     reset,
   } = useForm<CreateLinkFormInputs>({
     resolver: zodResolver(createLinkSchema),
-    defaultValues: { longUrl: '' },
+    defaultValues: { longUrl: '', domain: null },
   });
 
   const createLinkMutation = useMutation({
-    mutationFn: (longUrl: string) => linkService.createShortLink(longUrl),
+    mutationFn: (payload: { long_url: string; domain_id?: number | null }) =>
+      linkService.createShortLink(payload),
     onSuccess: () => {
-      // این بخش جادوی TanStack Query است!
-      // پس از موفقیت، تمام کوئری‌های مربوط به 'my-links' را نامعتبر اعلام می‌کنیم.
-      // این کار باعث می‌شود کامپوننت لیست لینک‌ها به طور خودکار داده‌های جدید را واکشی کند.
-      queryClient.invalidateQueries({ queryKey: ['my-links'] }); // [cite: 796]
-      handleClose(); // بستن مودال
+      queryClient.invalidateQueries({ queryKey: ['my-links'] });
+      handleClose();
     },
   });
 
   const onSubmit = (data: CreateLinkFormInputs) => {
-    createLinkMutation.mutate(data.longUrl);
+    createLinkMutation.mutate({
+      long_url: data.longUrl,
+      domain_id: data.domain?.id,
+    });
   };
 
   const handleClose = () => {
-    reset(); // ریست کردن فرم
-    createLinkMutation.reset(); // ریست کردن وضعیت خطا
+    reset();
+    createLinkMutation.reset();
     onClose();
   };
 
   return (
-    <Modal
-      open={isOpen}
-      onClose={handleClose}
-      aria-labelledby="create-link-modal-title"
-    >
+    <Modal open={isOpen} onClose={handleClose} aria-labelledby="create-link-modal-title">
       <Box sx={modalStyle}>
         <Typography id="create-link-modal-title" variant="h6" component="h2">
           ایجاد لینک کوتاه جدید
@@ -77,9 +93,9 @@ export function CreateLinkForm({ isOpen, onClose }: CreateLinkFormProps) {
 
         <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate sx={{ mt: 2 }}>
           {createLinkMutation.isError && (
-              <Alert severity="error" sx={{ mb: 2 }}>
-                {createLinkMutation.error.message || "خطا در ایجاد لینک."}
-              </Alert>
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {createLinkMutation.error.message || 'خطا در ایجاد لینک.'}
+            </Alert>
           )}
 
           <Controller
@@ -94,11 +110,28 @@ export function CreateLinkForm({ isOpen, onClose }: CreateLinkFormProps) {
                 autoFocus
                 error={!!errors.longUrl}
                 helperText={errors.longUrl?.message}
-                // استفاده از ویژگی‌های منطقی برای استایل‌دهی مستقل از جهت
-                sx={{ mb: 2 }} // margin-bottom
+                sx={{ mb: 2 }}
               />
             )}
           />
+
+          <Controller
+            name="domain"
+            control={control}
+            render={({ field }) => (
+              <Autocomplete
+                {...field}
+                options={(domains || []).filter((d) => d.is_verified)}
+                getOptionLabel={(opt) => opt.name}
+                value={field.value}
+                onChange={(_, v) => field.onChange(v)}
+                renderInput={(params) => <TextField {...params} label="دامنه (اختیاری)" />}
+                isOptionEqualToValue={(option, value) => option.id === value?.id}
+                sx={{ mb: 2 }}
+              />
+            )}
+          />
+
           <Button
             type="submit"
             fullWidth

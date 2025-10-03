@@ -1,7 +1,7 @@
 from secrets import token_urlsafe
 
 from sqlalchemy import Column, Integer, String, BigInteger, ForeignKey, Date, Enum as SQLAlchemyEnum, DateTime, func, \
-    Boolean, Text
+    Boolean, Text, UniqueConstraint
 
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
@@ -54,6 +54,8 @@ class User(Base):
     last_name = Column(String, nullable=True)
     phone_number = Column(String, nullable=True)
 
+    domains = relationship("Domain", back_populates="owner", cascade="all, delete-orphan")
+
     def generate_api_key(self):
         self.api_key = "sk_" + token_urlsafe(32)
 
@@ -63,16 +65,27 @@ class Link(Base):
 
     id = Column(BigInteger, primary_key=True, index=True)
     long_url = Column(String, index=True, nullable=False)
-    short_code = Column(String, unique=True, index=True, nullable=False)
+    # short_code = Column(String, unique=True, index=True, nullable=False)
+    short_code = Column(String, nullable=False)
+
     clicks = Column(Integer, default=0)
 
-    owner_id = Column(Integer, ForeignKey("users.id"))
+    # owner_id = Column(Integer, ForeignKey("users.id"))
+    owner_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     owner = relationship("User", back_populates="links")
+
+    domain_id = Column(Integer, ForeignKey("domains.id"), nullable=True)
+    domain = relationship("Domain", back_populates="links")
 
     click_events = relationship("ClickEvent", back_populates="link", cascade="all, delete-orphan")
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    __table_args__ = (
+        # short_code باید یکتا در هر دامنه باشه
+        UniqueConstraint("short_code", "domain_id", name="uq_short_code_per_domain"),
+    )
 
 
 class TransactionStatus(str, enum.Enum):
@@ -117,3 +130,17 @@ class ClickEvent(Base):
     is_bot = Column(Boolean, default=False, nullable=True, index=True)
     fingerprint = Column(String(128), nullable=True, index=True)  # اگر frontend fingerprint ارسال کند
 
+
+class Domain(Base):
+    __tablename__ = "domains"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, unique=True, nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    is_verified = Column(Boolean, default=False)
+    is_primary = Column(Boolean, default=False)  # NEW
+    verification_token = Column(String(128), nullable=True)  # NEW
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    owner = relationship("User", back_populates="domains")
+    links = relationship("Link", back_populates="domain")

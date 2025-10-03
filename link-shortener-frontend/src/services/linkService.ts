@@ -1,5 +1,5 @@
 import apiClient from "../lib/axios";
-import type {AdvancedLinkStats, LinkDetails, LinkStatsResponse, URLResponse} from "../types/api";
+import type {AdvancedLinkStats, LinkDetails, LinkStatsResponse, URLCreate, URLResponse} from "../types/api";
 
 export const linkService = {
   getMyLinks: async (): Promise<LinkDetails[]> => {
@@ -7,10 +7,15 @@ export const linkService = {
     return response.data;
   },
 
-  createShortLink: async (longUrl: string): Promise<URLResponse> => {
-    const response = await apiClient.post('/links/shorten', { long_url: longUrl }); // <<<< اصلاح شد
-    return response.data;
-  },
+  // createShortLink: async (longUrl: string): Promise<URLResponse> => {
+  //   const response = await apiClient.post('/links/shorten', { long_url: longUrl }); // <<<< اصلاح شد
+  //   return response.data;
+  // },
+  //
+    createShortLink: async (payload: URLCreate): Promise<URLResponse> => {
+      const response = await apiClient.post('/links/shorten', payload);
+      return response.data;
+    },
 
   deleteLink: async (shortCode: string): Promise<void> => {
     await apiClient.delete(`/links/${shortCode}`); // <<<< اصلاح شد
