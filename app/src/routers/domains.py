@@ -1,4 +1,3 @@
-# routers/domains.py
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -6,11 +5,17 @@ from sqlalchemy import update
 from sqlalchemy.exc import IntegrityError
 import secrets
 import httpx
+import logging
 
 from .. import models, schemas
 from ..database import get_db
 from ..services.security import get_user_by_api_key, get_current_user
 from ..config import settings
+
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
 
 router = APIRouter(prefix="/domains", tags=["Domains"])
 
@@ -55,7 +60,7 @@ async def list_domains(
 @router.post("/{domain_id}/verification/start")
 async def start_verification(
     domain_id: int,
-    user: models.User = Depends(get_user_by_api_key),
+    user: models.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     domain = await db.scalar(select(models.Domain).where(models.Domain.id == domain_id, models.Domain.user_id == user.id))
@@ -82,33 +87,53 @@ async def start_verification(
         }
     }
 
+
 @router.post("/{domain_id}/verification/check")
 async def check_verification(
-    domain_id: int,
-    user: models.User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+        domain_id: int,
+        user: models.User = Depends(get_current_user),
+        db: AsyncSession = Depends(get_db)
 ):
-    domain = await db.scalar(select(models.Domain).where(models.Domain.id == domain_id, models.Domain.user_id == user.id))
+    domain = await db.scalar(
+        select(models.Domain).where(models.Domain.id == domain_id, models.Domain.user_id == user.id)
+    )
     if not domain:
         raise HTTPException(status_code=404, detail="Domain not found")
+
+
     if domain.is_verified:
         return {"verified": True}
 
     token = domain.verification_token
+
     if not token:
+
         raise HTTPException(status_code=400, detail="No verification token present. Start verification first.")
 
     # Try HTTPS and HTTP
     for scheme in ("https", "http"):
+        url = f"{scheme}://{domain.name}/.well-known/shortener-verification.txt"
         try:
-            resp = await httpx.get(f"{scheme}://{domain.name}/.well-known/shortener-verification.txt", timeout=5.0)
+
+            async with httpx.AsyncClient() as client:
+                resp = await client.get(url, timeout=5.0)
+
+
             if resp.status_code == 200 and resp.text.strip() == token:
+                logger.info(f"Verification token matched for domain {domain.name} with {scheme.upper()}")
                 domain.is_verified = True
                 domain.verification_token = None
                 await db.commit()
                 await db.refresh(domain)
                 return {"verified": True}
-        except Exception:
+            else:
+                logger.warning(f"Token mismatch or invalid status for domain {domain.name} with {scheme.upper()}")
+        except Exception as e:
+            logger.exception(f"Error checking domain {domain.name} with {scheme.upper()}: {e}")
             continue
 
-    raise HTTPException(status_code=400, detail="Verification not found on domain. Please follow instructions and try again.")
+    logger.error(f"Verification not found on domain {domain.name}. Returning 400.")
+    raise HTTPException(
+        status_code=400,
+        detail="Verification not found on domain. Please follow instructions and try again."
+    )

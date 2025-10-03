@@ -175,6 +175,7 @@ class DomainCreate(BaseModel):
 class DomainResponse(BaseModel):
     id: int
     name: str
+    is_verified: bool   # حتما bool باشد
     is_primary: bool
     created_at: datetime
 
