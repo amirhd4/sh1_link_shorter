@@ -173,6 +173,9 @@ const MobileLinkCard = ({ link, index, onDetailsClick, onEditClick, onDeleteClic
 // =================================================================
 // Main Dashboard
 // =================================================================
+type DeleteTarget = { shortCode: string; domainId: string };
+
+
 export function LinksDashboard() {
     const navigate = useNavigate();
     const { t } = useTranslation('common');
@@ -183,7 +186,8 @@ export function LinksDashboard() {
 
     const [isCreateModalOpen, setCreateModalOpen] = useState(false);
     const [editTarget, setEditTarget] = useState<LinkDetails | null>(null);
-    const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+    const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null);
+
     // const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
     const [snackbarMessage, setSnackbarMessage] = useState<{ text: string; severity: "success" | "error" } | null>(null);
 
@@ -210,11 +214,9 @@ export function LinksDashboard() {
     }
     }, []);
 
-
-
-
     const deleteMutation = useMutation({
-        mutationFn: linkService.deleteLink,
+        mutationFn: (variables: DeleteTarget) =>
+            linkService.deleteLink(variables.shortCode, variables.domainId),
         onSuccess: () => {
             setSnackbarMessage({ text: "لینک با موفقیت حذف شد.", severity: "success" });
 
@@ -225,9 +227,10 @@ export function LinksDashboard() {
         onSettled: () => setDeleteTarget(null),
     });
 
-    const handleDetailsClick = (shortCode: string) => () => navigate(`/links/${shortCode}`);
-    const handleDeleteClick = (shortCode: string) => () => setDeleteTarget(shortCode);
+    const handleDetailsClick = (shortCode: string, domainId: string) => () => navigate(`/links/${shortCode}/${domainId}`);
+    const handleDeleteClick = (shortCode: string, domainId: string) => () => setDeleteTarget({ shortCode, domainId });
     const handleConfirmDelete = () => { if(deleteTarget) deleteMutation.mutate(deleteTarget); };
+
     const handleEditClick = (link: LinkDetails) => () => setEditTarget(link);
 
     const columns: GridColDef<LinkDetails>[] = [
@@ -265,9 +268,9 @@ export function LinksDashboard() {
             headerName: 'عملیات',
             width: 150,
             getActions: ({ row }) => [
-                <GridActionsCellItem icon={<AnalyticsIcon />} label="جزئیات" onClick={handleDetailsClick(row.short_code)} />,
+                <GridActionsCellItem icon={<AnalyticsIcon />} label="جزئیات" onClick={handleDetailsClick(row.short_code, row.domain_id || "0")} />,
                 <GridActionsCellItem icon={<EditIcon />} label="ویرایش" onClick={handleEditClick(row)} />,
-                <GridActionsCellItem icon={<DeleteIcon />} label="حذف" onClick={handleDeleteClick(row.short_code)} />,
+                <GridActionsCellItem icon={<DeleteIcon />} label="حذف" onClick={handleDeleteClick(row.short_code, row.domain_id || "0")} />,
             ],
         },
     ];
@@ -293,10 +296,10 @@ export function LinksDashboard() {
                             key={link.short_code}
                             index={start + idx}
                             link={link}
-                            onDetailsClick={handleDetailsClick(link.short_code)}
+                            onDetailsClick={handleDetailsClick(link.short_code, link.domain_id || "0")}
                             onEditClick={handleEditClick(link)}
-                            onDeleteClick={handleDeleteClick(link.short_code)}
-                            isDeleting={deleteMutation.isPending && deleteMutation.variables === link.short_code}
+                            onDeleteClick={handleDeleteClick(link.short_code, link.domain_id || "0")}
+                            isDeleting={deleteMutation.isPending && deleteMutation.variables?.shortCode === link.short_code}
                         />
                     ))}
                     <Stack direction="row" justifyContent="center" spacing={2} mt={2}>

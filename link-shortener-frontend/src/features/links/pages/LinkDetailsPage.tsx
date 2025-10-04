@@ -63,23 +63,23 @@ function ClicksChart({ stats }: { stats: AdvancedLinkStats }) {
  * جزئیات لینک + آمار پیشرفته
  */
 export function LinkDetailsPage() {
-  const { shortCode } = useParams<{ shortCode: string }>();
+  const { shortCode, domainId } = useParams<{ shortCode: string, domainId: string }>();
   const [isSnackbarOpen, setSnackbarOpen] = useState(false);
 
   const { data: linkDetails, isLoading, isError } = useQuery({
     queryKey: ['link-details', shortCode],
-    queryFn: () => linkService.getLinkDetails(shortCode!),
+    queryFn: () => linkService.getLinkDetails(shortCode!, domainId),
     enabled: !!shortCode
   });
 
   const { data: analytics, isLoading: isAnalyticsLoading } = useQuery({
     queryKey: ['link-analytics', shortCode],
-    queryFn: () => linkService.getLinkStats(shortCode!),
+    queryFn: () => linkService.getLinkStats(shortCode!, domainId),
     enabled: !!shortCode
   });
 
-  const fullShortUrl = `${config.backendBaseUrlOrigin}/${linkDetails?.short_code}`;
-  const qrCodeUrl = `${config.backendBaseUrl}/links/${linkDetails?.short_code}/qr`;
+  const fullShortUrl = `${linkDetails?.domain_name}/${linkDetails?.short_code}`;
+  const qrCodeUrl = `${config.backendBaseUrl}/links/${linkDetails?.short_code}/${linkDetails?.domain_id || 0}/qr`;
 
   const handleCopyToClipboard = () => {
     if (!fullShortUrl) return;

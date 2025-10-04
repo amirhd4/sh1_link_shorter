@@ -62,7 +62,7 @@ const router = createBrowserRouter([
           { path: 'profile', element: <ProfilePage /> },
           { path: 'plans', element: <PlansPage /> },
           { path: 'billing', element: <BillingHistoryPage /> },
-          { path: 'links/:shortCode', element: <LinkDetailsPage /> },
+          { path: 'links/:shortCode/:domainId', element: <LinkDetailsPage /> },
           { path: 'api', element: <ApiPage /> },
           { path: 'domains', element: <DomainsManager /> }
         ],

@@ -63,7 +63,7 @@ export function CreateLinkForm({ isOpen, onClose }: CreateLinkFormProps) {
   });
 
   const createLinkMutation = useMutation({
-    mutationFn: (payload: { long_url: string; domain_id?: number | null }) =>
+    mutationFn: (payload: { long_url: string; domain_id: number | 0 }) =>
       linkService.createShortLink(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['my-links'] });

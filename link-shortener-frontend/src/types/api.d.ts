@@ -37,6 +37,8 @@ export interface LinkDetails {
     short_code: string;
     clicks: number;
     created_at: string;
+    domain_id: string;
+    domain_name: string;
 }
 
 export interface URLResponse {
@@ -134,5 +136,5 @@ export interface DomainResponse {
 
 export interface URLCreate {
   long_url: string;
-  domain_id?: number | null;
+  domain_id?: number | 0;
 }

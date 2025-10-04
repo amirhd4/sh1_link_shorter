@@ -17,8 +17,9 @@ export const linkService = {
       return response.data;
     },
 
-  deleteLink: async (shortCode: string): Promise<void> => {
-    await apiClient.delete(`/links/${shortCode}`); // <<<< اصلاح شد
+  deleteLink: async (shortCode: string, domainId: string): Promise<void> => {
+    const domainIdNum = parseInt(domainId, 10)
+    await apiClient.delete(`/links/${shortCode}/${domainIdNum}`);
   },
 
   updateLink: async ({ shortCode, longUrl }: { shortCode: string; longUrl: string }): Promise<LinkDetails> => {
@@ -26,13 +27,15 @@ export const linkService = {
     return response.data;
   },
 
-  getLinkDetails: async (shortCode: string): Promise<LinkDetails> => {
-    const response = await apiClient.get(`/links/${shortCode}`);
+  getLinkDetails: async (shortCode: string, domainId: string): Promise<LinkDetails> => {
+    const domainIdNum = parseInt(domainId, 10);
+    const response = await apiClient.get(`/links/${shortCode}/${domainIdNum}`);
     return response.data;
   },
 
-  getLinkStats: async (shortCode: string): Promise<AdvancedLinkStats> => {
-    const response = await apiClient.get(`/links/${shortCode}/stats`);
+  getLinkStats: async (shortCode: string, domainId: string): Promise<AdvancedLinkStats> => {
+    const domainIdNum = parseInt(domainId, 10);
+    const response = await apiClient.get(`/links/${shortCode}/${domainIdNum}/stats`);
     return response.data;
   },
 };

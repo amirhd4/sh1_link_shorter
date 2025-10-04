@@ -17,6 +17,7 @@ from datetime import date, timedelta
 
 from sqlalchemy.orm import selectinload
 
+from .auth import logger
 from .. import models, schemas
 from ..config import settings
 from ..database import get_db
@@ -71,22 +72,26 @@ async def create_short_url(
         raise HTTPException(status_code=400, detail="The provided URL is flagged as malicious and cannot be shortened.")
 
     # domain selection (fix: use settings.default_domain consistently)
-    if url_data.domain_id:
-        domain = await db.scalar(
-            select(models.Domain).where(
-                models.Domain.id == url_data.domain_id,
-                models.Domain.user_id == current_user.id,
-                models.Domain.is_verified == True
+    domain_id = None
+    logger.info(url_data.domain_id)
+    if url_data.domain_id is not None:
+        if url_data.domain_id != 0:
+            domain = await db.scalar(
+                select(models.Domain).where(
+                    models.Domain.id == url_data.domain_id,
+                    models.Domain.user_id == current_user.id,
+                    models.Domain.is_verified == True
+                )
             )
-        )
-        if not domain:
-            raise HTTPException(status_code=403, detail="دامنه معتبر نیست یا تایید نشده")
+            if not domain:
+                raise HTTPException(status_code=403, detail="دامنه معتبر نیست یا تایید نشده")
+            domain_id = domain.id
+            domain_name = domain.name
+        else:
+            domain_name = settings.origin_backend_url
     else:
-        domain = await db.scalar(
-            select(models.Domain).where(models.Domain.name == settings.origin_backend_url)
-        )
-        if not domain:
-            raise HTTPException(status_code=500, detail="Default domain not found")
+        raise HTTPException(status_code=401, detail="Default domain not found")
+
 
     MAX_RETRIES = 5
     for _ in range(MAX_RETRIES):
@@ -96,7 +101,7 @@ async def create_short_url(
             long_url=str(url_data.long_url),
             short_code=short_code,
             owner_id=current_user.id,
-            domain_id=domain.id
+            domain_id=domain_id
         )
 
         db.add(db_link)
@@ -105,9 +110,9 @@ async def create_short_url(
             await db.commit()
             await db.refresh(db_link)
 
-            short_url_full = f"https://{domain.name}/{db_link.short_code}"
+            short_url_full = f"https://{domain_name}/{db_link.short_code}"
             # Optionally warm the cache:
-            await redis_client.set(make_cache_key(domain.name, db_link.short_code), db_link.long_url, ex=3600)
+            await redis_client.set(make_cache_key(domain_name, db_link.short_code), db_link.long_url, ex=3600)
 
             return schemas.URLResponse(long_url=db_link.long_url, short_url=short_url_full)
 
@@ -128,25 +133,40 @@ async def get_user_links(
     """
     result = await db.execute(
         select(models.Link)
+        .options(selectinload(models.Link.domain))
         .where(models.Link.owner_id == current_user.id)
         .order_by(models.Link.id.desc())
     )
 
     links = result.scalars().all()
+    my_links: List[schemas.LinkDetails] = []
+    for link in links:
+        domain_name = link.domain.name if link.domain else settings.origin_backend_url
+        my_links.append(schemas.LinkDetails(
+            long_url=link.long_url,
+            short_code=link.short_code,
+            clicks=link.clicks,
+            created_at=link.created_at,
+            domain_id=link.domain_id,
+            domain_name=domain_name
+        ))
 
-    return links
+    return my_links
 
 
-@router.delete("/{short_code}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{short_code}/{domain_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_link(
         short_code: str,
+        domain_id: int,
         current_user: models.User = Depends(security.get_current_user),
         db: AsyncSession = Depends(get_db),
         redis_client: redis.Redis = Depends(get_redis_client)
 ):
     result = await db.execute(
         select(models.Link).options(selectinload(models.Link.domain))
-        .where(models.Link.short_code == short_code, models.Link.owner_id == current_user.id)
+        .where(models.Link.short_code == short_code, models.Link.owner_id == current_user.id,
+               (models.Link.domain_id == None if domain_id == 0 else models.Link.domain_id == domain_id)
+               )
     )
     db_link = result.scalar_one_or_none()
 
@@ -198,17 +218,25 @@ async def update_link(
 
 
 @limiter.limit("30/minute")
-@router.get("/{short_code}/stats", response_model=schemas.AdvancedLinkStats)
+@router.get("/{short_code}/{domain_id}/stats", response_model=schemas.AdvancedLinkStats)
 async def get_link_analytics(
     request: Request,
     short_code: str,
+    domain_id: int,
     db: AsyncSession = Depends(get_db),
     current_user: models.User = Depends(security.get_current_user)
 ):
-    link_result = await db.execute(
-        select(models.Link.id)
-        .where(models.Link.short_code == short_code, models.Link.owner_id == current_user.id)
-    )
+    if domain_id == 0:
+        link_result = await db.execute(
+            select(models.Link.id)
+            .where(models.Link.short_code == short_code, models.Link.owner_id == current_user.id,
+                   models.Link.domain_id == None)
+        )
+    else:
+        link_result = await db.execute(
+            select(models.Link.id)
+            .where(models.Link.short_code == short_code, models.Link.owner_id == current_user.id, models.Link.domain_id == domain_id)
+        )
     link_id = link_result.scalar_one_or_none()
     if not link_id:
         raise HTTPException(status_code=404, detail="Link not found or permission denied")
@@ -312,39 +340,54 @@ async def get_link_analytics(
         clicks_last_7_days=stats_last_7_days
     )
 
-@router.get("/{short_code}", response_model=schemas.LinkDetails)
+@router.get("/{short_code}/{domain_id}", response_model=schemas.LinkDetails)
 @limiter.limit("30/minute")
 async def get_link_details(
     request: Request,
     short_code: str,
+    domain_id: int,
     db: AsyncSession = Depends(get_db),
     current_user: models.User = Depends(security.get_current_user)
 ):
     result = await db.execute(
         select(models.Link)
-        .where(models.Link.short_code == short_code, models.Link.owner_id == current_user.id)
+        .options(selectinload(models.Link.domain))
+        .where(models.Link.short_code == short_code,
+               models.Link.owner_id == current_user.id,
+               (models.Link.domain_id == None if domain_id == 0 else models.Link.domain_id == domain_id))
     )
     link = result.scalar_one_or_none()
     if not link:
-        raise HTTPException(status_code=404, detail="Link not found or you do not have permission to view it")
-    return link
+        raise HTTPException(status_code=404, detail="Link not found or no permission")
 
-
-@router.get("/{short_code}/qr", tags=["QR Codes"])
-async def get_qr_code(short_code: str, request: Request, db: AsyncSession = Depends(get_db)):
-    host = request.headers.get("host")
-    if not host:
-        raise HTTPException(status_code=400, detail="Host header required")
-
-    result = await db.execute(
-        select(models.Link).join(models.Domain)
-        .where(models.Link.short_code == short_code, models.Domain.name == host)
+    domain_name = link.domain.name if link.domain else settings.origin_backend_url
+    return schemas.LinkDetails(
+        long_url=link.long_url,
+        short_code=link.short_code,
+        clicks=link.clicks,
+        created_at=link.created_at,
+        domain_id=link.domain_id,
+        domain_name=domain_name
     )
+
+
+@router.get("/{short_code}/{domain_id}/qr", tags=["QR Codes"])
+async def get_qr_code(short_code: str, domain_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(
+        select(models.Link)
+        .options(selectinload(models.Link.domain))
+        .where(models.Link.short_code == short_code,
+               (models.Link.domain_id == None if domain_id == 0 else models.Link.domain_id == domain_id)
+               )
+    )
+
     link = result.scalar_one_or_none()
     if not link:
         raise HTTPException(status_code=404, detail="Link not found")
 
-    full_short_url = f"https://{link.domain.name}/{link.short_code}"
+    domain_name = link.domain.name if link.domain else settings.origin_backend_url
+    full_short_url = f"{domain_name}/{link.short_code}"
+
     img = qrcode.make(full_short_url)
     buf = io.BytesIO()
     img.save(buf, "PNG")

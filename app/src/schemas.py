@@ -82,7 +82,7 @@ class UserResponse(BaseModel):
 
 class URLCreate(BaseModel):
     long_url: HttpUrl
-    domain_id: Optional[int] = None
+    domain_id: Optional[int] = 0
 
 
 class URLResponse(BaseModel):
@@ -108,6 +108,8 @@ class LinkDetails(BaseModel):
     short_code: str
     clicks: int
     created_at: datetime
+    domain_id: Optional[int] = 0
+    domain_name: str
 
     class Config:
         from_attributes = True
