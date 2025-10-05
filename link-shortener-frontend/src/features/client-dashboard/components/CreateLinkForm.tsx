@@ -1,28 +1,36 @@
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { TextField, Button, Box, Typography, Alert, Modal, CircularProgress, Autocomplete } from '@mui/material';
+import {
+    TextField, Button, Box, Typography, Alert, Modal, CircularProgress, Autocomplete, Grid, Stack,
+    useMediaQuery, useTheme
+} from '@mui/material';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { linkService } from '../../../services/linkService';
 import { domainService } from '../../../services/domainService';
-import type { DomainResponse } from '../../../types/api';
+import type { DomainResponse, URLCreate, URLResponse } from '../../../types/api';
 
-// استایل برای قرارگیری مودال در مرکز صفحه
+
+// 1. استایل برای قرارگیری مودال در مرکز صفحه (افزایش عرض برای فیلدهای UTM)
 const modalStyle = {
   position: 'absolute' as 'absolute',
   top: '50%',
   left: '50%',
   transform: 'translate(-50%, -50%)',
-  width: 400,
+  width: { xs: '95%', sm: 650 }, // افزایش عرض
   bgcolor: 'background.paper',
   border: '2px solid #000',
   boxShadow: 24,
   p: 4,
+  borderRadius: 2,
+  maxHeight: '90vh',
+  overflowY: 'auto'
 };
 
-// تعریف Schema برای اعتبارسنجی با Zod
+// 2. ✨ تعریف Schema برای اعتبارسنجی با Zod (با UTM)
 const createLinkSchema = z.object({
   longUrl: z.string().url('لطفاً یک آدرس اینترنتی معتبر وارد کنید.'),
+  shortCode: z.string().optional(), // اضافه کردن فیلد shortCode
   domain: z
     .object({
       id: z.number(),
@@ -33,6 +41,13 @@ const createLinkSchema = z.object({
     })
     .optional()
     .nullable(),
+
+  // UTM Fields - مطابق با ساختار EditLinkForm
+  utmSource: z.string().nullable().optional(),
+  utmMedium: z.string().nullable().optional(),
+  utmCampaign: z.string().nullable().optional(),
+  utmTerm: z.string().nullable().optional(),
+  utmContent: z.string().nullable().optional(),
 });
 
 type CreateLinkFormInputs = z.infer<typeof createLinkSchema>;
@@ -42,15 +57,25 @@ interface CreateLinkFormProps {
   onClose: () => void;
 }
 
+// برای مدیریت دامنه پیش‌فرض در Autocomplete
+const DEFAULT_DOMAIN_OBJECT: DomainResponse = {
+    id: 0,
+    name: "(دامنه پیش‌فرض)",
+    is_verified: true,
+    is_primary: false,
+    created_at: new Date().toISOString()
+};
+
+
 export function CreateLinkForm({ isOpen, onClose }: CreateLinkFormProps) {
   const queryClient = useQueryClient();
-
-  // const { data: domains } = useQuery(['domains'], domainService.getDomains);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const { data: domains } = useQuery<DomainResponse[]>({
       queryKey: ['domains'],
       queryFn: domainService.getDomains,
-    });
+  });
 
   const {
     control,
@@ -59,23 +84,50 @@ export function CreateLinkForm({ isOpen, onClose }: CreateLinkFormProps) {
     reset,
   } = useForm<CreateLinkFormInputs>({
     resolver: zodResolver(createLinkSchema),
-    defaultValues: { longUrl: '', domain: null },
+    defaultValues: {
+        longUrl: '',
+        shortCode: '',
+        domain: DEFAULT_DOMAIN_OBJECT, // برای حفظ Autocomplete
+        utmSource: null,
+        utmMedium: null,
+        utmCampaign: null,
+        utmTerm: null,
+        utmContent: null,
+    },
   });
 
-  const createLinkMutation = useMutation({
-    mutationFn: (payload: { long_url: string; domain_id: number | 0 }) =>
-      linkService.createShortLink(payload),
-    onSuccess: () => {
+  const createLinkMutation = useMutation<URLResponse, Error, URLCreate>({
+    // 3. رفع خطای TS2339: استفاده از createShortLink
+    mutationFn: (payload) => linkService.createShortLink(payload),
+    // 4. رفع خطای TS2339: تعیین نوع داده خروجی (data: URLResponse)
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['my-links'] });
+      // می‌توانید از short_url استفاده کنید:
+      // console.log(`لینک ایجاد شد: ${data.short_url}`);
       handleClose();
     },
   });
 
   const onSubmit = (data: CreateLinkFormInputs) => {
-    createLinkMutation.mutate({
+    // تبدیل فیلدهای UTM خالی ('') به null برای سازگاری با بک‌اند
+    const utmPayload = {
+        utm_source: data.utmSource || null,
+        utm_medium: data.utmMedium || null,
+        utm_campaign: data.utmCampaign || null,
+        utm_term: data.utmTerm || null,
+        utm_content: data.utmContent || null,
+    };
+
+    const payload: URLCreate = {
       long_url: data.longUrl,
       domain_id: data.domain?.id,
-    });
+      ...utmPayload,
+    };
+
+    // فیلدهای اختیاری که در بک‌اند nullable هستند را حذف می‌کنیم اگر خالی باشند.
+    Object.keys(payload).forEach(key => payload[key] === undefined && delete payload[key]);
+
+    createLinkMutation.mutate(payload);
   };
 
   const handleClose = () => {
@@ -84,59 +136,194 @@ export function CreateLinkForm({ isOpen, onClose }: CreateLinkFormProps) {
     onClose();
   };
 
+  // دامنه پیش‌فرض را به لیست اضافه می‌کنیم
+  const availableDomains = [
+    DEFAULT_DOMAIN_OBJECT,
+    ...(domains || []).filter((d) => d.is_verified)
+  ];
+
   return (
     <Modal open={isOpen} onClose={handleClose} aria-labelledby="create-link-modal-title">
       <Box sx={modalStyle}>
-        <Typography id="create-link-modal-title" variant="h6" component="h2">
-          ایجاد لینک کوتاه جدید
+        <Typography id="create-link-modal-title" variant="h5" component="h2" sx={{ mb: 3 }}>
+          ایجاد لینک کوتاه جدید (با UTM)
         </Typography>
 
-        <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate sx={{ mt: 2 }}>
+        <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
           {createLinkMutation.isError && (
             <Alert severity="error" sx={{ mb: 2 }}>
-              {createLinkMutation.error.message || 'خطا در ایجاد لینک.'}
+              {/* @ts-ignore */}
+              {createLinkMutation.error.response?.data?.detail || createLinkMutation.error.message || 'خطا در ایجاد لینک.'}
             </Alert>
           )}
 
-          <Controller
-            name="longUrl"
-            control={control}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                required
-                fullWidth
-                label="آدرس اصلی (URL)"
-                autoFocus
-                error={!!errors.longUrl}
-                helperText={errors.longUrl?.message}
-                sx={{ mb: 2 }}
-              />
-            )}
-          />
+          <Grid container spacing={2}>
+            {/* Long URL */}
+            <Grid size={{xs: 12}}>
+                <Controller
+                    name="longUrl"
+                    control={control}
+                    render={({ field }) => (
+                        <TextField
+                            {...field}
+                            required
+                            fullWidth
+                            label="آدرس اصلی (URL)"
+                            autoFocus
+                            error={!!errors.longUrl}
+                            helperText={errors.longUrl?.message}
+                        />
+                    )}
+                />
+            </Grid>
 
-          <Controller
-            name="domain"
-            control={control}
-            render={({ field }) => (
-              <Autocomplete
-                {...field}
-                options={(domains || []).filter((d) => d.is_verified)}
-                getOptionLabel={(opt) => opt.name}
-                value={field.value}
-                onChange={(_, v) => field.onChange(v)}
-                renderInput={(params) => <TextField {...params} label="دامنه (اختیاری)" />}
-                isOptionEqualToValue={(option, value) => option.id === value?.id}
-                sx={{ mb: 2 }}
+            {/* Short Code */}
+            <Grid size={{xs: 12, sm: 6}}>
+                <Controller
+                    name="shortCode"
+                    control={control}
+                    render={({ field }) => (
+                        <TextField
+                            {...field}
+                            fullWidth
+                            label="کد کوتاه دلخواه (اختیاری)"
+                            placeholder="my-short-code"
+                            error={!!errors.shortCode}
+                            helperText={errors.shortCode?.message || 'در صورت خالی ماندن، کد به‌صورت تصادفی تولید می‌شود.'}
+                        />
+                    )}
+                />
+            </Grid>
+
+            {/* Domain Select (Autocomplete) */}
+            <Grid size={{xs: 12, sm: 6}}>
+
+                <Controller
+                    name="domain"
+                    control={control}
+                    render={({ field }) => (
+                        <Autocomplete
+                            {...field}
+                            // اطمینان از مقداردهی field.value با یک آبجکت DomainResponse یا null
+                            value={field.value || DEFAULT_DOMAIN_OBJECT}
+                            onChange={(_, v) => field.onChange(v)}
+                            options={availableDomains}
+                            getOptionLabel={(opt) => opt.name}
+                            isOptionEqualToValue={(option, value) => option.id === value.id}
+                            renderInput={(params) => <TextField {...params} label="دامنه" />}
+                            sx={{ width: '100%' }}
+                        />
+                    )}
+                />
+            </Grid>
+          </Grid>
+
+          {/* ✨ بخش UTM Parameters */}
+          <Typography variant="subtitle1" fontWeight="bold" sx={{ mt: 3, mb: 1 }}>
+            پارامترهای UTM (اختیاری)
+          </Typography>
+
+          <Grid container spacing={2}>
+            {/* UTM Source */}
+            <Grid size={{xs: 12, sm: 6}}>
+              <Controller
+                name="utmSource"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    // تبدیل null به '' برای نمایش در TextField و مدیریت توسط React Hook Form
+                    {...field}
+                    value={field.value ?? ''}
+                    onChange={(e) => field.onChange(e.target.value || null)}
+                    fullWidth
+                    label="Source (منبع: utm_source)"
+                    error={!!errors.utmSource}
+                    helperText={errors.utmSource?.message}
+                  />
+                )}
               />
-            )}
-          />
+            </Grid>
+            {/* UTM Medium */}
+            <Grid size={{xs: 12, sm: 6}}>
+              <Controller
+                name="utmMedium"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    value={field.value ?? ''}
+                    onChange={(e) => field.onChange(e.target.value || null)}
+                    fullWidth
+                    label="Medium (واسط: utm_medium)"
+                    error={!!errors.utmMedium}
+                    helperText={errors.utmMedium?.message}
+                  />
+                )}
+              />
+            </Grid>
+            {/* UTM Campaign */}
+            <Grid size={{xs: 12}}>
+              <Controller
+                name="utmCampaign"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    value={field.value ?? ''}
+                    onChange={(e) => field.onChange(e.target.value || null)}
+                    fullWidth
+                    label="Campaign (کمپین: utm_campaign)"
+                    error={!!errors.utmCampaign}
+                    helperText={errors.utmCampaign?.message}
+                  />
+                )}
+              />
+            </Grid>
+            {/* UTM Term */}
+            <Grid size={{xs: 12, sm: 6}}>
+              <Controller
+                name="utmTerm"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    value={field.value ?? ''}
+                    onChange={(e) => field.onChange(e.target.value || null)}
+                    fullWidth
+                    label="Term (کلمات کلیدی: utm_term)"
+                    error={!!errors.utmTerm}
+                    helperText={errors.utmTerm?.message}
+                  />
+                )}
+              />
+            </Grid>
+            {/* UTM Content */}
+            <Grid size={{xs: 12, sm: 6}}>
+              <Controller
+                name="utmContent"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    value={field.value ?? ''}
+                    onChange={(e) => field.onChange(e.target.value || null)}
+                    fullWidth
+                    label="Content (محتوا: utm_content)"
+                    error={!!errors.utmContent}
+                    helperText={errors.utmContent?.message}
+                  />
+                )}
+              />
+            </Grid>
+          </Grid>
+
 
           <Button
             type="submit"
             fullWidth
             variant="contained"
             disabled={createLinkMutation.isPending}
+            sx={{ mt: 3 }}
           >
             {createLinkMutation.isPending ? <CircularProgress size={24} /> : 'کوتاه کن'}
           </Button>

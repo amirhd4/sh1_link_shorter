@@ -2,10 +2,11 @@ import { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { TextField, Button, Box, Typography, Alert, Modal, CircularProgress } from '@mui/material';
+import { TextField, Button, Box, Typography, Alert, Modal, CircularProgress, Grid } from '@mui/material';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { linkService } from '../../../services/linkService';
-import type { LinkDetails } from '../../../types/api';
+import type {LinkDetails, UpdateLinkPayload} from '../../../types/api';
+
 
 const modalStyle = {
   position: 'absolute' as 'absolute',
@@ -21,13 +22,13 @@ const modalStyle = {
 
 const editLinkSchema = z.object({
   longUrl: z.string().url('لطفاً یک آدرس اینترنتی معتبر وارد کنید.'),
+  utmSource: z.string().nullable().optional(),
+  utmMedium: z.string().nullable().optional(),
+  utmCampaign: z.string().nullable().optional(),
+  utmTerm: z.string().nullable().optional(),
+  utmContent: z.string().nullable().optional(),
 });
 
-type UpdateLinkPayload = {
-    shortCode: string;
-    longUrl: string;
-    domainId: string | number;
-};
 
 type EditLinkFormInputs = z.infer<typeof editLinkSchema>;
 
@@ -49,12 +50,18 @@ export function EditLinkForm({ isOpen, onClose, link }: EditLinkFormProps) {
     resolver: zodResolver(editLinkSchema),
   });
 
-  // با استفاده از useEffect، هر زمان که لینک ورودی تغییر کرد، فرم را با اطلاعات آن پر می‌کنیم
   useEffect(() => {
-    if (link) {
-      reset({ longUrl: link.long_url });
-    }
-  }, [link, reset]);
+        if (link) {
+            reset({
+                longUrl: link.long_url,
+                utmSource: link.utm_source,
+                utmMedium: link.utm_medium,
+                utmCampaign: link.utm_campaign,
+                utmTerm: link.utm_term,
+                utmContent: link.utm_content,
+            });
+        }
+    }, [link, reset]);
 
   const updateLinkMutation = useMutation({
     mutationFn: (data: UpdateLinkPayload) => linkService.updateLink(data),
@@ -70,19 +77,26 @@ export function EditLinkForm({ isOpen, onClose, link }: EditLinkFormProps) {
 
     const domainIdToUse = link.domain_id || "0";
 
-    updateLinkMutation.mutate({ shortCode: link.short_code, longUrl: data.longUrl, domainId: domainIdToUse });
+    // updateLinkMutation.mutate({ shortCode: link.short_code, longUrl: data.longUrl, domainId: domainIdToUse });
+    updateLinkMutation.mutate({
+            shortCode: link.short_code,
+            long_url: data.longUrl,
+            domainId: domainIdToUse,
+            utm_source: data.utmSource,
+            utm_medium: data.utmMedium,
+            utm_campaign: data.utmCampaign,
+            utm_term: data.utmTerm,
+            utm_content: data.utmContent,
+        });
   };
 
   return (
-    <Modal
-      open={isOpen}
-      onClose={onClose}
-      aria-labelledby="edit-link-modal-title"
-    >
-      <Box sx={modalStyle}>
-        <Typography id="edit-link-modal-title" variant="h6" component="h2">
-          ویرایش لینک
-        </Typography>
+    <Modal open={isOpen} onClose={onClose} aria-labelledby="edit-link-modal-title">
+          <Box sx={{ ...modalStyle, width: { xs: '90%', sm: 600 } }}> {/* افزایش عرض برای فیلدهای UTM */}
+            <Typography id="edit-link-modal-title" variant="h6" component="h2">
+              ویرایش لینک (UTM Enabled)
+            </Typography>
+
 
         <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate sx={{ mt: 2 }}>
           {updateLinkMutation.isError && (
@@ -92,31 +106,119 @@ export function EditLinkForm({ isOpen, onClose, link }: EditLinkFormProps) {
           )}
 
           <Controller
-            name="longUrl"
-            control={control}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                required
-                fullWidth
-                label="آدرس اصلی (URL)"
-                autoFocus
-                error={!!errors.longUrl}
-                helperText={errors.longUrl?.message}
-                sx={{ mb: 2 }}
+                name="longUrl"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    required
+                    fullWidth
+                    label="آدرس اصلی (URL)"
+                    autoFocus
+                    error={!!errors.longUrl}
+                    helperText={errors.longUrl?.message}
+                    sx={{ mb: 2 }}
+                  />
+                )}
               />
-            )}
-          />
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            disabled={updateLinkMutation.isPending}
-          >
-            {updateLinkMutation.isPending ? <CircularProgress size={24} /> : 'ذخیره تغییرات'}
-          </Button>
-        </Box>
-      </Box>
-    </Modal>
-  );
+
+              {/* ✨ بخش UTM Parameters */}
+              <Typography variant="subtitle1" fontWeight="bold" sx={{ mt: 3, mb: 1 }}>
+                پارامترهای UTM (اختیاری)
+              </Typography>
+              <Grid container spacing={2}> {/* استفاده از Grid برای چیدمان بهتر */}
+                {/* UTM Source */}
+                <Grid size={{xs: 12, sm: 6}}>
+                  <Controller
+                    name="utmSource"
+                    control={control}
+                    render={({ field }) => (
+                      <TextField
+                        {...field}
+                        fullWidth
+                        label="Source (منبع: utm_source)"
+                        error={!!errors.utmSource}
+                        helperText={errors.utmSource?.message}
+                      />
+                    )}
+                  />
+                </Grid>
+                {/* UTM Medium */}
+                <Grid size={{xs: 12, sm: 6}}>
+                  <Controller
+                    name="utmMedium"
+                    control={control}
+                    render={({ field }) => (
+                      <TextField
+                        {...field}
+                        fullWidth
+                        label="Medium (واسط: utm_medium)"
+                        error={!!errors.utmMedium}
+                        helperText={errors.utmMedium?.message}
+                      />
+                    )}
+                  />
+                </Grid>
+                {/* UTM Campaign */}
+                <Grid size={{xs: 12, sm: 12}}>
+                  <Controller
+                    name="utmCampaign"
+                    control={control}
+                    render={({ field }) => (
+                      <TextField
+                        {...field}
+                        fullWidth
+                        label="Campaign (کمپین: utm_campaign)"
+                        error={!!errors.utmCampaign}
+                        helperText={errors.utmCampaign?.message}
+                      />
+                    )}
+                  />
+                </Grid>
+                {/* UTM Term and Content */}
+                <Grid size={{xs: 12, sm: 6}}>
+                  <Controller
+                    name="utmTerm"
+                    control={control}
+                    render={({ field }) => (
+                      <TextField
+                        {...field}
+                        fullWidth
+                        label="Term (کلمات کلیدی: utm_term)"
+                        error={!!errors.utmTerm}
+                        helperText={errors.utmTerm?.message}
+                      />
+                    )}
+                  />
+                </Grid>
+                <Grid size={{xs: 12, sm: 6}}>
+                  <Controller
+                    name="utmContent"
+                    control={control}
+                    render={({ field }) => (
+                      <TextField
+                        {...field}
+                        fullWidth
+                        label="Content (محتوا: utm_content)"
+                        error={!!errors.utmContent}
+                        helperText={errors.utmContent?.message}
+                      />
+                    )}
+                  />
+                </Grid>
+              </Grid>
+
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                disabled={updateLinkMutation.isPending}
+                sx={{ mt: 3 }}
+              >
+                {updateLinkMutation.isPending ? <CircularProgress size={24} /> : 'ذخیره تغییرات'}
+              </Button>
+            </Box>
+          </Box>
+        </Modal>
+    );
 }

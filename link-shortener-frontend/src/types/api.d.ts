@@ -39,6 +39,12 @@ export interface LinkDetails {
     created_at: string;
     domain_id: string;
     domain_name: string;
+
+    utm_source: string | null;
+    utm_medium: string | null;
+    utm_campaign: string | null;
+    utm_term: string | null;
+    utm_content: string | null;
 }
 
 export interface URLResponse {
@@ -125,7 +131,6 @@ export interface AdvancedLinkStats {
   clicks_last_7_days: LinkStatDay[];
 }
 
-
 export interface DomainResponse {
   id: number;
   name: string;
@@ -138,3 +143,15 @@ export interface URLCreate {
   long_url: string;
   domain_id?: number | 0;
 }
+
+type UpdateLinkPayload = {
+    shortCode: string;
+    long_url: string;
+    domainId: string | number;
+
+    utm_source?: string | null;
+    utm_medium?: string | null;
+    utm_campaign?: string | null;
+    utm_term?: string | null;
+    utm_content?: string | null;
+};

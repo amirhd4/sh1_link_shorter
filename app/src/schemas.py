@@ -10,7 +10,7 @@ class UserSummary(BaseModel):
     id: int
     email: EmailStr
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 
 class LinkDetailsForAdmin(BaseModel):
@@ -21,7 +21,7 @@ class LinkDetailsForAdmin(BaseModel):
     owner: UserSummary
 
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 
 class LinkStatDay(BaseModel):
@@ -54,7 +54,7 @@ class PlanResponse(BaseModel):
     duration_days: int
 
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 
 class UserUpdate(BaseModel):
@@ -77,12 +77,18 @@ class UserResponse(BaseModel):
     subscription_start_date: Optional[date] = None
 
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 
 class URLCreate(BaseModel):
     long_url: HttpUrl
     domain_id: Optional[int] = 0
+
+    utm_source: Optional[str] = None
+    utm_medium: Optional[str] = None
+    utm_campaign: Optional[str] = None
+    utm_term: Optional[str] = None
+    utm_content: Optional[str] = None
 
 
 class URLResponse(BaseModel):
@@ -90,7 +96,7 @@ class URLResponse(BaseModel):
     short_url: str
 
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 
 class UserCreate(BaseModel):
@@ -111,13 +117,24 @@ class LinkDetails(BaseModel):
     domain_id: Optional[int] = 0
     domain_name: str
 
+    utm_source: Optional[str] = None
+    utm_medium: Optional[str] = None
+    utm_campaign: Optional[str] = None
+    utm_term: Optional[str] = None
+    utm_content: Optional[str] = None
+
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 
 class LinkUpdate(BaseModel):
     long_url: HttpUrl
 
+    utm_source: Optional[str] = None
+    utm_medium: Optional[str] = None
+    utm_campaign: Optional[str] = None
+    utm_term: Optional[str] = None
+    utm_content: Optional[str] = None
 
 class DailyStat(BaseModel):
     date: date

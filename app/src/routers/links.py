@@ -101,7 +101,13 @@ async def create_short_url(
             long_url=str(url_data.long_url),
             short_code=short_code,
             owner_id=current_user.id,
-            domain_id=domain_id
+            domain_id=domain_id,
+
+            utm_source=url_data.utm_source,
+            utm_medium=url_data.utm_medium,
+            utm_campaign=url_data.utm_campaign,
+            utm_term=url_data.utm_term,
+            utm_content=url_data.utm_content,
         )
 
         db.add(db_link)
@@ -209,9 +215,22 @@ async def update_link(
         raise HTTPException(status_code=404, detail="Link not found or no permission")
 
     # 2. به‌روزرسانی آدرس اصلی
-    db_link.long_url = str(link_update.long_url)
+    if link_update.long_url:
+        db_link.long_url = str(link_update.long_url)
+
+    update_data = link_update.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        if key == 'long_url' and value:
+            setattr(db_link, key, str(value))
+        elif hasattr(db_link, key):
+            setattr(db_link, key, value)
+
     await db.commit()
     await db.refresh(db_link)
+
+    # db_link.long_url = str(link_update.long_url)
+    # await db.commit()
+    # await db.refresh(db_link)
 
     if db_link.domain and db_link.domain.name:
         domain_name_for_cache = db_link.domain.name
@@ -229,9 +248,14 @@ async def update_link(
         clicks=db_link.clicks,
         created_at=db_link.created_at,
         domain_id=db_link.domain_id,
-        domain_name=domain_name
+        domain_name=domain_name,
+        utm_source=db_link.utm_source,
+        utm_medium=db_link.utm_medium,
+        utm_campaign=db_link.utm_campaign,
+        utm_term=db_link.utm_term,
+        utm_content=db_link.utm_content,
     )
-
+    # return schemas.LinkDetails.model_validate(db_link)
 
 @limiter.limit("30/minute")
 @router.get("/{short_code}/{domain_id}/stats", response_model=schemas.AdvancedLinkStats)

@@ -5,9 +5,10 @@ from sqlalchemy.future import select
 from sqlalchemy import update
 import logging
 import hashlib
-from urllib.parse import urlparse  # <--- اضافه شد
+from urllib.parse import urlparse, parse_qs, urlencode, urlunparse  # <--- اضافه شد
 
 import redis.asyncio as redis
+from sqlalchemy.orm import selectinload
 from starlette.responses import RedirectResponse
 
 from ..database import async_session_factory, get_db
@@ -118,7 +119,7 @@ async def redirect_to_long_url(
                 models.Link.short_code == short_code)
             )
         else:
-            result = await db.execute(select(models.Link).join(models.Domain).where(models.Domain.name == host,
+            result = await db.execute(select(models.Link).options(selectinload(models.Link.domain)).where(models.Domain.name == host,
                                                                                     models.Link.short_code == short_code))
 
         link = result.scalar_one_or_none()
@@ -127,6 +128,27 @@ async def redirect_to_long_url(
             raise HTTPException(status_code=404, detail="URL not found")
 
         long_url = link.long_url
+
+        utm_params = {
+            'utm_source': link.utm_source,
+            'utm_medium': link.utm_medium,
+            'utm_campaign': link.utm_campaign,
+            'utm_term': link.utm_term,
+            'utm_content': link.utm_content,
+        }
+        active_utm_params = {k: v for k, v in utm_params.items() if v}
+
+        if active_utm_params:
+            parsed_url = urlparse(long_url)
+            query_params = parse_qs(parsed_url.query)
+
+            query_params.update(active_utm_params)
+
+            new_query = urlencode(query_params, doseq=True)
+            long_url_with_utm = urlunparse(parsed_url._replace(query=new_query))
+        else:
+            long_url_with_utm = long_url  # اگر UTMی نبود، همان long_url اصلی استفاده می‌شود
+
         await redis_client.set(cache_key, long_url, ex=3600)
 
     # استخراج اطلاعات کلیک و اجرای آمارگیری در پس‌زمینه

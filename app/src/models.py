@@ -3,7 +3,7 @@ from secrets import token_urlsafe
 from sqlalchemy import Column, Integer, String, BigInteger, ForeignKey, Date, Enum as SQLAlchemyEnum, DateTime, func, \
     Boolean, Text, UniqueConstraint
 
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Mapped, mapped_column
 from sqlalchemy.ext.declarative import declarative_base
 import enum
 
@@ -81,6 +81,12 @@ class Link(Base):
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    utm_source: Mapped[str | None] = mapped_column(String, nullable=True)
+    utm_medium: Mapped[str | None] = mapped_column(String, nullable=True)
+    utm_campaign: Mapped[str | None] = mapped_column(String, nullable=True)
+    utm_term: Mapped[str | None] = mapped_column(String, nullable=True)
+    utm_content: Mapped[str | None] = mapped_column(String, nullable=True)
 
     __table_args__ = (
         # short_code باید یکتا در هر دامنه باشه

@@ -1,4 +1,3 @@
-// home.page.tsx
 import React from "react";
 import {
   Box,
@@ -16,10 +15,18 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  Divider,
+  Stack,
+  Link,
 } from "@mui/material";
 import ContentCopyOutlinedIcon from "@mui/icons-material/ContentCopyOutlined";
 import CheckIcon from "@mui/icons-material/Check";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import MonetizationOnIcon from "@mui/icons-material/MonetizationOn";
+import DomainIcon from "@mui/icons-material/Domain";
+import SecurityIcon from "@mui/icons-material/Security";
+import ShareIcon from "@mui/icons-material/Share";
+import InsightsIcon from "@mui/icons-material/Insights";
 import { Link as RouterLink } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Helmet } from "react-helmet-async";
@@ -56,38 +63,36 @@ const techStack = ["FastAPI", "React", "PostgreSQL", "Redis", "Docker", "MUI", "
 const examples = [
   {
     label: "cURL (پیش‌فرض)",
-    code: `curl -X POST "https://l1s.ir/api/v1/shorten" \\
-  -H "Api-Key: sk_your_api_key_here" \\
-  -H "Content-Type: application/json" \\
-  -d '{"long_url":"https://example.com"}'`,
-    response: `{\n  "long_url": "https://example.com",\n  "short_url": "https://l1s.ir/Ab12Xy"\n}`,
+    code: `curl -X POST "https://l1s.ir/api/v1/shorten" \\\n  -H "Api-Key: sk_your_api_key_here" \\\n  -H "Content-Type: application/json" \\\n  -d '{"long_url":"https://example.com"}'`,
+    response: `{
+  "long_url": "https://example.com",
+  "short_url": "https://l1s.ir/Ab12Xy"
+}`,
   },
   {
-    label: "fetch (پیش‌فرض)",
-    code: `fetch("https://l1s.ir/api/v1/shorten", {
-  method: "POST",
-  headers: {
-    "Api-Key": "sk_your_api_key_here",
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify({ long_url: "https://example.com" })
-})
-.then(res => res.json())
-.then(console.log);`,
-    response: `{\n  "long_url": "https://example.com",\n  "short_url": "https://l1s.ir/Ab12Xy"\n}`,
-  },
-  {
-    label: "دامنه سفارشی",
-    code: `curl -X POST "https://l1s.ir/api/v1/shorten" \\
-  -H "Api-Key: sk_your_api_key_here" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "long_url": "https://example.com/project",
-    "domain_id": 42
-  }'
+    label: "دامنه سفارشی + UTM",
+    code: `curl -X POST "https://l1s.ir/api/v1/shorten" \\\n  -H "Api-Key: sk_your_api_key_here" \\\n  -H "Content-Type: application/json" \\\n  -d '{\n    "long_url": "https://example.com/project?utm_source=twitter&utm_medium=social&utm_campaign=launch",\n    "domain_id": 42,\n    "enable_no_redirect": true\n  }' # enable_no_redirect: زمانی که می‌خواهید بدون ریدایرکت تبلیغ انجام شود
 # domain_id: شناسه دامنه‌ای است که در پنل شما ثبت شده است.
 `,
-    response: `{\n  "long_url": "https://example.com/project",\n  "short_url": "https://customdomain.com/Xy12Ab"\n}`,
+    response: `{
+  "long_url": "https://example.com/project?utm_source=twitter&utm_medium=social&utm_campaign=launch",
+  "short_url": "https://customdomain.com/Xy12Ab",
+  "utm": {
+    "source": "twitter",
+    "medium": "social",
+    "campaign": "launch"
+  }
+}`,
+  },
+  {
+    label: "Monetize (Auto-forward or On-click)",
+    code: `# نمونه ساخت لینک با فعال‌سازی کسب درآمد (در پنل نرخ‌ها مشخص می‌شود)
+curl -X POST "https://l1s.ir/api/v1/shorten" \\\n  -H "Api-Key: sk_your_api_key_here" \\\n  -H "Content-Type: application/json" \\\n  -d '{\n    "long_url": "https://affiliate.example.com/product",\n    "monetize": true\n  }'`,
+    response: `{
+  "long_url": "https://affiliate.example.com/product",
+  "short_url": "https://l1s.ir/Mon3t1ze",
+  "monetize": true
+}`,
   },
 ];
 
@@ -107,7 +112,7 @@ const faqItems = [
   },
   {
     q: "آیا می‌توانم آمار کلیک‌ها را ببینم؟",
-    a: "بله، در داشبورد می‌توانید نمودارها و آمار دقیق کلیک‌ها را مشاهده کنید.",
+    a: "بله، در داشبورد می‌توانید نمودارها و آمار دقیق کلیک‌ها را مشاهده کنید از جمله شهر، کشور، Referrer و fingerprint.",
   },
 ];
 
@@ -130,22 +135,57 @@ export const HomePage: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>L1s | کوتاه‌کننده لینک سریع و امن</title>
+        <title>L1s | کوتاه‌کننده لینک سریع، امن و قابل درآمدزایی</title>
         <meta
           name="description"
-          content="L1s یک سرویس کوتاه‌کننده لینک حرفه‌ای با داشبورد پیشرفته، API عمومی و آمار دقیق برای تیم‌ها و توسعه‌دهندگان است."
+          content="L1s سرویس کوتاه‌کننده لینک با داشبورد پیشرفته، دامنه اختصاصی، تنظیم UTM، آمار تفصیلی (شهر، کشور، Referrer، fingerprint) و قابلیت کسب درآمد — بدون تبلیغات یا ریدایرکت اجباری."
         />
+        <link rel="canonical" href="https://l1s.ir/" />
+
+        {/* Open Graph */}
+        <meta property="og:title" content="L1s | کوتاه‌کننده لینک سریع، امن و قابل درآمدزایی" />
+        <meta property="og:description" content="داشبورد حرفه‌ای، API سریع، دامنه اختصاصی، تنظیم UTM و آمار کامل برای بازاریابان و توسعه‌دهندگان." />
+        <meta property="og:url" content="https://l1s.ir/" />
+        <meta property="og:type" content="website" />
+
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="L1s | کوتاه‌کننده لینک" />
+        <meta name="twitter:description" content="سرویس کوتاه‌کننده لینک مخصوص توسعه‌دهندگان با امکان کسب درآمد و آمار دقیق." />
+
+        {/* Structured Data: FAQ + SoftwareApplication + Breadcrumb */}
         <script type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org",
-            "@type": "FAQPage",
+            "@type": "SoftwareApplication",
+            name: "L1s",
+            url: "https://l1s.ir/",
+            description:
+              "L1s سرویس کوتاه‌کننده لینک با داشبورد پیشرفته، API امن، دامنه اختصاصی، تنظیم UTM، آمار تفصیلی و امکانات کسب درآمد.",
+            applicationCategory: "DeveloperTool",
+            operatingSystem: "Web",
+            offers: {
+              "@type": "Offer",
+              price: 0,
+              priceCurrency: "IRR",
+              url: "https://l1s.ir/register",
+            },
+            potentialAction: [
+              {
+                "@type": "Action",
+                name: "ShortenURL",
+              },
+            ],
+            breadcrumb: {
+              "@type": "BreadcrumbList",
+              itemListElement: [
+                { "@type": "ListItem", position: 1, name: "خانه", item: "https://l1s.ir/" },
+              ],
+            },
             mainEntity: faqItems.map((f) => ({
               "@type": "Question",
               name: f.q,
-              acceptedAnswer: {
-                "@type": "Answer",
-                text: f.a,
-              },
+              acceptedAnswer: { "@type": "Answer", text: f.a },
             })),
           })}
         </script>
@@ -153,14 +193,14 @@ export const HomePage: React.FC = () => {
 
       <GlobalStyles
         styles={{
-          body: { background: "#0f172a", color: "#e2e8f0" },
+          body: { background: "#0f172a", color: "#e2e8f0", WebkitFontSmoothing: "antialiased" },
           "::selection": { background: "#a855f7", color: "#fff" },
         }}
       />
 
       {/* Hero */}
-      <Box sx={{ textAlign: "center", py: { xs: 8, md: 12 } }}>
-        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
+      <Box sx={{ textAlign: "center", py: { xs: 6, md: 10 }, px: 2 }}>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
           <Typography
             variant="h2"
             sx={{
@@ -171,22 +211,20 @@ export const HomePage: React.FC = () => {
               mb: 2,
             }}
           >
-            کوتاه‌کننده لینک نسل جدید 🚀
+            کوتاه‌کننده لینک نسل بعدی — امن، قابل سفارشی و درآمدزا 🚀
           </Typography>
-          <Typography sx={{ maxWidth: 640, mx: "auto", mb: 4, color: "#94a3b8" }}>
-            سریع، امن و مخصوص توسعه‌دهندگان — با داشبورد حرفه‌ای و API کامل.
+
+          <Typography sx={{ maxWidth: 800, mx: "auto", mb: 3, color: "#94a3b8" }}>
+            سریع، بدون تبلیغات اجباری، با امکان دامنه اختصاصی، تنظیم UTM، آمار دقیق (شهر/کشور/Referrer) و ابزار کسب درآمد برای سازنده‌ها.
           </Typography>
-          <Box sx={{ display: "flex", gap: 2, justifyContent: "center", flexWrap: "wrap" }}>
+
+          <Stack direction="row" spacing={2} justifyContent="center" flexWrap="wrap">
             <Button
               component={RouterLink}
               to="/register"
               variant="contained"
               size="large"
-              sx={{
-                borderRadius: "50px",
-                px: 5,
-                background: "linear-gradient(45deg,#a855f7,#d946ef)",
-              }}
+              sx={{ borderRadius: "50px", px: 5, background: "linear-gradient(45deg,#a855f7,#d946ef)" }}
             >
               شروع رایگان
             </Button>
@@ -199,9 +237,129 @@ export const HomePage: React.FC = () => {
             >
               مستندات API
             </Button>
-          </Box>
+            <Button
+              component={RouterLink}
+              to="/pricing"
+              variant="text"
+              size="large"
+              sx={{ color: "#cbd5e1" }}
+            >
+              پلن‌ها
+            </Button>
+          </Stack>
         </motion.div>
       </Box>
+
+     {/* Key new features banner – نسخه ارتقا یافته */}
+<Container sx={{ py: { xs: 4, md: 6 }, px: { xs: 2, md: 0 } }}>
+  <Paper
+    component="section"
+    aria-label="ویژگی‌های جدید"
+    sx={{
+      position: "relative",
+      overflow: "hidden",
+      p: { xs: 2, md: 3 },
+      borderRadius: 3,
+      background: "rgba(255,255,255,0.05)",
+      // یک گرادینت کم‌رنگ برای جلوه بیشتر
+      backgroundImage: "linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0) 100%)",
+      border: "1px solid rgba(255,255,255,0.1)",
+    }}
+  >
+    <Grid container spacing={2} alignItems="center">
+      <Grid size={{xs: 12, md: 3}}>
+        <Typography variant="h6" fontWeight={800} sx={{ color: "#f1f5f9" }}>
+          ویژگی‌های برجسته
+        </Typography>
+        <Typography sx={{ color: "#94a3b8", mt: 0.5 }}>
+          امکانات جدید: کسب درآمد، دامنه اختصاصی، UTM، بدون ریدایرکت اجباری و آمار جغرافیایی.
+        </Typography>
+      </Grid>
+
+<Grid size={{xs: 12, md: 9}}>
+    <Stack
+          direction={{ xs: "column", sm: "row" }}
+          spacing={1}
+          alignItems="center"
+          justifyContent={{ xs: "flex-start", sm: "flex-end" }}
+        >
+          {/* از sx برای استایل سفارشی چپ استفاده می‌کنیم */}
+          <Chip
+            icon={<MonetizationOnIcon />}
+            label="کسب درآمد"
+            clickable
+            component={Link}
+            href="/pages/monetize"
+            sx={{
+              color: "#fff",
+              background: "linear-gradient(90deg, #a855f7, #d946ef)",
+              '&:hover': {
+                background: "linear-gradient(90deg, #d946ef, #a855f7)",
+              },
+            }}
+          />
+          <Chip
+            icon={<DomainIcon />}
+            label="دامنه اختصاصی"
+            clickable
+            component={Link}
+            href="/pages/domains"
+            sx={{
+              color: "#fff",
+              background: "linear-gradient(90deg, #06b6d4, #3b82f6)",
+              '&:hover': {
+                background: "linear-gradient(90deg, #3b82f6, #06b6d4)",
+              },
+            }}
+          />
+          <Chip
+            icon={<ShareIcon />}
+            label="بدون ریدایرکت (No-Ads Flow)"
+            clickable
+            component={Link}
+            href="/pages/no-ads"
+            sx={{
+              color: "#fff",
+              background: "linear-gradient(90deg, #f97316, #f59e0b)",
+              '&:hover': {
+                background: "linear-gradient(90deg, #f59e0b, #f97316)",
+              },
+            }}
+          />
+          <Chip
+            icon={<InsightsIcon />}
+            label="آمار پیشرفته (شهر/کشور/Referrer)"
+            clickable
+            component={Link}
+            href="/pages/analytics"
+            sx={{
+              color: "#fff",
+              background: "linear-gradient(90deg, #10b981, #14b8a6)",
+              '&:hover': {
+                background: "linear-gradient(90deg, #14b8a6, #10b981)",
+              },
+            }}
+          />
+          <Chip
+            icon={<SecurityIcon />}
+            label="امنیت و حریم خصوصی"
+            clickable
+            component={Link}
+            href="/pages/security"
+            sx={{
+              color: "#fff",
+              background: "linear-gradient(90deg, #64748b, #475569)",
+              '&:hover': {
+                background: "linear-gradient(90deg, #475569, #64748b)",
+              },
+            }}
+          />
+        </Stack>
+      </Grid>
+    </Grid>
+  </Paper>
+</Container>
+
 
       {/* Features */}
       <Container sx={{ py: { xs: 6, md: 10 } }}>
@@ -210,11 +368,11 @@ export const HomePage: React.FC = () => {
         </Typography>
         <Grid container spacing={4}>
           {features.map((f, i) => (
-            <Grid size={{xs: 12, sm:6, md: 3}} key={i}>
+            <Grid size={{xs: 12, sm: 6, md: 3}} key={i}>
               <motion.div
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1, duration: 0.6 }}
+                transition={{ delay: i * 0.08, duration: 0.5 }}
               >
                 <Paper
                   sx={{
@@ -223,18 +381,53 @@ export const HomePage: React.FC = () => {
                     textAlign: "center",
                     background: "rgba(255,255,255,0.04)",
                     color: "#fff",
-                    "&:hover": { transform: "translateY(-6px)", transition: "0.3s" },
+                    height: "100%",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                    "&:hover": { transform: "translateY(-6px)", transition: "0.25s" },
                   }}
                 >
                   <Typography fontSize={34}>{f.icon}</Typography>
-                  <Typography fontWeight={700} mt={1}>
-                    {f.title}
-                  </Typography>
-                  <Typography sx={{ color: "#94a3b8", mt: 1 }}>{f.desc}</Typography>
+                  <Box>
+                    <Typography fontWeight={700} mt={1}>
+                      {f.title}
+                    </Typography>
+                    <Typography sx={{ color: "#94a3b8", mt: 1 }}>{f.desc}</Typography>
+                  </Box>
                 </Paper>
               </motion.div>
             </Grid>
           ))}
+
+          {/* New detailed feature: Monetization explanation */}
+          <Grid size={{xs: 12, md: 6}}>
+            <Paper sx={{ p: 3, borderRadius: 3, background: "rgba(255,255,255,0.03)" }}>
+              <Typography fontWeight={800} mb={1}>
+                کسب درآمد از لینک‌ها
+              </Typography>
+              <Typography sx={{ color: "#94a3b8", mb: 2 }}>
+                می‌توانید لینک‌ها را به‌صورت درآمدزا فعال کنید. پرداخت‌ها بر اساس پلن‌ها و تنظیمات شما در پنل انجام می‌شود. امکان فعال‌سازی on-click یا pre-roll وجود دارد. (قابل تنظیم برای هر لینک)
+              </Typography>
+              <Button component={RouterLink} to="/pages/monetize" variant="outlined" size="small">
+                جزئیات کسب درآمد
+              </Button>
+            </Paper>
+          </Grid>
+
+          <Grid size={{xs: 12, md: 6}}>
+            <Paper sx={{ p: 3, borderRadius: 3, background: "rgba(255,255,255,0.03)" }}>
+              <Typography fontWeight={800} mb={1}>
+                عملکرد بدون تبلیغات اجباری (No-Ads Flow)
+              </Typography>
+              <Typography sx={{ color: "#94a3b8", mb: 2 }}>
+                می‌توانید لینک‌هایی بسازید که بدون ریدایرکت تبلیغاتی کاربر را به مقصد هدایت کنند — مناسب زمانی که می‌خواهید مخاطب حس اعتماد بیشتری داشته باشد.
+              </Typography>
+              <Button component={RouterLink} to="/pages/no-ads" variant="outlined" size="small">
+                اطلاعات بیشتر
+              </Button>
+            </Paper>
+          </Grid>
         </Grid>
       </Container>
 
@@ -246,7 +439,7 @@ export const HomePage: React.FC = () => {
           </Typography>
           <Paper sx={{ p: 3, borderRadius: 3, background: "#0f172a" }}>
             <ResponsiveContainer width="100%" height={320}>
-              <LineChart data={chartData}>
+              <LineChart data={chartData} aria-label="نمودار آمار هفته">
                 <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
                 <XAxis dataKey="day" stroke="#94a3b8" />
                 <YAxis stroke="#94a3b8" />
@@ -255,6 +448,127 @@ export const HomePage: React.FC = () => {
                 <Line type="monotone" dataKey="clicks" stroke="#ec4899" strokeWidth={3} />
               </LineChart>
             </ResponsiveContainer>
+
+            <Divider sx={{ my: 3 }} />
+
+            {/* 🔹 Advanced Analytics Features Section - نسخه ارتقا یافته */}
+<Container sx={{ py: { xs: 6, md: 10 } }}>
+  <Typography
+    variant="h4"
+    fontWeight={800}
+    align="center"
+    mb={5}
+    sx={{
+      background: "linear-gradient(90deg,#a855f7,#ec4899)",
+      WebkitBackgroundClip: "text",
+      WebkitTextFillColor: "transparent",
+    }}
+  >
+    آمار و تحلیل پیشرفته
+  </Typography>
+
+  <Grid container spacing={4}>
+    {/* کارت ۱ */}
+    <Grid size={{xs: 12, md: 4}}>
+      <motion.div
+        whileHover={{ y: -6, scale: 1.02 }}
+        transition={{ type: "spring", stiffness: 200 }}
+      >
+        <Paper
+          elevation={0}
+          sx={{
+            p: 3,
+            borderRadius: 4,
+            height: "100%",
+            background:
+              "linear-gradient(135deg, rgba(168,85,247,0.08) 0%, rgba(236,72,153,0.08) 100%)",
+            border: "1px solid rgba(255,255,255,0.06)",
+            backdropFilter: "blur(10px)",
+          }}
+        >
+          <Typography
+            variant="h6"
+            fontWeight={800}
+            sx={{ color: "#f1f5f9", mb: 1.5 }}
+          >
+            🌍 آمار جغرافیایی
+          </Typography>
+          <Typography sx={{ color: "#94a3b8", lineHeight: 1.7 }}>
+            نمایش شهر، استان و کشور بازدیدکنندگان به‌صورت دقیق و تفکیک‌شده برای
+            تحلیل مخاطبان هدف.
+          </Typography>
+        </Paper>
+      </motion.div>
+    </Grid>
+
+    {/* کارت ۲ */}
+    <Grid size={{xs: 12, md: 4}}>
+      <motion.div
+        whileHover={{ y: -6, scale: 1.02 }}
+        transition={{ type: "spring", stiffness: 200 }}
+      >
+        <Paper
+          elevation={0}
+          sx={{
+            p: 3,
+            borderRadius: 4,
+            height: "100%",
+            background:
+              "linear-gradient(135deg, rgba(56,189,248,0.08) 0%, rgba(59,130,246,0.08) 100%)",
+            border: "1px solid rgba(255,255,255,0.06)",
+            backdropFilter: "blur(10px)",
+          }}
+        >
+          <Typography
+            variant="h6"
+            fontWeight={800}
+            sx={{ color: "#f1f5f9", mb: 1.5 }}
+          >
+            🔍 Referrer & Fingerprint
+          </Typography>
+          <Typography sx={{ color: "#94a3b8", lineHeight: 1.7 }}>
+            مشاهده‌ی منبع ترافیک (Referrer)، مرورگر، دستگاه، IP و fingerprint برای
+            شناسایی رفتار کاربران و تشخیص ترافیک مشکوک.
+          </Typography>
+        </Paper>
+      </motion.div>
+    </Grid>
+
+    {/* کارت ۳ */}
+    <Grid size={{xs: 12, md: 4}}>
+      <motion.div
+        whileHover={{ y: -6, scale: 1.02 }}
+        transition={{ type: "spring", stiffness: 200 }}
+      >
+        <Paper
+          elevation={0}
+          sx={{
+            p: 3,
+            borderRadius: 4,
+            height: "100%",
+            background:
+              "linear-gradient(135deg, rgba(34,197,94,0.08) 0%, rgba(16,185,129,0.08) 100%)",
+            border: "1px solid rgba(255,255,255,0.06)",
+            backdropFilter: "blur(10px)",
+          }}
+        >
+          <Typography
+            variant="h6"
+            fontWeight={800}
+            sx={{ color: "#f1f5f9", mb: 1.5 }}
+          >
+            📊 UTM & Campaigns
+          </Typography>
+          <Typography sx={{ color: "#94a3b8", lineHeight: 1.7 }}>
+            امکان ساخت و ردیابی خودکار پارامترهای UTM و فیلتر داده‌ها بر اساس
+            کمپین، منبع یا رسانه برای بررسی عملکرد بازاریابی.
+          </Typography>
+        </Paper>
+      </motion.div>
+    </Grid>
+  </Grid>
+</Container>
+
           </Paper>
         </Container>
       </Box>
@@ -267,21 +581,22 @@ export const HomePage: React.FC = () => {
               API توسعه‌دهندگان
             </Typography>
             <Typography sx={{ color: "#94a3b8", mb: 3 }}>
-              با Api-Key امن لینک کوتاه بسازید. پاسخ JSON استاندارد و محدودیت Rate-limit.
+              با Api-Key امن لینک کوتاه بسازید. پشتیبانی از دامنه سفارشی، پارامترهای UTM، و گزینه‌های کسب درآمد یا No-Ads.
             </Typography>
             <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 2 }}>
               {examples.map((ex, i) => (
-                <Tab key={i} label={ex.label} sx={{ mb: 2, color: "#ffffff" }}/>
+                <Tab key={i} label={ex.label} sx={{ mb: 2, color: "#ffffff" }} />
               ))}
             </Tabs>
             <Paper sx={{ p: 2, background: "#1e293b", borderRadius: 2, position: "relative" }}>
-              <Box component="pre" sx={{ fontSize: 13, m: 0, color: "#ffffff", whiteSpace: 'pre-wrap' }}>
+              <Box component="pre" sx={{ fontSize: 13, m: 0, color: "#ffffff", whiteSpace: "pre-wrap" }}>
                 {examples[tab].code}
               </Box>
               <Tooltip title={copied ? "کپی شد!" : "کپی"}>
                 <IconButton
                   onClick={() => copyToClipboard(examples[tab].code, setCopied)}
                   sx={{ position: "absolute", top: 8, right: 8, color: copied ? "#22c55e" : "#cbd5e1" }}
+                  aria-label="کپی کد نمونه"
                 >
                   {copied ? <CheckIcon fontSize="small" /> : <ContentCopyOutlinedIcon fontSize="small" />}
                 </IconButton>
@@ -291,11 +606,10 @@ export const HomePage: React.FC = () => {
 
           <Grid size={{xs: 12, md: 6}}>
             <Paper sx={{ p: 3, borderRadius: 3, background: "rgba(255,255,255,0.04)" }}>
-              <Typography fontWeight={700} mb={1} sx={{ color: "#cbd6e8", fontWeight: 800}}>
+              <Typography fontWeight={700} mb={1} sx={{ color: "#cbd6e8", fontWeight: 800 }}>
                 نمونه پاسخ JSON
               </Typography>
               <Box component="pre" sx={{ fontSize: 13, color: "#e2e8f0", m: 0 }}>
-                {/* از فیلد جدید response استفاده می‌کند */}
                 {examples[tab].response}
               </Box>
             </Paper>
@@ -323,7 +637,7 @@ export const HomePage: React.FC = () => {
           سوالات متداول
         </Typography>
         {faqItems.map((f, i) => (
-          <Accordion key={i} sx={{ background: "rgba(255,255,255,0.03)", color: "#fff", fontWeight:900, mb: 1, borderRadius: 2 }}>
+          <Accordion key={i} sx={{ background: "rgba(255,255,255,0.03)", color: "#fff", fontWeight: 900, mb: 1, borderRadius: 2 }}>
             <AccordionSummary expandIcon={<ExpandMoreIcon sx={{ color: "#cbcbd1" }} />}>
               <Typography fontWeight={700}>{f.q}</Typography>
             </AccordionSummary>
@@ -339,7 +653,7 @@ export const HomePage: React.FC = () => {
         <Typography variant="h5" fontWeight={800} mb={1}>
           آماده شروع هستید؟
         </Typography>
-        <Typography sx={{ color: "#94a3b8", mb: 3 }}>ثبت‌نام کنید و اولین لینک کوتاه خود را بسازید.</Typography>
+        <Typography sx={{ color: "#94a3b8", mb: 3 }}>ثبت‌نام کنید و اولین لینک کوتاه خود را بسازید — حتی به‌صورت رایگان.</Typography>
         <Button
           component={RouterLink}
           to="/register"

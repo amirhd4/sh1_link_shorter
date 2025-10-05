@@ -86,7 +86,12 @@ async def api_shorten_url(
             long_url=str(url_data.long_url),
             short_code=short_code,
             owner_id=user.id,
-            domain_id=link_domain_id
+            domain_id=link_domain_id,
+            utm_source=url_data.utm_source,
+            utm_medium=url_data.utm_medium,
+            utm_campaign=url_data.utm_campaign,
+            utm_term=url_data.utm_term,
+            utm_content=url_data.utm_content,
         )
 
         db.add(new_link)

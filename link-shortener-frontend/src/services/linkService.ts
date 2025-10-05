@@ -1,5 +1,12 @@
 import apiClient from "../lib/axios";
-import type {AdvancedLinkStats, LinkDetails, LinkStatsResponse, URLCreate, URLResponse} from "../types/api";
+import type {
+    AdvancedLinkStats,
+    LinkDetails,
+    LinkStatsResponse,
+    UpdateLinkPayload,
+    URLCreate,
+    URLResponse
+} from "../types/api";
 
 export const linkService = {
   getMyLinks: async (): Promise<LinkDetails[]> => {
@@ -26,16 +33,14 @@ export const linkService = {
   //   const response = await apiClient.patch(`/links/${shortCode}`, { long_url: longUrl }); // <<<< اصلاح شد
   //   return response.data;
   // },
-    updateLink: async ({ shortCode, longUrl, domainId }:
-    { shortCode: string; longUrl: string; domainId: string | number }
-    ): Promise<LinkDetails> => {
+    updateLink: async (payload: UpdateLinkPayload): Promise<LinkDetails> => {
+        const { shortCode, domainId, ...updateData } = payload;
 
-    // مطمئن می‌شویم که domainId به شکل عددی در URL قرار بگیرد
-    const domainIdNum = typeof domainId === 'string' ? parseInt(domainId, 10) : domainId;
+        const domainIdNum = typeof domainId === 'string' ? parseInt(domainId, 10) : domainId;
 
-    // استفاده از هر دو shortCode و domainId در مسیر PATCH
-    const response = await apiClient.patch(`/links/${shortCode}/${domainIdNum}`, { long_url: longUrl });
-    return response.data;
+        // استفاده از هر دو shortCode و domainId در مسیر PATCH
+        const response = await apiClient.patch(`/links/${shortCode}/${domainIdNum}`, updateData);
+        return response.data;
   },
 
   getLinkDetails: async (shortCode: string, domainId: string): Promise<LinkDetails> => {
