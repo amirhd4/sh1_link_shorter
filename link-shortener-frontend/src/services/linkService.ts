@@ -22,8 +22,19 @@ export const linkService = {
     await apiClient.delete(`/links/${shortCode}/${domainIdNum}`);
   },
 
-  updateLink: async ({ shortCode, longUrl }: { shortCode: string; longUrl: string }): Promise<LinkDetails> => {
-    const response = await apiClient.patch(`/links/${shortCode}`, { long_url: longUrl }); // <<<< اصلاح شد
+  // updateLink: async ({ shortCode, longUrl }: { shortCode: string; longUrl: string }): Promise<LinkDetails> => {
+  //   const response = await apiClient.patch(`/links/${shortCode}`, { long_url: longUrl }); // <<<< اصلاح شد
+  //   return response.data;
+  // },
+    updateLink: async ({ shortCode, longUrl, domainId }:
+    { shortCode: string; longUrl: string; domainId: string | number }
+    ): Promise<LinkDetails> => {
+
+    // مطمئن می‌شویم که domainId به شکل عددی در URL قرار بگیرد
+    const domainIdNum = typeof domainId === 'string' ? parseInt(domainId, 10) : domainId;
+
+    // استفاده از هر دو shortCode و domainId در مسیر PATCH
+    const response = await apiClient.patch(`/links/${shortCode}/${domainIdNum}`, { long_url: longUrl });
     return response.data;
   },
 

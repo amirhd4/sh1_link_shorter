@@ -23,6 +23,12 @@ const editLinkSchema = z.object({
   longUrl: z.string().url('لطفاً یک آدرس اینترنتی معتبر وارد کنید.'),
 });
 
+type UpdateLinkPayload = {
+    shortCode: string;
+    longUrl: string;
+    domainId: string | number;
+};
+
 type EditLinkFormInputs = z.infer<typeof editLinkSchema>;
 
 interface EditLinkFormProps {
@@ -51,7 +57,7 @@ export function EditLinkForm({ isOpen, onClose, link }: EditLinkFormProps) {
   }, [link, reset]);
 
   const updateLinkMutation = useMutation({
-    mutationFn: (data: { shortCode: string; longUrl: string }) => linkService.updateLink(data),
+    mutationFn: (data: UpdateLinkPayload) => linkService.updateLink(data),
     onSuccess: () => {
       // دوباره از جادوی invalidateQueries استفاده می‌کنیم
       queryClient.invalidateQueries({ queryKey: ['my-links'] });
@@ -61,7 +67,10 @@ export function EditLinkForm({ isOpen, onClose, link }: EditLinkFormProps) {
 
   const onSubmit = (data: EditLinkFormInputs) => {
     if (!link) return;
-    updateLinkMutation.mutate({ shortCode: link.short_code, longUrl: data.longUrl });
+
+    const domainIdToUse = link.domain_id || "0";
+
+    updateLinkMutation.mutate({ shortCode: link.short_code, longUrl: data.longUrl, domainId: domainIdToUse });
   };
 
   return (

@@ -186,35 +186,51 @@ async def delete_link(
     return None
 
 
-@router.patch("/{short_code}", response_model=schemas.LinkDetails)
+@router.patch("/{short_code}/{domain_id}", response_model=schemas.LinkDetails)
 async def update_link(
-    short_code: str,
-    link_update: schemas.LinkUpdate,
-    current_user: models.User = Depends(security.get_current_user),
-    db: AsyncSession = Depends(get_db),
-    redis_client: redis.Redis = Depends(get_redis_client)
+        short_code: str,
+        domain_id: int,
+        link_update: schemas.LinkUpdate,
+        current_user: models.User = Depends(security.get_current_user),
+        db: AsyncSession = Depends(get_db),
+        redis_client: redis.Redis = Depends(get_redis_client)
 ):
     result = await db.execute(
         select(models.Link).options(selectinload(models.Link.domain))
-        .where(models.Link.short_code == short_code, models.Link.owner_id == current_user.id)
+        .where(
+            models.Link.short_code == short_code,
+            models.Link.owner_id == current_user.id,
+            (models.Link.domain_id == None if domain_id == 0 else models.Link.domain_id == domain_id)
+        )
     )
     db_link = result.scalar_one_or_none()
 
     if db_link is None:
-        raise HTTPException(status_code=404, detail="Link not found")
+        raise HTTPException(status_code=404, detail="Link not found or no permission")
 
+    # 2. به‌روزرسانی آدرس اصلی
     db_link.long_url = str(link_update.long_url)
     await db.commit()
     await db.refresh(db_link)
 
     if db_link.domain and db_link.domain.name:
-        await redis_client.delete(make_cache_key(db_link.domain.name, db_link.short_code))
+        domain_name_for_cache = db_link.domain.name
     else:
-        async for key in redis_client.scan_iter(match=f"link:*:{short_code}"):
-            await redis_client.delete(key)
+        domain_name_for_cache = settings.origin_backend_url
 
-    return db_link
+    domain_name = db_link.domain.name if db_link.domain else settings.origin_backend_url
 
+    cache_key = make_cache_key(domain_name_for_cache, db_link.short_code)
+    await redis_client.delete(cache_key)
+
+    return schemas.LinkDetails(
+        long_url=db_link.long_url,
+        short_code=db_link.short_code,
+        clicks=db_link.clicks,
+        created_at=db_link.created_at,
+        domain_id=db_link.domain_id,
+        domain_name=domain_name
+    )
 
 
 @limiter.limit("30/minute")

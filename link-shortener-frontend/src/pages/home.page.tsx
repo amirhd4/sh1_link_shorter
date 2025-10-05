@@ -55,14 +55,15 @@ const techStack = ["FastAPI", "React", "PostgreSQL", "Redis", "Docker", "MUI", "
 
 const examples = [
   {
-    label: "cURL",
+    label: "cURL (پیش‌فرض)",
     code: `curl -X POST "https://l1s.ir/api/v1/shorten" \\
   -H "Api-Key: sk_your_api_key_here" \\
   -H "Content-Type: application/json" \\
   -d '{"long_url":"https://example.com"}'`,
+    response: `{\n  "long_url": "https://example.com",\n  "short_url": "https://l1s.ir/Ab12Xy"\n}`,
   },
   {
-    label: "fetch",
+    label: "fetch (پیش‌فرض)",
     code: `fetch("https://l1s.ir/api/v1/shorten", {
   method: "POST",
   headers: {
@@ -70,16 +71,23 @@ const examples = [
     "Content-Type": "application/json"
   },
   body: JSON.stringify({ long_url: "https://example.com" })
-})`,
+})
+.then(res => res.json())
+.then(console.log);`,
+    response: `{\n  "long_url": "https://example.com",\n  "short_url": "https://l1s.ir/Ab12Xy"\n}`,
   },
   {
-    label: "axios",
-    code: `import axios from "axios";
-axios.post("https://l1s.ir/api/v1/shorten", {
-  long_url: "https://example.com"
-}, {
-  headers: { "Api-Key": "sk_your_api_key_here" }
-}).then(res => console.log(res.data));`,
+    label: "دامنه سفارشی",
+    code: `curl -X POST "https://l1s.ir/api/v1/shorten" \\
+  -H "Api-Key: sk_your_api_key_here" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "long_url": "https://example.com/project",
+    "domain_id": 42
+  }'
+# domain_id: شناسه دامنه‌ای است که در پنل شما ثبت شده است.
+`,
+    response: `{\n  "long_url": "https://example.com/project",\n  "short_url": "https://customdomain.com/Xy12Ab"\n}`,
   },
 ];
 
@@ -267,7 +275,7 @@ export const HomePage: React.FC = () => {
               ))}
             </Tabs>
             <Paper sx={{ p: 2, background: "#1e293b", borderRadius: 2, position: "relative" }}>
-              <Box component="pre" sx={{ fontSize: 13, m: 0, color: "#ffffff" }}>
+              <Box component="pre" sx={{ fontSize: 13, m: 0, color: "#ffffff", whiteSpace: 'pre-wrap' }}>
                 {examples[tab].code}
               </Box>
               <Tooltip title={copied ? "کپی شد!" : "کپی"}>
@@ -287,10 +295,8 @@ export const HomePage: React.FC = () => {
                 نمونه پاسخ JSON
               </Typography>
               <Box component="pre" sx={{ fontSize: 13, color: "#e2e8f0", m: 0 }}>
-{`{
-  "long_url": "https://example.com",
-  "short_url": "https://l1s.ir/Ab12Xy"
-}`}
+                {/* از فیلد جدید response استفاده می‌کند */}
+                {examples[tab].response}
               </Box>
             </Paper>
           </Grid>
