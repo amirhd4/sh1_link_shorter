@@ -1,4 +1,3 @@
-# redirect.py (نسخه اصلاح‌شده و منطبق با رویکرد جدید)
 from fastapi import APIRouter, Request, BackgroundTasks, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select

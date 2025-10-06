@@ -7,6 +7,9 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 from geoip2.database import Reader
+from redis import exceptions as redis_exceptions
+
+import redis.asyncio as redis
 
 from .. import models
 from ..config import settings
@@ -119,12 +122,13 @@ async def process_record(db: AsyncSession, rds: redis.Redis, msg_id: str, msg: d
 
 
 async def consumer_loop():
-    rds = redis.Redis.from_url(settings.redis_url)
-
+    rds = redis.Redis.from_url(settings.redis_url, decode_responses=False)
+    assert isinstance(rds, redis.Redis)  # async Redis
+    
     # Create group if not exists
     try:
         await rds.xgroup_create(REDIS_STREAM, GROUP, id="$", mkstream=True)
-    except redis.exceptions.ResponseError:
+    except redis_exceptions.ResponseError as e:
         pass
 
     while True:
