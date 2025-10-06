@@ -177,24 +177,6 @@ export function CreateLinkForm({ isOpen, onClose }: CreateLinkFormProps) {
                 />
             </Grid>
 
-            {/* Short Code */}
-            <Grid size={{xs: 12, sm: 6}}>
-                <Controller
-                    name="shortCode"
-                    control={control}
-                    render={({ field }) => (
-                        <TextField
-                            {...field}
-                            fullWidth
-                            label="کد کوتاه دلخواه (اختیاری)"
-                            placeholder="my-short-code"
-                            error={!!errors.shortCode}
-                            helperText={errors.shortCode?.message || 'در صورت خالی ماندن، کد به‌صورت تصادفی تولید می‌شود.'}
-                        />
-                    )}
-                />
-            </Grid>
-
             {/* Domain Select (Autocomplete) */}
             <Grid size={{xs: 12, sm: 6}}>
 
