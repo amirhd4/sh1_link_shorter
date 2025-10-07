@@ -10,7 +10,7 @@ class UserSummary(BaseModel):
     id: int
     email: EmailStr
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class LinkDetailsForAdmin(BaseModel):
@@ -21,7 +21,7 @@ class LinkDetailsForAdmin(BaseModel):
     owner: UserSummary
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class LinkStatDay(BaseModel):
@@ -54,7 +54,7 @@ class PlanResponse(BaseModel):
     duration_days: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class UserUpdate(BaseModel):
@@ -77,7 +77,7 @@ class UserResponse(BaseModel):
     subscription_start_date: Optional[date] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class URLCreate(BaseModel):
@@ -96,7 +96,7 @@ class URLResponse(BaseModel):
     short_url: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class UserCreate(BaseModel):
@@ -124,7 +124,7 @@ class LinkDetails(BaseModel):
     utm_content: Optional[str] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class LinkUpdate(BaseModel):
@@ -152,7 +152,6 @@ class RegisterOtpRequest(BaseModel):
     code: str
     first_name: Optional[str] = None
     last_name: Optional[str] = None
-
 
 
 class UserWithToken(BaseModel):
@@ -199,4 +198,4 @@ class DomainResponse(BaseModel):
     created_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
