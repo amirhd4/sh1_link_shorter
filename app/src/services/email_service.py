@@ -4,6 +4,7 @@ from fastapi import APIRouter, Request
 from loguru import logger
 from email.message import EmailMessage
 import aiosmtplib
+from datetime import datetime
 
 from ..config import settings
 
@@ -134,7 +135,7 @@ async def send_password_reset_email(request: Request, to_email: str, reset_token
                 <p style="margin: 0 0 15px;">با احترام،<br>تیم پشتیبانی لِس</p>
             </div>
             <div class="footer" style="background-color: #f8f9fa; color: #777777; padding: 20px; text-align: center; font-size: 12px;">
-                <p>© {new Date().getFullYear()} سرویس کوتاه‌کننده لینک لِس. تمامی حقوق محفوظ است.</p>
+                <p>© {datetime.now().year} سرویس کوتاه‌کننده لینک لِس. تمامی حقوق محفوظ است.</p>
             </div>
         </div>
     </body>
@@ -227,7 +228,7 @@ async def send_account_verification_email(request: Request, to_email: str, verif
                 <p style="margin: 0 0 15px;">با احترام،<br>تیم پشتیبانی لِس</p>
             </div>
             <div class="footer" style="background-color: #f8f9fa; color: #777777; padding: 20px; text-align: center; font-size: 12px;">
-                <p>© {new Date().getFullYear()} سرویس کوتاه‌کننده لینک لِس. تمامی حقوق محفوظ است.</p>
+                <p>© {datetime.now().year} سرویس کوتاه‌کننده لینک لِس. تمامی حقوق محفوظ است.</p>
             </div>
         </div>
     </body>

@@ -188,7 +188,6 @@ async def read_users_me(current_user: models.User = Depends(security.get_current
 @router.post("/forgot-password", status_code=status.HTTP_200_OK)
 @limiter.limit("3/minute")
 async def forgot_password(
-    request: Request,
     form: EmailRequest,
     db: AsyncSession = Depends(get_db),
     request: Request = None
@@ -512,7 +511,7 @@ class RegisterOtpRequestCaptcha(RegisterOtpRequest):
 
 @router.post("/register-otp", response_model=schemas.UserWithToken, status_code=status.HTTP_201_CREATED)
 @limiter.limit("10/minute")
-async def register_with_otp(request: Request, payload: RegisterOtpRequestCaptcha, request: Request, db: AsyncSession = Depends(get_db)):
+async def register_with_otp(request: Request, payload: RegisterOtpRequestCaptcha, db: AsyncSession = Depends(get_db)):
     """
     ثبت‌نام با OTP.
     """
