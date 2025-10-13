@@ -11,16 +11,19 @@ from .. import models, schemas
 from ..database import get_db
 from ..services.security import get_user_by_api_key, get_current_user
 from ..config import settings
+from ..rate_limiter import limiter
 
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-
 router = APIRouter(prefix="/domains", tags=["Domains"])
 
+
 @router.post("/", response_model=schemas.DomainResponse)
+@limiter.limit("10/hour")
 async def add_domain(
+    request: Request,
     domain_data: schemas.DomainCreate,
     user: models.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
@@ -49,16 +52,22 @@ async def add_domain(
     await db.refresh(new_domain)
     return new_domain
 
+
 @router.get("/", response_model=list[schemas.DomainResponse])
+@limiter.limit("60/minute")
 async def list_domains(
+    request: Request,
     user: models.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     result = await db.execute(select(models.Domain).where(models.Domain.user_id == user.id).order_by(models.Domain.created_at.desc()))
     return result.scalars().all()
 
+
 @router.post("/{domain_id}/verification/start")
+@limiter.limit("5/hour")
 async def start_verification(
+    request: Request,
     domain_id: int,
     user: models.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
@@ -89,7 +98,9 @@ async def start_verification(
 
 
 @router.post("/{domain_id}/verification/check")
+@limiter.limit("15/hour")
 async def check_verification(
+        request: Request,
         domain_id: int,
         user: models.User = Depends(get_current_user),
         db: AsyncSession = Depends(get_db)

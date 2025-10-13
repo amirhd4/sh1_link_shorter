@@ -8,7 +8,6 @@ import aiosmtplib
 from ..config import settings
 
 
-# email_service.py
 async def send_email(
     request: Request,
     to_email: str,
@@ -57,11 +56,91 @@ async def send_password_reset_email(request: Request, to_email: str, reset_token
     reset_url = f"{settings.frontend_url}/pages/reset-password?token={reset_token}"
 
     content = f"""
-    <p>سلام،</p>
-    <p>برای تنظیم مجدد رمز عبور خود روی لینک زیر کلیک کنید:</p>
-    <p><a href="{reset_url}">{reset_url}</a></p>
-    <p>اگر شما این درخواست را نداده‌اید، این ایمیل را نادیده بگیرید.</p>
+    <!DOCTYPE html>
+    <html lang="fa" dir="rtl">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            /* General styles */
+            body {{
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Tahoma', 'Arial', sans-serif;
+                margin: 0;
+                padding: 0;
+                background-color: #f4f4f7;
+            }}
+            .container {{
+                max-width: 600px;
+                margin: 40px auto;
+                background-color: #ffffff;
+                border-radius: 8px;
+                overflow: hidden;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            }}
+            .header {{
+                background-color: #007bff;
+                color: #ffffff;
+                padding: 20px;
+                text-align: center;
+            }}
+            .header h1 {{
+                margin: 0;
+                font-size: 24px;
+            }}
+            .content {{
+                padding: 30px;
+                text-align: right;
+                line-height: 1.7;
+                color: #333333;
+            }}
+            .content p {{
+                margin: 0 0 15px;
+            }}
+            .button-container {{
+                text-align: center;
+                margin: 30px 0;
+            }}
+            .button {{
+                display: inline-block;
+                background-color: #007bff;
+                color: #ffffff;
+                padding: 12px 25px;
+                text-decoration: none;
+                border-radius: 5px;
+                font-weight: bold;
+                font-size: 16px;
+            }}
+            .footer {{
+                background-color: #f8f9fa;
+                color: #777777;
+                padding: 20px;
+                text-align: center;
+                font-size: 12px;
+            }}
+        </style>
+    </head>
+    <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Tahoma', 'Arial', sans-serif; margin: 0; padding: 0; background-color: #f4f4f7;">
+        <div class="container" style="max-width: 600px; margin: 40px auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+            <div class="header" style="background-color: #007bff; color: #ffffff; padding: 20px; text-align: center;">
+                <h1 style="margin: 0; font-size: 24px;">لِس | l1s</h1>
+            </div>
+            <div class="content" style="padding: 30px; text-align: right; line-height: 1.7; color: #333333;">
+                <p style="margin: 0 0 15px;">سلام،</p>
+                <p style="margin: 0 0 15px;">به نظر می‌رسد درخواست بازنشانی رمز عبور برای حساب کاربری خود در سرویس کوتاه‌کننده لینک <strong>لِس</strong> را داده‌اید. برای ایجاد یک رمز عبور جدید، لطفاً روی دکمه زیر کلیک کنید:</p>
+                <div class="button-container" style="text-align: center; margin: 30px 0;">
+                    <a href="{reset_url}" class="button" style="display: inline-block; background-color: #007bff; color: #ffffff; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px;">بازنشانی رمز عبور</a>
+                </div>
+                <p style="margin: 0 0 15px;">اگر شما این درخواست را نداده‌اید، نیازی به انجام کاری نیست و می‌توانید این ایمیل را نادیده بگیرید.</p>
+                <p style="margin: 0 0 15px;">با احترام،<br>تیم پشتیبانی لِس</p>
+            </div>
+            <div class="footer" style="background-color: #f8f9fa; color: #777777; padding: 20px; text-align: center; font-size: 12px;">
+                <p>© {new Date().getFullYear()} سرویس کوتاه‌کننده لینک لِس. تمامی حقوق محفوظ است.</p>
+            </div>
+        </div>
+    </body>
+    </html>
     """
+
     await send_email(request, to_email, subject, content)
 
 
@@ -70,9 +149,89 @@ async def send_account_verification_email(request: Request, to_email: str, verif
     verification_url = f"{settings.frontend_url}/pages/verify-email?token={verification_token}"
 
     content = f"""
-    <p>سلام،</p>
-    <p>از ثبت‌نام شما در سرویس ما متشکریم! برای فعال‌سازی حساب خود روی لینک زیر کلیک کنید:</p>
-    <p><a href="{verification_url}">{verification_url}</a></p>
-    <p>این لینک تا ۲۴ ساعت آینده معتبر است.</p>
+    <!DOCTYPE html>
+    <html lang="fa" dir="rtl">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            /* General styles */
+            body {{
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Tahoma', 'Arial', sans-serif;
+                margin: 0;
+                padding: 0;
+                background-color: #f4f4f7;
+            }}
+            .container {{
+                max-width: 600px;
+                margin: 40px auto;
+                background-color: #ffffff;
+                border-radius: 8px;
+                overflow: hidden;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            }}
+            .header {{
+                background-color: #28a745;
+                color: #ffffff;
+                padding: 20px;
+                text-align: center;
+            }}
+            .header h1 {{
+                margin: 0;
+                font-size: 24px;
+            }}
+            .content {{
+                padding: 30px;
+                text-align: right;
+                line-height: 1.7;
+                color: #333333;
+            }}
+            .content p {{
+                margin: 0 0 15px;
+            }}
+            .button-container {{
+                text-align: center;
+                margin: 30px 0;
+            }}
+            .button {{
+                display: inline-block;
+                background-color: #28a745;
+                color: #ffffff;
+                padding: 12px 25px;
+                text-decoration: none;
+                border-radius: 5px;
+                font-weight: bold;
+                font-size: 16px;
+            }}
+            .footer {{
+                background-color: #f8f9fa;
+                color: #777777;
+                padding: 20px;
+                text-align: center;
+                font-size: 12px;
+            }}
+        </style>
+    </head>
+    <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Tahoma', 'Arial', sans-serif; margin: 0; padding: 0; background-color: #f4f4f7;">
+        <div class="container" style="max-width: 600px; margin: 40px auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+            <div class="header" style="background-color: #28a745; color: #ffffff; padding: 20px; text-align: center;">
+                <h1 style="margin: 0; font-size: 24px;">به لِس | l1s خوش آمدید!</h1>
+            </div>
+            <div class="content" style="padding: 30px; text-align: right; line-height: 1.7; color: #333333;">
+                <p style="margin: 0 0 15px;">سلام،</p>
+                <p style="margin: 0 0 15px;">از ثبت‌نام شما در سرویس کوتاه‌کننده لینک <strong>لِس</strong> سپاسگزاریم! برای تکمیل فرآیند ثبت‌نام و فعال‌سازی حساب کاربری خود، لطفاً روی دکمه زیر کلیک کنید:</p>
+                <div class="button-container" style="text-align: center; margin: 30px 0;">
+                    <a href="{verification_url}" class="button" style="display: inline-block; background-color: #28a745; color: #ffffff; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px;">فعال‌سازی حساب کاربری</a>
+                </div>
+                <p style="margin: 0 0 15px;">این لینک تا ۲۴ ساعت آینده معتبر است. اگر شما ثبت‌نام نکرده‌اید، این ایمیل را نادیده بگیرید.</p>
+                <p style="margin: 0 0 15px;">با احترام،<br>تیم پشتیبانی لِس</p>
+            </div>
+            <div class="footer" style="background-color: #f8f9fa; color: #777777; padding: 20px; text-align: center; font-size: 12px;">
+                <p>© {new Date().getFullYear()} سرویس کوتاه‌کننده لینک لِس. تمامی حقوق محفوظ است.</p>
+            </div>
+        </div>
+    </body>
+    </html>
     """
+
     await send_email(request, to_email, subject, content)

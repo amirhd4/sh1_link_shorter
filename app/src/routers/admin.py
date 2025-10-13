@@ -53,6 +53,8 @@ async def list_all_links(db: AsyncSession = Depends(get_db)):
     result = await db.execute(stmt)
     links = result.scalars().all()
     return links
+
+    
 @router.post("/users", response_model=schemas.UserResponse, status_code=status.HTTP_201_CREATED)
 async def create_user_by_admin(user_create: schemas.UserCreate, db: AsyncSession = Depends(get_db)):
     """

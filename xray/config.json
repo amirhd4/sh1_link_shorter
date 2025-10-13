@@ -59,11 +59,11 @@
       "settings": {
         "vnext": [
           {
-            "address": "185.143.233.5",
-            "port": 443,
+            "address": "151.101.3.8",
+            "port": 80,
             "users": [
               {
-                "id": "536c344e-b352-41df-8907-21f9c99ea242",
+                "id": "be288b40-1403-4343-a048-1815f8c8ff8c",
                 "email": "t@t.tt",
                 "security": "auto",
                 "encryption": "none"
@@ -73,19 +73,10 @@
         ]
       },
       "streamSettings": {
-        "network": "ws",
-        "security": "tls",
-        "tlsSettings": {
-          "allowInsecure": false,
-          "serverName": "anten.ir",
-          "fingerprint": "randomized"
-        },
-        "wsSettings": {
-          "path": "/?ed=443",
-          "host": "anten.ir.oadeflantrogmnl7.mapircloud.com",
-          "headers": {
-            "Host": "anten.ir.oadeflantrogmnl7.mapircloud.com"
-          }
+        "network": "xhttp",
+        "xhttpSettings": {
+          "path": "/-LiV2ry@LIGHTNING6-TEL--@LIGHTNING6-TEL--@LIGHTNING6-TEL--@LIGHTNING6-JOIN-@LIGHTNING6-TEL--@LIGHTNING6-JOIN-@LIGHTNING6-TEL-@LIGHTNING6-TEL--@LIGHTNING6-JOIN-@LIGHTNING6-TEL--@LIGHTNING6?ed=2048",
+          "host": "fotofactory.pk"
         }
       },
       "mux": {

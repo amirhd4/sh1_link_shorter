@@ -14,6 +14,7 @@ from ..database import async_session_factory, get_db
 from ..services import security
 from ..config import settings
 from .. import models
+from ..rate_limiter import limiter
 
 
 logger = logging.getLogger(__name__)
@@ -95,6 +96,7 @@ async def increment_click_counter(
 
 
 @router.get("/{short_code}")
+@limiter.limit("1000/minute")
 async def redirect_to_long_url(
         request: Request,
         short_code: str,

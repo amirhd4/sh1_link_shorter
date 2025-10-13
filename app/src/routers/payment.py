@@ -18,6 +18,7 @@ from ..services import security
 from ..services.zarinpal_gateway import ZarinpalGateway
 from ..config import settings
 from ..database import async_session_factory
+from ..rate_limiter import limiter
 
 
 router = APIRouter(
@@ -35,18 +36,19 @@ async def mark_transaction_failed(transaction_id: int):
             await db.commit()
 
 
-
 class CreatePaymentRequest(schemas.BaseModel):
     plan_name: str
 
 
 @router.post("/create-zarinpal-link")
+@limiter.limit("5/minute")
 async def create_payment(
-        request: CreatePaymentRequest,
+        request: Request,
+        req: CreatePaymentRequest,
         current_user: models.User = Depends(security.get_current_user),
         db: AsyncSession = Depends(get_db)
 ):
-    plan_result = await db.execute(select(models.Plan).where(models.Plan.name == request.plan_name))
+    plan_result = await db.execute(select(models.Plan).where(models.Plan.name == req.plan_name))
     plan = plan_result.scalar_one_or_none()
     if not plan:
         raise HTTPException(status_code=404, detail="Plan not found")
@@ -164,8 +166,11 @@ class TransactionResponse(BaseModel):
     class Config:
         from_attributes = True
 
+
 @router.get("/transactions", response_model=List[TransactionResponse])
+@limiter.limit("30/minute")
 async def get_my_transactions(
+    request: Request,
     db: AsyncSession = Depends(get_db),
     current_user: models.User = Depends(security.get_current_user)
 ):

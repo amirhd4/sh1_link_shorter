@@ -130,7 +130,9 @@ async def create_short_url(
 
 
 @router.get("/my-links", response_model=List[schemas.LinkDetails])
+@limiter.limit("60/minute")
 async def get_user_links(
+        request: Request,
         current_user: models.User = Depends(security.get_current_user),
         db: AsyncSession = Depends(get_db)
 ):
@@ -161,7 +163,9 @@ async def get_user_links(
 
 
 @router.delete("/{short_code}/{domain_id}", status_code=status.HTTP_204_NO_CONTENT)
+@limiter.limit("30/minute")
 async def delete_link(
+        request: Request,
         short_code: str,
         domain_id: int,
         current_user: models.User = Depends(security.get_current_user),
@@ -193,7 +197,9 @@ async def delete_link(
 
 
 @router.patch("/{short_code}/{domain_id}", response_model=schemas.LinkDetails)
+@limiter.limit("30/minute")
 async def update_link(
+        request: Request,
         short_code: str,
         domain_id: int,
         link_update: schemas.LinkUpdate,
@@ -256,6 +262,7 @@ async def update_link(
         utm_content=db_link.utm_content,
     )
     # return schemas.LinkDetails.model_validate(db_link)
+
 
 @limiter.limit("30/minute")
 @router.get("/{short_code}/{domain_id}/stats", response_model=schemas.AdvancedLinkStats)
@@ -412,7 +419,8 @@ async def get_link_details(
 
 
 @router.get("/{short_code}/{domain_id}/qr", tags=["QR Codes"])
-async def get_qr_code(short_code: str, domain_id: int, db: AsyncSession = Depends(get_db)):
+@limiter.limit("20/minute")
+async def get_qr_code(request: Request, short_code: str, domain_id: int, db: AsyncSession = Depends(get_db)):
     result = await db.execute(
         select(models.Link)
         .options(selectinload(models.Link.domain))

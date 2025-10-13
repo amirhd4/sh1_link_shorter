@@ -137,6 +137,7 @@ async def register_user(
 
 
 @router.post("/token", response_model=schemas.Token)
+@limiter.limit("10/minute")
 async def login_for_access_token(request: Request, form_data: OAuth2PasswordRequestForm = Depends(), captcha_token: str = Form(...), db: AsyncSession = Depends(get_db)):
     if not settings.DEBUG:
         await verify_turnstile(request, captcha_token)
@@ -185,7 +186,9 @@ async def read_users_me(current_user: models.User = Depends(security.get_current
 
 
 @router.post("/forgot-password", status_code=status.HTTP_200_OK)
+@limiter.limit("3/minute")
 async def forgot_password(
+    request: Request,
     form: EmailRequest,
     db: AsyncSession = Depends(get_db),
     request: Request = None
@@ -382,7 +385,7 @@ async def google_callback(code: str, db: AsyncSession = Depends(get_db)):
         free_plan = free_plan_result.scalar_one()
         new_user = models.User(
             email=email,
-            hashed_password=security.get_password_hash("a_default_strong_password"),
+            hashed_password=security.get_password_hash(str(email)),
             is_verified=True,
             plan_id=free_plan.id,
             subscription_start_date=date.today(),
@@ -392,6 +395,10 @@ async def google_callback(code: str, db: AsyncSession = Depends(get_db)):
         await db.commit()
         await db.refresh(new_user)
         user = new_user
+    else:
+        user.is_verified = True
+        await db.commit()
+        await db.refresh(user)
 
     app_token = security.create_access_token(data={"sub": user.email})
     return RedirectResponse(url=f"{settings.frontend_url}/pages/auth/callback?token={app_token}")
@@ -474,7 +481,8 @@ class VerifyOtpRequestCaptcha(VerifyOtpRequest):
 
 
 @router.post("/verify-otp-login")
-async def verify_otp_login(payload: VerifyOtpRequestCaptcha, request: Request, db: AsyncSession = Depends(get_db)):
+@limiter.limit("10/minute")
+async def verify_otp_login(request: Request, payload: VerifyOtpRequestCaptcha, db: AsyncSession = Depends(get_db)):
     """
     تایید OTP برای ورود.
     """
@@ -503,7 +511,8 @@ class RegisterOtpRequestCaptcha(RegisterOtpRequest):
 
 
 @router.post("/register-otp", response_model=schemas.UserWithToken, status_code=status.HTTP_201_CREATED)
-async def register_with_otp(payload: RegisterOtpRequestCaptcha, request: Request, db: AsyncSession = Depends(get_db)):
+@limiter.limit("10/minute")
+async def register_with_otp(request: Request, payload: RegisterOtpRequestCaptcha, request: Request, db: AsyncSession = Depends(get_db)):
     """
     ثبت‌نام با OTP.
     """
@@ -551,7 +560,9 @@ async def register_with_otp(payload: RegisterOtpRequestCaptcha, request: Request
 
 
 @router.post("/generate-api-key")
+@limiter.limit("5/hour")
 async def generate_api_key(
+    request: Request,
     current_user: models.User = Depends(security.get_current_user),
     db: AsyncSession = Depends(get_db)
 ):

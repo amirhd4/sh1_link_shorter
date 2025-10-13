@@ -4,15 +4,21 @@ from sqlalchemy import func, select
 from .. import models, schemas
 from ..database import get_db
 from ..services import security
+from ..rate_limiter import limiter
+
 
 router = APIRouter(prefix="/stats", tags=["Statistics"])
+
 
 class DashboardStats(schemas.BaseModel):
     total_links: int
     total_clicks: int
 
+
 @router.get("/dashboard", response_model=DashboardStats)
+@limiter.limit("60/minute")
 async def get_dashboard_stats(
+    request: Request,
     current_user: models.User = Depends(security.get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
