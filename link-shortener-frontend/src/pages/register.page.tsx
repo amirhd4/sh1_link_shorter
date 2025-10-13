@@ -13,7 +13,7 @@ export function RegisterPage() {
         />
         <link rel="canonical" href="https://l1s.ir/pages/register" />
       </Helmet>
-  <RegisterForm />;
+  <RegisterForm />
     </>
   );
 
