@@ -30,18 +30,38 @@ services:
       xray:
         condition: service_started
 
-  worker:
+  click_processor:
     build:
       context: ./app
-    command: python -m src.services.click_processor
+    command: python -m src.services.click_processor  # دستور واحد برای اجرای این سرویس
     env_file: .env
     depends_on:
-      db:
-        condition: service_healthy
-      cache:
-        condition: service_healthy
+      - db
+      - cache
+    deploy:
+      resources:
+        limits:
+          memory: 256M # حافظه تقسیم شده
     volumes:
       - ./app:/app
+    restart: always # برای تضمین اجرای مداوم سرویس
+
+    # سرویس دوم: مصرف‌کننده پرش از تبلیغ
+  ad_skip_consumer:
+    build:
+      context: ./app
+    command: python -m src.services.ad_skip_consumer # دستور واحد برای اجرای این سرویس
+    env_file: .env
+    depends_on:
+      - db
+      - cache
+    deploy:
+      resources:
+        limits:
+          memory: 256M # حافظه تقسیم شده
+    volumes:
+      - ./app:/app
+    restart: always # برای تضمین اجرای مداوم سرویس
 
   # -----------------------------------------------------------------
   # 2. Proxy Service (Kept as a core dependency)
