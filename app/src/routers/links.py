@@ -1,4 +1,6 @@
 import io
+from urllib.parse import urlparse
+
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import RedirectResponse, JSONResponse
 from fastapi.responses import StreamingResponse
@@ -40,7 +42,9 @@ async def get_redis_client(request: Request) -> redis.Redis:
 
 
 def make_cache_key(domain_name: str, short_code: str) -> str:
-    return f"link:{domain_name}:{short_code}"
+    host = urlparse(domain_name).netloc or domain_name
+    return f"link:{host}:{short_code}"
+    # return f"link:{domain_name}:{short_code}"
 
 @router.post("/shorten", response_model=schemas.URLResponse)
 @limiter.limit("30/minute")
@@ -102,6 +106,7 @@ async def create_short_url(
             short_code=short_code,
             owner_id=current_user.id,
             domain_id=domain_id,
+            show_ads=url_data.show_ads,
 
             utm_source=url_data.utm_source,
             utm_medium=url_data.utm_medium,

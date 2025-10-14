@@ -29,6 +29,7 @@ import { LoginOtpPage } from './pages/login-otp.page.tsx';
 import { RegisterOtpPage } from "./pages/register-otp.page.tsx";
 import {ApiPage} from "./features/api/pages/ApiPage.tsx";
 import {DomainsManager} from "./pages/domains-manager.page.tsx";
+import AdRedirectPage from "./pages/[shortCode].tsx";
 
 const router = createBrowserRouter([
   // --- روت‌های عمومی ---
@@ -45,6 +46,7 @@ const router = createBrowserRouter([
       { path: '/auth/callback', element: <AuthCallbackPage /> },
       { path: '/login-otp', element: <LoginOtpPage /> },
       { path: '/register-otp', element: <RegisterOtpPage /> },
+      { path: '/:domainId/:shortCode/ad', element: <AdRedirectPage /> },
     ],
   },
 

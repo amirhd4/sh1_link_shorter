@@ -84,6 +84,8 @@ class URLCreate(BaseModel):
     long_url: HttpUrl
     domain_id: Optional[int] = 0
 
+    show_ads: bool = False
+
     utm_source: Optional[str] = None
     utm_medium: Optional[str] = None
     utm_campaign: Optional[str] = None

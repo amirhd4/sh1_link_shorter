@@ -66,7 +66,7 @@ class Link(Base):
     id = Column(BigInteger, primary_key=True, index=True)
     long_url = Column(String, index=True, nullable=False)
     # short_code = Column(String, unique=True, index=True, nullable=False)
-    short_code = Column(String, nullable=False)
+    short_code = Column(String, nullable=False, index=True)
 
     clicks = Column(Integer, default=0)
 
@@ -87,6 +87,9 @@ class Link(Base):
     utm_campaign: Mapped[str | None] = mapped_column(String, nullable=True)
     utm_term: Mapped[str | None] = mapped_column(String, nullable=True)
     utm_content: Mapped[str | None] = mapped_column(String, nullable=True)
+
+    show_ads = Column(Boolean, default=False, nullable=False)
+    ad_analytics = relationship("AdAnalytics", back_populates="link", lazy="noload")
 
     __table_args__ = (
         # short_code باید یکتا در هر دامنه باشه
@@ -134,14 +137,18 @@ class ClickEvent(Base):
     region = Column(String(128), nullable=True, index=True)
     city = Column(String(128), nullable=True, index=True)
     is_bot = Column(Boolean, default=False, nullable=True, index=True)
-    fingerprint = Column(String(128), nullable=True, index=True)  # اگر frontend fingerprint ارسال کند
+    fingerprint = Column(String(128), nullable=True, index=True)
 
+    device_type = Column(String(64), nullable=True)
+    browser = Column(String(64), nullable=True)
+    os = Column(String(64), nullable=True)
 
 class Domain(Base):
     __tablename__ = "domains"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, unique=True, nullable=False)
+    name = Column(String, unique=True, index=True, nullable=False)
+
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     is_verified = Column(Boolean, default=False)
     is_primary = Column(Boolean, default=False)  # NEW
@@ -150,3 +157,19 @@ class Domain(Base):
 
     owner = relationship("User", back_populates="domains")
     links = relationship("Link", back_populates="domain")
+    ad_analytics = relationship("AdAnalytics", back_populates="domain", lazy="noload")
+
+
+class AdAnalytics(Base):
+    __tablename__ = "ad_analytics"
+
+    id = Column(Integer, primary_key=True, index=True)
+    link_id = Column(Integer, ForeignKey("links.id"), nullable=False)
+    domain_id = Column(Integer, ForeignKey("domains.id"), nullable=True)
+    from_ad_page = Column(Boolean, default=False)
+    ip_hash = Column(String(128), nullable=True)
+    user_agent = Column(String(255))
+    timestamp = Column(DateTime(timezone=True), server_default=func.now())
+
+    link = relationship("Link", back_populates="ad_analytics")
+    domain = relationship("Domain", back_populates="ad_analytics", lazy="joined")
