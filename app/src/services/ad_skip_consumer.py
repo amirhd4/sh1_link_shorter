@@ -18,9 +18,13 @@ STREAM_NAME = "ad_skip_events_stream"
 GROUP_NAME = "ad_skip_group"
 CONSUMER_NAME = "worker-1"
 
+
 async def init_consumer_group(rds: redis.Redis):
     """ایجاد consumer group در صورت نبود"""
     try:
+        if not await rds.exists(STREAM_NAME):
+            await rds.xadd(STREAM_NAME, {"init": "true"})
+
         groups = await rds.xinfo_groups(STREAM_NAME)
         if not any(g["name"].decode() == GROUP_NAME for g in groups):
             await rds.xgroup_create(STREAM_NAME, GROUP_NAME, id="$", mkstream=True)
@@ -28,6 +32,7 @@ async def init_consumer_group(rds: redis.Redis):
     except Exception as e:
         if "BUSYGROUP" not in str(e):
             logger.warning("Failed to create group (maybe exists): %s", e)
+
 
 async def process_event(session: AsyncSession, event_data: dict):
     """ذخیره‌ی event در دیتابیس"""

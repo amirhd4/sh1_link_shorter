@@ -30,7 +30,7 @@ export default function AdRedirectPage() {
 
   const handleSkip = () => {
     const domainValue = domainId && domainId !== "undefined" ? domainId : 0;
-    window.location.href = `${import.meta.env.VITE_BACKEND_BASE_URL}/ad/skip/${domainValue}/${shortCode}`;
+    window.location.href = `${import.meta.env.VITE_BACKEND_BASE_URL_ORIGIN}/ad/skip/${domainValue}/${shortCode}`;
   };
 
   return (

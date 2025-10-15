@@ -15,6 +15,7 @@ from .. import models
 from ..config import settings
 from ..models import ClickEvent
 
+
 logger = logging.getLogger(__name__)
 
 REDIS_STREAM = "click_events_stream"
