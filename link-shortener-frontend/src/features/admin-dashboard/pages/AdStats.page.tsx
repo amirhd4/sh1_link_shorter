@@ -11,21 +11,38 @@ export function AdStatsPage() {
   const [tabIndex, setTabIndex] = useState(0);
 
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        if (tabIndex === 0) {
-          const linkStats = await getAdStatsPerLink();
+  const fetchStats = async () => {
+    try {
+      if (tabIndex === 0) {
+        const linkStats = await getAdStatsPerLink();
+        // ✅ مطمئن شو که خروجی واقعا آرایه است
+        if (Array.isArray(linkStats)) {
           setStatsLink(linkStats);
         } else {
-          const userStats = await getAdStatsPerUser();
-          setStatsUser(userStats);
+          console.warn('Unexpected linkStats data:', linkStats);
+          setStatsLink([]); // مقدار پیش‌فرض امن
         }
-      } catch (err) {
-        setError('Failed to fetch statistics.');
+      } else {
+        const userStats = await getAdStatsPerUser();
+        if (Array.isArray(userStats)) {
+          setStatsUser(userStats);
+        } else {
+          console.warn('Unexpected userStats data:', userStats);
+          setStatsUser([]);
+        }
       }
-    };
-    fetchStats();
-  }, [tabIndex]);
+    } catch (err) {
+      console.error('Error fetching stats:', err);
+      setError('Failed to fetch statistics.');
+      // ✅ در صورت خطا هم state‌هارو ریست کن تا map ارور نده
+      setStatsLink([]);
+      setStatsUser([]);
+    }
+  };
+
+  fetchStats();
+}, [tabIndex]);
+
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabIndex(newValue);

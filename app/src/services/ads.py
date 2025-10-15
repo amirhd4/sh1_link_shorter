@@ -7,11 +7,18 @@ from .. import models, schemas
 
 async def create_ad(db: AsyncSession, ad: schemas.AdCreate) -> models.Ad:
     """ایجاد یک تبلیغ جدید"""
-    new_ad = models.Ad(**ad.dict())
+    ad_data = ad.model_dump()  # ✅ در Pydantic v2 به جای .dict()
+    # ✅ تبدیل HttpUrl به string
+    ad_data["media_url"] = str(ad_data["media_url"])
+    if ad_data.get("target_url"):
+        ad_data["target_url"] = str(ad_data["target_url"])
+
+    new_ad = models.Ad(**ad_data)
     db.add(new_ad)
     await db.commit()
     await db.refresh(new_ad)
     return new_ad
+
 
 
 async def get_ad(db: AsyncSession, ad_id: int) -> Optional[models.Ad]:
@@ -34,13 +41,20 @@ async def update_ad(db: AsyncSession, ad_id: int, ad_update: schemas.AdUpdate) -
     if not db_ad:
         return None
 
-    update_data = ad_update.dict(exclude_unset=True)
+    update_data = ad_update.model_dump(exclude_unset=True)
+    # ✅ اطمینان از اینکه URLها استرینگ هستند
+    if update_data.get("media_url"):
+        update_data["media_url"] = str(update_data["media_url"])
+    if update_data.get("target_url"):
+        update_data["target_url"] = str(update_data["target_url"])
+
     for key, value in update_data.items():
         setattr(db_ad, key, value)
 
     await db.commit()
     await db.refresh(db_ad)
     return db_ad
+
 
 
 async def delete_ad(db: AsyncSession, ad_id: int) -> bool:
