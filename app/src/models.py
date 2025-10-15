@@ -91,6 +91,7 @@ class Link(Base):
 
     show_ads = Column(Boolean, default=False, nullable=False)
     ad_analytics = relationship("AdAnalytics", back_populates="link", lazy="noload")
+    ads = relationship("LinkAd", back_populates="link")
 
     __table_args__ = (
         # short_code باید یکتا در هر دامنه باشه
@@ -144,6 +145,7 @@ class ClickEvent(Base):
     browser = Column(String(64), nullable=True)
     os = Column(String(64), nullable=True)
 
+
 class Domain(Base):
     __tablename__ = "domains"
 
@@ -188,3 +190,27 @@ class UserAdReward(Base):
 
     user = relationship("User", back_populates="ad_rewards")
     link = relationship("Link")
+
+
+class Ad(Base):
+    __tablename__ = "ads"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String(255), nullable=False)
+    media_type = Column(String(50), default="image")
+    media_url = Column(Text, nullable=False)
+    target_url = Column(Text, nullable=True)
+    is_active = Column(Boolean, default=True)
+    duration = Column(Integer, default=7)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class LinkAd(Base):
+    __tablename__ = "link_ads"
+
+    id = Column(Integer, primary_key=True)
+    link_id = Column(Integer, ForeignKey("links.id"), nullable=False)
+    ad_id = Column(Integer, ForeignKey("ads.id"), nullable=False)
+
+    link = relationship("Link", back_populates="ads")
+    ad = relationship("Ad")

@@ -1,173 +1,130 @@
-import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { Box, Button, Typography, LinearProgress, Paper } from "@mui/material";
+import { useEffect, useState, useRef } from "react";
+import { useParams } from "react-router-dom";
+import { Box, Button, Typography, LinearProgress, Paper, CircularProgress } from "@mui/material";
 import { motion } from "framer-motion";
-import { PlayCircleOutline } from "@mui/icons-material";
-import { useTheme } from "@mui/material/styles";
-import {adService} from "../services/adService.ts";
+import { adService } from "../services/adService";
+import VisibilitySensor from "react-visibility-sensor";
 
 export default function AdRedirectPage() {
   const { domainId, shortCode } = useParams();
-  const navigate = useNavigate();
-  const theme = useTheme();
-
+  const [ad, setAd] = useState<any>(null);
   const [progress, setProgress] = useState(0);
   const [canSkip, setCanSkip] = useState(false);
-  const countdown = 7; // ⏱️ زمان انتظار (به ثانیه)
+  const [isVisible, setIsVisible] = useState(true); // برای بررسی visibility
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const counterRef = useRef(0);
 
+  // 📌 گرفتن تبلیغ از سرور
   useEffect(() => {
-    let timer: NodeJS.Timeout;
-    let current = 0;
-    timer = setInterval(() => {
-      current++;
-      setProgress((current / countdown) * 100);
-      if (current >= countdown) {
+    adService.getActiveAd(shortCode).then(setAd).catch(console.error);
+  }, [shortCode]);
+
+  // 📌 شروع شمارش
+  useEffect(() => {
+    if (!ad) return;
+
+    const tick = () => {
+      if (!isVisible) return; // اگر صفحه دیده نشد، شمارش متوقف
+      counterRef.current++;
+      const newProgress = (counterRef.current / ad.duration) * 100;
+      setProgress(newProgress);
+      if (counterRef.current >= ad.duration) {
         setCanSkip(true);
-        clearInterval(timer);
+        if (timerRef.current) clearInterval(timerRef.current);
       }
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
+    };
+
+    timerRef.current = setInterval(tick, 1000);
+
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [ad, isVisible]);
 
   const handleSkip = async () => {
-      const domainValue = domainId && domainId !== "undefined" ? domainId : 0;
-      try {
-        await adService.registerAdView(shortCode!, domainValue);
-      } catch (e) {
-        console.error('Failed to register ad view', e);
-      }
-      window.location.href = `${import.meta.env.VITE_BACKEND_BASE_URL}/ad/skip/${domainValue}/${shortCode}`;
+    if (!ad) return;
+    const domainValue = domainId && domainId !== "undefined" ? domainId : 0;
+    try {
+      await adService.registerAdView(shortCode!, domainValue);
+    } catch (e) {
+      console.error("Failed to register ad view", e);
+    }
+    window.location.href = `${import.meta.env.VITE_BACKEND_BASE_URL}/ad/skip/${domainValue}/${shortCode}`;
   };
 
+  if (!ad) return <CircularProgress sx={{ mt: 10, display: "block", mx: "auto" }} />;
+
   return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        p: 3,
-      }}
-    >
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
+    <VisibilitySensor onChange={(visible) => setIsVisible(visible)} partialVisibility>
+      <Box
+        sx={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "linear-gradient(135deg, #1976d2, #9c27b0)",
+          p: 3,
+        }}
       >
-        <Paper
-          elevation={10}
-          sx={{
-            maxWidth: 600,
-            p: 4,
-            borderRadius: 4,
-            backdropFilter: "blur(10px)",
-            backgroundColor: "rgba(255,255,255,0.9)",
-            textAlign: "center",
-          }}
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
         >
-          <Typography variant="h4" sx={{ mb: 2, fontWeight: "bold", color: "primary.main" }}>
-            🎬 لطفاً چند لحظه صبر کنید...
-          </Typography>
-          <Typography variant="subtitle1" sx={{ mb: 3 }}>
-            تا پایان تبلیغ و انتقال به مقصد، در صفحه بمانید.
-          </Typography>
+          <Paper sx={{ p: 4, borderRadius: 4, textAlign: "center", maxWidth: 700, width: "100%" }}>
+            <Typography variant="h5" sx={{ mb: 2, fontWeight: "bold" }}>
+              🎬 {ad.title}
+            </Typography>
 
-          {/* 📺 بخش تبلیغات */}
-          <Box
-            sx={{
-              width: "100%",
-              height: 250,
-              borderRadius: 3,
-              overflow: "hidden",
-              mb: 3,
-              position: "relative",
-              boxShadow: 3,
-              backgroundColor: "#000",
-            }}
-          >
-            {/* اینجا می‌تونی بعداً iframe یا ویدیو تبلیغاتی بذاری */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 1.2 }}
-              style={{
-                width: "100%",
-                height: "100%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#fff",
-                fontSize: "1.2rem",
-              }}
+            {/* 🔹 تبلیغ پویا */}
+            {ad.media_type === "video" ? (
+              <Box
+                component="video"
+                src={ad.media_url}
+                autoPlay
+                muted
+                playsInline
+                controls={false}
+                style={{ width: "100%", borderRadius: 8, maxHeight: 400, objectFit: "cover" }}
+              />
+            ) : ad.media_type === "image" ? (
+              <Box component="img" src={ad.media_url} alt="Ad" sx={{ width: "100%", borderRadius: 2, maxHeight: 400, objectFit: "cover" }} />
+            ) : (
+              <Box
+                sx={{ borderRadius: 2, overflow: "hidden", maxHeight: 400 }}
+                dangerouslySetInnerHTML={{ __html: ad.media_url }}
+              />
+            )}
+
+            {/* 🔹 نوار پیشرفت */}
+            <LinearProgress
+              variant="determinate"
+              value={progress}
+              sx={{ mt: 3, height: 10, borderRadius: 5 }}
+            />
+
+            {/* 🔹 دکمه رفتن به لینک */}
+            <Button
+              variant="contained"
+              color="success"
+              onClick={handleSkip}
+              disabled={!canSkip}
+              sx={{ mt: 3, borderRadius: 3, px: 5, py: 1.5, fontWeight: "bold", fontSize: "1.1rem" }}
             >
-              <PlayCircleOutline sx={{ fontSize: 60, opacity: 0.7 }} />
-              <Typography sx={{ ml: 1 }}>در حال نمایش تبلیغ...</Typography>
-            </motion.div>
-          </Box>
+              {canSkip
+                ? "🚀 رفتن به لینک مقصد"
+                : `منتظر بمانید (${Math.ceil(ad.duration - (progress / 100) * ad.duration)}s)`}
+            </Button>
 
-          {/* نوار پیشرفت */}
-          <LinearProgress
-            variant="determinate"
-            value={progress}
-            sx={{
-              height: 8,
-              borderRadius: 5,
-              mb: 2,
-            }}
-          />
-
-          {/* دکمه رد کردن */}
-          <Button
-            variant="contained"
-            color="success"
-            size="large"
-            disabled={!canSkip}
-            onClick={handleSkip}
-            sx={{
-              mt: 2,
-              borderRadius: 3,
-              px: 4,
-              py: 1.2,
-              fontWeight: "bold",
-              fontSize: "1.1rem",
-              transition: "all 0.3s ease",
-              ":disabled": {
-                backgroundColor: "grey.400",
-              },
-            }}
-          >
-            {canSkip ? "🚀 رفتن به لینک مقصد" : `منتظر بمانید (${Math.ceil((100 - progress) / (100 / countdown))}s)`}
-          </Button>
-        </Paper>
-      </motion.div>
-
-      {/* بخش پایین صفحه - تبلیغ دوم یا بنر */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.5 }}
-      >
-        <Box
-          sx={{
-            position: "fixed",
-            bottom: 10,
-            textAlign: "center",
-            width: "100%",
-          }}
-        >
-          <Typography
-            variant="caption"
-            sx={{
-              color: "white",
-              textShadow: "0 0 5px rgba(0,0,0,0.5)",
-            }}
-          >
-            تبلیغات توسط سامانه کوتاه‌لینک © {new Date().getFullYear()}
-          </Typography>
-        </Box>
-      </motion.div>
-    </Box>
+            {/* 🔹 اعلان حضور کاربر */}
+            {!isVisible && (
+              <Typography variant="body2" color="error" sx={{ mt: 2 }}>
+                ⚠️ صفحه فعال نیست! شمارش تا زمانی که در صفحه باشید متوقف می‌شود.
+              </Typography>
+            )}
+          </Paper>
+        </motion.div>
+      </Box>
+    </VisibilitySensor>
   );
 }

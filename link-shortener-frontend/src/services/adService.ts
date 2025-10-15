@@ -18,4 +18,10 @@ export const adService = {
     const res = await apiClient.post(`/ads/view/${domain}/${shortCode}`);
     return res.data;
   },
+
+  async getActiveAd(shortCode?: string) {
+    const params = shortCode ? { params: { link_code: shortCode } } : undefined;
+    const res = await apiClient.get('/ads/active', params);
+    return res.data;
+  },
 };
