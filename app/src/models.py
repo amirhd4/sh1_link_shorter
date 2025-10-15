@@ -49,12 +49,13 @@ class User(Base):
     links = relationship("Link", back_populates="owner", cascade="all, delete-orphan")
     transactions = relationship("Transaction", back_populates="user", cascade="all, delete-orphan")
 
-
     first_name = Column(String, nullable=True)
     last_name = Column(String, nullable=True)
     phone_number = Column(String, nullable=True)
 
     domains = relationship("Domain", back_populates="owner", cascade="all, delete-orphan")
+
+    ad_rewards = relationship("UserAdReward", back_populates="user", cascade="all, delete-orphan")
 
     def generate_api_key(self):
         self.api_key = "sk_" + token_urlsafe(32)
@@ -173,3 +174,17 @@ class AdAnalytics(Base):
 
     link = relationship("Link", back_populates="ad_analytics")
     domain = relationship("Domain", back_populates="ad_analytics", lazy="joined")
+
+
+class UserAdReward(Base):
+    __tablename__ = "user_ad_rewards"
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    link_id = Column(Integer, ForeignKey("links.id"), nullable=False, index=True)
+    ad_view_count = Column(Integer, default=0)
+    total_points = Column(Integer, default=0)
+    last_view_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    user = relationship("User", back_populates="ad_rewards")
+    link = relationship("Link")

@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from fastapi import APIRouter, Request, BackgroundTasks, Depends, HTTPException, Path
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -10,6 +12,7 @@ import redis.asyncio as redis
 from sqlalchemy.orm import selectinload
 from starlette.responses import RedirectResponse
 import json
+from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 
 from ..database import async_session_factory, get_db
 from ..services import security
@@ -95,8 +98,6 @@ async def increment_click_counter(
     except Exception as e:
         logger.exception("increment_click_counter failed for %s: %s", short_code, e)
 
-
-from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 
 @router.get("/{short_code}")
 @limiter.limit("1000/minute")
@@ -318,5 +319,20 @@ async def skip_ad_and_redirect(
         fingerprint,
         redis_client,
     )
+
+    try:
+        await redis_client.xadd("ad_skip_events_stream", {
+            "short_code": short_code,
+            "domain_id": str(domain_id) if domain_id is not None else "default",
+            "from_ad_page": "true",
+            "ip": client_ip,
+            "user_agent": user_agent,
+            # "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat()
+
+        })
+        logger.info("Ad skip event sent to stream for %s", short_code)
+    except Exception as e:
+        logger.exception("Failed to push ad skip event: %s", e)
 
     return RedirectResponse(url=long_url, status_code=307)

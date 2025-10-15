@@ -162,3 +162,12 @@ type UpdateLinkPayload = {
 
     show_ads?: boolean;
 };
+
+
+export interface AdReward {
+  link_short_code: string;
+  link_long_url: string;
+  ad_views: number;
+  points: number;
+  last_view_at: string;
+}

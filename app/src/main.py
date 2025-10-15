@@ -9,7 +9,7 @@ from aiosmtplib import SMTP
 import ssl
 
 from .database import engine, Base, async_session_factory
-from .routers import auth, links, admin, payment, stats, plans, redirect, api, domains
+from .routers import auth, links, admin, payment, stats, plans, redirect, api, domains, ads
 from .rate_limiter import limiter
 from .models import Plan
 from .config import settings
@@ -79,7 +79,6 @@ app.add_middleware(
     allow_headers=["*"],    # اجازه ارسال تمام هدرها
 )
 
-
 app.include_router(auth.router, prefix="/api")
 app.include_router(links.router, prefix="/api")
 app.include_router(admin.router, prefix="/api")
@@ -88,6 +87,7 @@ app.include_router(stats.router, prefix="/api")
 app.include_router(plans.router, prefix="/api")
 app.include_router(api.api_router, prefix="/api")
 app.include_router(domains.router, prefix="/api")
+app.include_router(ads.router, prefix="/api")
 app.include_router(redirect.router)
 
 

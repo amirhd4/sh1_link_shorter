@@ -4,6 +4,7 @@ import { Box, Button, Typography, LinearProgress, Paper } from "@mui/material";
 import { motion } from "framer-motion";
 import { PlayCircleOutline } from "@mui/icons-material";
 import { useTheme } from "@mui/material/styles";
+import {adService} from "../services/adService.ts";
 
 export default function AdRedirectPage() {
   const { domainId, shortCode } = useParams();
@@ -28,9 +29,14 @@ export default function AdRedirectPage() {
     return () => clearInterval(timer);
   }, []);
 
-  const handleSkip = () => {
-    const domainValue = domainId && domainId !== "undefined" ? domainId : 0;
-    window.location.href = `${import.meta.env.VITE_BACKEND_BASE_URL_ORIGIN}/ad/skip/${domainValue}/${shortCode}`;
+  const handleSkip = async () => {
+      const domainValue = domainId && domainId !== "undefined" ? domainId : 0;
+      try {
+        await adService.registerAdView(shortCode!, domainValue);
+      } catch (e) {
+        console.error('Failed to register ad view', e);
+      }
+      window.location.href = `${import.meta.env.VITE_BACKEND_BASE_URL}/ad/skip/${domainValue}/${shortCode}`;
   };
 
   return (

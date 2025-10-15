@@ -35,6 +35,7 @@ import SmartToyIcon from '@mui/icons-material/SmartToy';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import config from '../../../config';
 import type { AdvancedLinkStats } from '../../../types/api';
+import {adService} from "../../../services/adService.ts";
 
 /**
  * نمودار کلیک ۷ روزه
@@ -74,9 +75,24 @@ export function LinkDetailsPage() {
 
   const { data: analytics, isLoading: isAnalyticsLoading } = useQuery({
     queryKey: ['link-analytics', shortCode],
-    queryFn: () => linkService.getLinkStats(shortCode!, domainId),
+    // queryFn: () => linkService.getLinkStats(shortCode!, domainId),
+    queryFn: async () => {
+      const stats = await linkService.getLinkStats(shortCode!, domainId);
+      const adStats = await adService.getLinkAdStats(shortCode!, domainId);
+      return { ...stats, ad_stats: adStats };
+    },
     enabled: !!shortCode
   });
+
+  const { data: adReward } = useQuery({
+    queryKey: ['ad-reward', shortCode],
+    queryFn: async () => {
+      const rewards = await adService.getUserAdRewards();
+      return rewards.find(r => r.link_short_code === shortCode);
+    },
+    enabled: !!shortCode,
+  });
+
 
   const fullShortUrl = `${linkDetails?.domain_name}/${linkDetails?.short_code}`;
   const qrCodeUrl = `${config.backendBaseUrl}/links/${linkDetails?.short_code}/${linkDetails?.domain_id || 0}/qr`;
@@ -237,6 +253,76 @@ export function LinkDetailsPage() {
             )}
           </Paper>
         </Box>
+        {/* آمار تبلیغاتی لینک */}
+<Box mt={4}>
+  <Typography variant="h6" gutterBottom>📺 آمار تبلیغاتی لینک</Typography>
+  <Paper sx={{ p: 2 }}>
+    {isAnalyticsLoading ? (
+      <CircularProgress sx={{ mt: 2 }} />
+    ) : analytics.ad_stats ? (
+      <Grid container spacing={2}>
+        <Grid size={{xs: 12, sm: 6, md: 4}}>
+          <Paper sx={{ p: 2, textAlign: 'center', borderRadius: 2, boxShadow: 2 }}>
+            <Typography variant="subtitle1" fontWeight="bold">👁 بازدیدهای تبلیغ</Typography>
+            <Typography variant="h4" color="primary" fontWeight="bold">
+              {analytics.ad_stats.views.toLocaleString('fa-IR')}
+            </Typography>
+          </Paper>
+        </Grid>
+
+        <Grid size={{xs: 12, sm: 6, md: 4}}>
+          <Paper sx={{ p: 2, textAlign: 'center', borderRadius: 2, boxShadow: 2 }}>
+            <Typography variant="subtitle1" fontWeight="bold">💰 امتیازات کسب‌شده</Typography>
+            <Typography variant="h4" color="success.main" fontWeight="bold">
+              {analytics.ad_stats.points.toLocaleString('fa-IR')}
+            </Typography>
+          </Paper>
+        </Grid>
+
+        <Grid size={{xs: 12, sm: 6, md: 4}}>
+          <Paper sx={{ p: 2, textAlign: 'center', borderRadius: 2, boxShadow: 2 }}>
+            <Typography variant="subtitle1" fontWeight="bold">🕒 آخرین مشاهده</Typography>
+            <Typography variant="body2" color="text.secondary">
+              {analytics.ad_stats.last_view_at
+                ? new Date(analytics.ad_stats.last_view_at).toLocaleString('fa-IR')
+                : '—'}
+            </Typography>
+          </Paper>
+        </Grid>
+      </Grid>
+    ) : (
+      <Typography variant="body2" color="text.secondary">
+        هنوز هیچ مشاهده تبلیغی برای این لینک ثبت نشده است.
+      </Typography>
+    )}
+  </Paper>
+</Box>
+
+
+        {adReward && (
+  <Box mt={4}>
+    <Typography variant="h6" gutterBottom>🎯 امتیاز تبلیغاتی این لینک</Typography>
+    <Paper sx={{ p: 2, borderRadius: 2, boxShadow: 2 }}>
+      <Grid container spacing={2}>
+        <Grid size={{xs: 12, sm: 4}}>
+          <Typography variant="subtitle1" fontWeight="bold">👁 بازدید تبلیغ</Typography>
+          <Typography variant="h5" color="primary">{adReward.ad_views}</Typography>
+        </Grid>
+        <Grid size={{xs: 12, sm: 4}}>
+          <Typography variant="subtitle1" fontWeight="bold">💰 امتیاز</Typography>
+          <Typography variant="h5" color="success.main">{adReward.points}</Typography>
+        </Grid>
+        <Grid size={{xs: 12, sm: 4}}>
+          <Typography variant="subtitle1" fontWeight="bold">🕒 آخرین مشاهده</Typography>
+          <Typography variant="body2" color="text.secondary">
+            {new Date(adReward.last_view_at).toLocaleString('fa-IR')}
+          </Typography>
+        </Grid>
+      </Grid>
+    </Paper>
+  </Box>
+)}
+
 
 
       <Snackbar
