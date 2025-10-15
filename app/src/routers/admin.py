@@ -10,7 +10,7 @@ from sqlalchemy.orm import selectinload
 from .. import models, schemas
 from ..database import get_db
 from ..schemas import DailyStat, SystemStats
-from ..services import security
+from ..services import security, ads as ads_service, stats as stats_service
 
 router = APIRouter(
     prefix="/admin",
@@ -119,6 +119,62 @@ async def update_user_role(user_id: int, request: UpdateUserRoleRequest, db: Asy
     await db.commit()
     await db.refresh(user)
     return user
+
+
+# Ad Statistics Endpoints
+@router.get("/stats/ads-per-link", response_model=List[schemas.AdStatsPerLink])
+async def get_ad_stats_per_link_by_admin(db: AsyncSession = Depends(get_db)):
+    """آمار بازدید و امتیازات تبلیغات را به تفکیک لینک برمی‌گرداند."""
+    stats = await stats_service.get_ad_stats_per_link(db)
+    return stats
+
+
+@router.get("/stats/ads-per-user", response_model=List[schemas.AdStatsPerUser])
+async def get_ad_stats_per_user_by_admin(db: AsyncSession = Depends(get_db)):
+    """آمار بازدید و امتیازات تبلیغات را به تفکیک کاربر برمی‌گرداند."""
+    stats = await stats_service.get_ad_stats_per_user(db)
+    return stats
+
+
+# Ad Management Endpoints
+@router.post("/ads", response_model=schemas.AdResponse, status_code=status.HTTP_201_CREATED)
+async def create_ad_by_admin(ad_create: schemas.AdCreate, db: AsyncSession = Depends(get_db)):
+    """ایجاد یک تبلیغ جدید توسط ادمین"""
+    return await ads_service.create_ad(db=db, ad=ad_create)
+
+
+@router.get("/ads", response_model=List[schemas.AdResponse])
+async def list_ads_by_admin(skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db)):
+    """لیست تمام تبلیغات را برمی‌گرداند"""
+    ads = await ads_service.get_ads(db, skip=skip, limit=limit)
+    return ads
+
+
+@router.get("/ads/{ad_id}", response_model=schemas.AdResponse)
+async def get_ad_by_admin(ad_id: int, db: AsyncSession = Depends(get_db)):
+    """دریافت اطلاعات یک تبلیغ خاص"""
+    db_ad = await ads_service.get_ad(db, ad_id=ad_id)
+    if db_ad is None:
+        raise HTTPException(status_code=404, detail="Ad not found")
+    return db_ad
+
+
+@router.put("/ads/{ad_id}", response_model=schemas.AdResponse)
+async def update_ad_by_admin(ad_id: int, ad_update: schemas.AdUpdate, db: AsyncSession = Depends(get_db)):
+    """به‌روزرسانی اطلاعات یک تبلیغ"""
+    updated_ad = await ads_service.update_ad(db=db, ad_id=ad_id, ad_update=ad_update)
+    if updated_ad is None:
+        raise HTTPException(status_code=404, detail="Ad not found")
+    return updated_ad
+
+
+@router.delete("/ads/{ad_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_ad_by_admin(ad_id: int, db: AsyncSession = Depends(get_db)):
+    """حذف یک تبلیغ"""
+    success = await ads_service.delete_ad(db=db, ad_id=ad_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Ad not found")
+    return None
 
 
 @router.delete("/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
