@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tabs, Tab } from '@mui/material';
-import { getAdStatsPerLink, getAdStatsPerUser } from '../../services/admin';
-import { AdStatsPerLink, AdStatsPerUser } from '../../types';
+import { getAdStatsPerLink, getAdStatsPerUser } from '../../../services/admin.ts';
+import { AdStatsPerLink, AdStatsPerUser } from '../../../types';
 
 export function AdStatsPage() {
   const [statsLink, setStatsLink] = useState<AdStatsPerLink[]>([]);

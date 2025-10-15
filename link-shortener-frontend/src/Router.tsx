@@ -9,8 +9,8 @@ import { AdminLayout } from './layouts/AdminLayout';
 
 // Pages
 import { HomePage } from './pages/home.page.tsx';
-import { AdManagementPage } from './pages/admin/AdManagement.page.tsx';
-import { AdStatsPage } from './pages/admin/AdStats.page.tsx';
+import { AdManagementPage } from './features/admin-dashboard/pages/AdManagement.page.tsx';
+import { AdStatsPage } from './features/admin-dashboard/pages/AdStats.page.tsx';
 import { LoginPage } from './pages/login.page.tsx';
 import { RegisterPage } from './pages/register.page.tsx';
 import { LinksDashboard } from './features/client-dashboard/components/LinksDashboard';

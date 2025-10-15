@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Box, Button, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, IconButton } from '@mui/material';
 import { Edit, Delete } from '@mui/icons-material';
-import { getAds, deleteAd } from '../../services/admin';
-import { Ad } from '../../types';
+import { getAds, deleteAd } from '../../../services/admin.ts';
+import { Ad } from '../../../types';
 
 export function AdManagementPage() {
   const [ads, setAds] = useState<Ad[]>([]);
