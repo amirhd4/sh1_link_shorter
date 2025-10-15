@@ -46,6 +46,20 @@ def make_cache_key(domain_name: str, short_code: str) -> str:
     return f"link:{host}:{short_code}"
     # return f"link:{domain_name}:{short_code}"
 
+
+async def resolve_domain(domain_id: int, current_user, db):
+    if domain_id == 0 or domain_id is None:
+        return None, settings.origin_backend_url
+    domain = await db.scalar(select(models.Domain).where(
+        models.Domain.id == domain_id,
+        models.Domain.user_id == current_user.id,
+        models.Domain.is_verified == True
+    ))
+    if not domain:
+        raise HTTPException(status_code=403, detail="دامنه معتبر نیست یا تایید نشده")
+    return domain.id, domain.name
+
+
 @router.post("/shorten", response_model=schemas.URLResponse)
 @limiter.limit("30/minute")
 async def create_short_url(
@@ -231,11 +245,8 @@ async def update_link(
 
     update_data = link_update.model_dump(exclude_unset=True)
     for key, value in update_data.items():
-        if key == 'long_url' and value:
-            setattr(db_link, key, str(value))
-        elif hasattr(db_link, key):
-            setattr(db_link, key, value)
-
+        if hasattr(db_link, key) and value is not None:
+            setattr(db_link, key, str(value) if key == "long_url" else value)
     await db.commit()
     await db.refresh(db_link)
 

@@ -45,11 +45,14 @@ export interface LinkDetails {
     utm_campaign: string | null;
     utm_term: string | null;
     utm_content: string | null;
+
+    show_ads: boolean;
 }
 
 export interface URLResponse {
   long_url: string;
   short_url: string;
+  show_ads: boolean;
 }
 
 export interface UpdateProfilePayload {
@@ -142,6 +145,8 @@ export interface DomainResponse {
 export interface URLCreate {
   long_url: string;
   domain_id?: number | 0;
+
+  show_ads?: boolean;
 }
 
 type UpdateLinkPayload = {
@@ -154,4 +159,6 @@ type UpdateLinkPayload = {
     utm_campaign?: string | null;
     utm_term?: string | null;
     utm_content?: string | null;
+
+    show_ads?: boolean;
 };

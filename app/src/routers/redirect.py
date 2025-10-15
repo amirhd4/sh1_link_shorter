@@ -96,6 +96,8 @@ async def increment_click_counter(
         logger.exception("increment_click_counter failed for %s: %s", short_code, e)
 
 
+from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
+
 @router.get("/{short_code}")
 @limiter.limit("1000/minute")
 async def redirect_to_long_url(
@@ -106,8 +108,13 @@ async def redirect_to_long_url(
         db: AsyncSession = Depends(get_db),
         redis_client: redis.Redis = Depends(get_redis_client)
 ):
-    host = request.headers.get("host")
+    host = (request.headers.get("host") or "").lower()
     cache_key = f"link:{host}:{short_code}"
+
+    long_url = None
+    show_ads = False
+    domain_id_for_ads = None
+    utm_params = {}
 
     # --- ۱. سعی کن از کش بخونی ---
     cached_data = await redis_client.get(cache_key)
@@ -116,14 +123,15 @@ async def redirect_to_long_url(
             cache_obj = json.loads(cached_data)
             long_url = cache_obj.get("long_url")
             show_ads = cache_obj.get("show_ads", False)
+            domain_id_for_ads = cache_obj.get("domain_id", None)
+            utm_params = cache_obj.get("utm_params", {})
         except Exception:
             long_url = None
             show_ads = False
-    else:
-        long_url = None
-        show_ads = False
+            utm_params = {}
+            domain_id_for_ads = None
 
-    is_custom_domain = (host != DEFAULT_HOST)
+    is_custom_domain = (host != DEFAULT_HOST.lower())
 
     # --- ۲. اگر تو کش نبود، از دیتابیس بخون ---
     if not long_url:
@@ -138,18 +146,18 @@ async def redirect_to_long_url(
             result = await db.execute(
                 select(models.Link)
                 .options(selectinload(models.Link.domain))
+                .join(models.Domain)
                 .where(models.Domain.name == host, models.Link.short_code == short_code)
             )
 
         link = result.scalar_one_or_none()
         if not link:
-            logger.info("URL not found for host %s and code %s", host, short_code)
             raise HTTPException(status_code=404, detail="URL not found")
 
         long_url = link.long_url
         show_ads = link.show_ads
+        domain_id_for_ads = link.domain_id if link else None
 
-        # --- UTM ساخت ---
         utm_params = {
             'utm_source': link.utm_source,
             'utm_medium': link.utm_medium,
@@ -157,36 +165,37 @@ async def redirect_to_long_url(
             'utm_term': link.utm_term,
             'utm_content': link.utm_content,
         }
-        active_utm_params = {k: v for k, v in utm_params.items() if v}
 
-        if active_utm_params:
-            parsed_url = urlparse(long_url)
-            query_params = parse_qs(parsed_url.query)
-            query_params.update(active_utm_params)
-            new_query = urlencode(query_params, doseq=True)
-            long_url_with_utm = urlunparse(parsed_url._replace(query=new_query))
-        else:
-            long_url_with_utm = long_url
-
-        # --- ذخیره تو کش (long_url + show_ads) ---
+        # ذخیره در کش
         await redis_client.set(
             cache_key,
-            json.dumps({"long_url": long_url, "show_ads": show_ads}),
+            json.dumps({
+                "long_url": long_url,
+                "show_ads": show_ads,
+                "domain_id": domain_id_for_ads,
+                "utm_params": {k: v for k, v in utm_params.items() if v}
+            }),
             ex=3600
         )
 
+    # --- ۳. اعمال UTM حتی اگر از کش خوند ---
+    active_utm_params = {k: v for k, v in utm_params.items() if v}
+    if active_utm_params:
+        parsed_url = urlparse(long_url)
+        query_params = parse_qs(parsed_url.query)
+        query_params.update(active_utm_params)
+        long_url_with_utm = urlunparse(parsed_url._replace(query=urlencode(query_params, doseq=True)))
     else:
-        # از کش استفاده کن
         long_url_with_utm = long_url
 
-    # --- ۳. اگر لینک تبلیغ‌دار بود، به صفحه تبلیغات بفرست ---
+    # --- ۴. اگر لینک تبلیغ‌دار بود ---
     if show_ads:
         return RedirectResponse(
-            url=f"{settings.frontend_url}/pages/{link.domain_id}/{short_code}/ad",
+            url=f"{settings.frontend_url}/pages/{domain_id_for_ads}/{short_code}/ad",
             status_code=307
         )
 
-    # --- ۴. ثبت اطلاعات کاربر ---
+    # --- ۵. ثبت اطلاعات کلیک ---
     client_ip = (request.headers.get("x-forwarded-for") or request.client.host).split(",")[0].strip()
     user_agent = request.headers.get("user-agent", "")
     accept_language = request.headers.get("accept-language")
@@ -223,15 +232,10 @@ async def skip_ad_and_redirect(
     db: AsyncSession = Depends(get_db),
     redis_client: redis.Redis = Depends(get_redis_client),
 ):
-    """
-    وقتی کاربر تبلیغات رو رد کرد و باید به لینک مقصد هدایت بشه.
-    از کش استفاده می‌کنه تا long_url و show_ads سریع‌تر خوانده بشه.
-    """
-
     host = request.headers.get("host")
-    cache_key = f"link:{host}:{short_code}"
+    cache_key = f"link:{host.lower()}:{short_code}"
 
-    # ---- domain_id normalization ----
+    # Normalize domain_id
     if domain_id in ["0", "None", "null", "undefined", ""]:
         domain_id = None
     else:
@@ -240,15 +244,15 @@ async def skip_ad_and_redirect(
         except ValueError:
             domain_id = None
 
-    # ---- خواندن از کش ----
+    # خواندن از کش
     cached = await redis_client.get(cache_key)
     if cached:
-        import json
         data = json.loads(cached)
         long_url = data.get("long_url")
         show_ads = data.get("show_ads", False)
+        utm_params = data.get("utm_params", {})
     else:
-        # ---- جستجوی لینک در دیتابیس ----
+        # جستجوی لینک در دیتابیس
         if domain_id is None:
             result = await db.execute(
                 select(models.Link)
@@ -269,38 +273,36 @@ async def skip_ad_and_redirect(
 
         long_url = link.long_url
         show_ads = link.show_ads
+        utm_params = {
+            'utm_source': link.utm_source,
+            'utm_medium': link.utm_medium,
+            'utm_campaign': link.utm_campaign,
+            'utm_term': link.utm_term,
+            'utm_content': link.utm_content,
+        }
 
-        # ---- ذخیره در کش ----
-        import json
+        # ذخیره در کش همراه با UTMها
         await redis_client.set(cache_key, json.dumps({
             "long_url": long_url,
-            "show_ads": show_ads
+            "show_ads": show_ads,
+            "utm_params": {k: v for k, v in utm_params.items() if v}
         }), ex=3600)
 
-    # ---- اعمال UTMها (مثل redirect اصلی) ----
-    utm_params = {
-        'utm_source': data.get("utm_source") if cached else link.utm_source,
-        'utm_medium': data.get("utm_medium") if cached else link.utm_medium,
-        'utm_campaign': data.get("utm_campaign") if cached else link.utm_campaign,
-        'utm_term': data.get("utm_term") if cached else link.utm_term,
-        'utm_content': data.get("utm_content") if cached else link.utm_content,
-    }
+    # اعمال UTMها روی URL حتی اگر از کش خونده شده
     active_utm_params = {k: v for k, v in utm_params.items() if v}
     if active_utm_params:
-        from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
         parsed_url = urlparse(long_url)
         query_params = parse_qs(parsed_url.query)
         query_params.update(active_utm_params)
         long_url = urlunparse(parsed_url._replace(query=urlencode(query_params, doseq=True)))
 
-    # ---- ثبت آمار کلیک ----
+    # ثبت آمار کلیک
     client_ip = (request.headers.get("x-forwarded-for") or request.client.host).split(",")[0].strip()
     user_agent = request.headers.get("user-agent", "")
     accept_language = request.headers.get("accept-language")
     referer = request.headers.get("referer")
 
     if not fingerprint:
-        import hashlib
         raw = f"{client_ip}|{user_agent}|{accept_language or ''}"
         fingerprint = hashlib.sha256(raw.encode()).hexdigest()
 
@@ -317,5 +319,4 @@ async def skip_ad_and_redirect(
         redis_client,
     )
 
-    # ---- Redirect ----
     return RedirectResponse(url=long_url, status_code=307)

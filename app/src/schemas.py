@@ -138,6 +138,8 @@ class LinkUpdate(BaseModel):
     utm_term: Optional[str] = None
     utm_content: Optional[str] = None
 
+    show_ads: bool = True
+
 class DailyStat(BaseModel):
     date: date
     count: int

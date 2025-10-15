@@ -48,6 +48,8 @@ const createLinkSchema = z.object({
   utmCampaign: z.string().nullable().optional(),
   utmTerm: z.string().nullable().optional(),
   utmContent: z.string().nullable().optional(),
+  showAds: z.boolean(),
+
 });
 
 type CreateLinkFormInputs = z.infer<typeof createLinkSchema>;
@@ -93,6 +95,8 @@ export function CreateLinkForm({ isOpen, onClose }: CreateLinkFormProps) {
         utmCampaign: null,
         utmTerm: null,
         utmContent: null,
+        showAds: true,
+
     },
   });
 
@@ -121,6 +125,7 @@ export function CreateLinkForm({ isOpen, onClose }: CreateLinkFormProps) {
     const payload: URLCreate = {
       long_url: data.longUrl,
       domain_id: data.domain?.id,
+      show_ads: data.showAds,
       ...utmPayload,
     };
 
@@ -298,6 +303,24 @@ export function CreateLinkForm({ isOpen, onClose }: CreateLinkFormProps) {
               />
             </Grid>
           </Grid>
+            <Grid size={{ xs: 12 }}>
+              <Controller
+                name="showAds"
+                control={control}
+                render={({ field }) => (
+                  <Stack direction="row" alignItems="center" spacing={1}>
+                    <input
+                      type="checkbox"
+                      checked={field.value}
+                      onChange={(e) => field.onChange(e.target.checked)}
+                      id="showAds"
+                    />
+                    <label htmlFor="showAds">نمایش صفحه تبلیغاتی قبل از انتقال (show_ads)</label>
+                  </Stack>
+                )}
+              />
+            </Grid>
+
 
 
           <Button

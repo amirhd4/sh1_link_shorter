@@ -58,7 +58,7 @@ async def api_shorten_url(
             detail="The provided URL is flagged as malicious and cannot be shortened."
         )
 
-    # تعیین دامنه و domain_id برای لینک جدید
+    # تعیین دامنه و domain_id
     if url_data.domain_id:
         domain = await db.scalar(
             select(models.Domain).where(
@@ -69,17 +69,12 @@ async def api_shorten_url(
         )
         if not domain:
             raise HTTPException(403, "دامنه معتبر نیست یا تایید نشده")
-
         link_domain_id = domain.id
         link_domain_name = domain.name
     else:
-        # **منطق جدید برای دامنه پیش‌فرض: بدون جستجوی دیتابیس و تنظیم domain_id = None**
         link_domain_id = None
-        # برای ساخت short_url، فقط Host را از تنظیمات استخراج می‌کنیم
-        # link_domain_name = urlparse(settings.origin_backend_url).netloc
         link_domain_name = settings.origin_backend_url
 
-    # ساخت لینک کوتاه
     for _ in range(5):
         short_code = await generate_unique_short_key(redis_client)
         new_link = models.Link(
@@ -98,6 +93,25 @@ async def api_shorten_url(
         try:
             await db.commit()
             await db.refresh(new_link)
+
+            # ذخیره در Redis همراه با UTMها
+            cache_key = f"link:{link_domain_name.lower()}:{new_link.short_code}"
+            await redis_client.set(
+                cache_key,
+                json.dumps({
+                    "long_url": new_link.long_url,
+                    "show_ads": getattr(new_link, "show_ads", False),
+                    "utm_params": {k: v for k, v in {
+                        'utm_source': new_link.utm_source,
+                        'utm_medium': new_link.utm_medium,
+                        'utm_campaign': new_link.utm_campaign,
+                        'utm_term': new_link.utm_term,
+                        'utm_content': new_link.utm_content
+                    }.items() if v}
+                }),
+                ex=3600
+            )
+
             return schemas.URLResponse(
                 long_url=new_link.long_url,
                 short_url=f"{link_domain_name}/{new_link.short_code}"

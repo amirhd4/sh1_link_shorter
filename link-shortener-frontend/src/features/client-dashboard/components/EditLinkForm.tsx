@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { TextField, Button, Box, Typography, Alert, Modal, CircularProgress, Grid } from '@mui/material';
+import {TextField, Button, Box, Typography, Alert, Modal, CircularProgress, Grid, Stack} from '@mui/material';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { linkService } from '../../../services/linkService';
 import type {LinkDetails, UpdateLinkPayload} from '../../../types/api';
@@ -27,6 +27,8 @@ const editLinkSchema = z.object({
   utmCampaign: z.string().nullable().optional(),
   utmTerm: z.string().nullable().optional(),
   utmContent: z.string().nullable().optional(),
+  showAds: z.boolean(),
+
 });
 
 
@@ -59,6 +61,8 @@ export function EditLinkForm({ isOpen, onClose, link }: EditLinkFormProps) {
                 utmCampaign: link.utm_campaign,
                 utmTerm: link.utm_term,
                 utmContent: link.utm_content,
+                showAds: link.show_ads,
+
             });
         }
     }, [link, reset]);
@@ -87,6 +91,8 @@ export function EditLinkForm({ isOpen, onClose, link }: EditLinkFormProps) {
             utm_campaign: data.utmCampaign,
             utm_term: data.utmTerm,
             utm_content: data.utmContent,
+            show_ads: data.showAds,
+
         });
   };
 
@@ -207,6 +213,25 @@ export function EditLinkForm({ isOpen, onClose, link }: EditLinkFormProps) {
                   />
                 </Grid>
               </Grid>
+
+            <Grid size={{ xs: 12 }}>
+              <Controller
+                name="showAds"
+                control={control}
+                render={({ field }) => (
+                  <Stack direction="row" alignItems="center" spacing={1}>
+                    <input
+                      type="checkbox"
+                      checked={field.value}
+                      onChange={(e) => field.onChange(e.target.checked)}
+                      id="showAdsEdit"
+                    />
+                    <label htmlFor="showAdsEdit">نمایش صفحه تبلیغاتی قبل از انتقال (show_ads)</label>
+                  </Stack>
+                )}
+              />
+            </Grid>
+
 
               <Button
                 type="submit"
