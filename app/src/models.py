@@ -6,6 +6,7 @@ from sqlalchemy import Column, Integer, String, BigInteger, ForeignKey, Date, En
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from sqlalchemy.ext.declarative import declarative_base
 import enum
+from datetime import datetime
 
 Base = declarative_base()
 

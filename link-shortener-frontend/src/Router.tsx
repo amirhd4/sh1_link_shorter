@@ -9,6 +9,8 @@ import { AdminLayout } from './layouts/AdminLayout';
 
 // Pages
 import { HomePage } from './pages/home.page.tsx';
+import { AdManagementPage } from './pages/admin/AdManagement.page.tsx';
+import { AdStatsPage } from './pages/admin/AdStats.page.tsx';
 import { LoginPage } from './pages/login.page.tsx';
 import { RegisterPage } from './pages/register.page.tsx';
 import { LinksDashboard } from './features/client-dashboard/components/LinksDashboard';
@@ -81,6 +83,8 @@ const router = createBrowserRouter([
               { path: 'dashboard', element: <AdminDashboardPage /> },
               { path: 'users', element: <UserManagementPage /> },
               { path: 'links', element: <LinkManagementPage /> },
+              { path: 'ads', element: <AdManagementPage /> },
+              { path: 'stats', element: <AdStatsPage /> },
             ],
           },
         ],

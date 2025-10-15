@@ -24,6 +24,51 @@ class LinkDetailsForAdmin(BaseModel):
         from_attributes = True
 
 
+# Schemas for Ad Statistics
+class AdStatsPerLink(BaseModel):
+    short_code: str
+    long_url: HttpUrl
+    total_views: int
+    total_points: int
+
+
+class AdStatsPerUser(BaseModel):
+    user_id: int
+    user_email: EmailStr
+    total_views: int
+    total_points: int
+
+
+# Schemas for Ads
+class AdBase(BaseModel):
+    title: str
+    media_type: str = "image"
+    media_url: HttpUrl
+    target_url: Optional[HttpUrl] = None
+    is_active: bool = True
+    duration: int = 7
+
+
+class AdCreate(AdBase):
+    pass
+
+
+class AdUpdate(BaseModel):
+    title: Optional[str] = None
+    media_url: Optional[HttpUrl] = None
+    target_url: Optional[HttpUrl] = None
+    is_active: Optional[bool] = None
+    duration: Optional[int] = None
+
+
+class AdResponse(AdBase):
+    id: int
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
 class LinkStatDay(BaseModel):
     date: date
     clicks: int

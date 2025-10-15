@@ -3,6 +3,8 @@ import DashboardIcon from '@mui/icons-material/Dashboard';
 import PeopleIcon from '@mui/icons-material/People';
 import { Link as RouterLink } from 'react-router-dom';
 import LinkIcon from '@mui/icons-material/Link';
+import CampaignIcon from '@mui/icons-material/Campaign';
+import BarChartIcon from '@mui/icons-material/BarChart';
 
 
 const drawerWidth = 240;
@@ -16,7 +18,8 @@ const navItems = [
     { text: 'داشبورد ادمین', icon: <DashboardIcon />, path: '/admin/dashboard' },
     { text: 'مدیریت کاربران', icon: <PeopleIcon />, path: '/admin/users' },
     { text: 'مدیریت لینک‌ها', icon: <LinkIcon />, path: '/admin/links' },
-
+    { text: 'مدیریت تبلیغات', icon: <CampaignIcon />, path: '/admin/ads' },
+    { text: 'آمار تبلیغات', icon: <BarChartIcon />, path: '/admin/stats' },
 ];
 
 export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
