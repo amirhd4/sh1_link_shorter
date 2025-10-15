@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -17,6 +17,7 @@ router = APIRouter(prefix="/ads", tags=["Advertising"])
 @limiter.limit("100/minute")
 @router.get("/rewards/me")
 async def get_user_ad_rewards(
+    request: Request,
     current_user: models.User = Depends(security.get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
@@ -41,7 +42,8 @@ async def get_user_ad_rewards(
 
 
 @router.get("/stats/{domain}/{short_code}")
-async def get_link_ad_stats(domain: str, short_code: str, db: AsyncSession = Depends(get_db)):
+@limiter.limit("100/minute")
+async def get_link_ad_stats(request: Request, domain: str, short_code: str, db: AsyncSession = Depends(get_db)):
     result = await db.execute(
         select(models.Link)
         .options(selectinload(models.Link.ad_rewards))
@@ -67,7 +69,9 @@ async def get_link_ad_stats(domain: str, short_code: str, db: AsyncSession = Dep
 
 
 @router.post("/view/{domain}/{short_code}")
+@limiter.limit("100/minute")
 async def register_ad_view(
+    request: Request,
     domain: str,
     short_code: str,
     current_user: models.User = Depends(security.get_current_user),
