@@ -1,28 +1,29 @@
-import { apiService } from './apiService';
-import { Ad, AdCreate, AdUpdate, AdStatsPerLink, AdStatsPerUser } from '../types';
+// import { apiService } from './apiService';
+import apiClient from '../lib/axios';
+import type {Ad, AdCreate, AdStatsPerLink, AdStatsPerUser, AdUpdate} from "../types";
 
 // Ad Management
 export const getAds = (): Promise<Ad[]> => {
-  return apiService.get('/admin/ads');
+  return apiClient.get('/admin/ads');
 };
 
 export const createAd = (adData: AdCreate): Promise<Ad> => {
-  return apiService.post('/admin/ads', adData);
+  return apiClient.post('/admin/ads', adData);
 };
 
 export const updateAd = (adId: number, adData: AdUpdate): Promise<Ad> => {
-  return apiService.put(`/admin/ads/${adId}`, adData);
+  return apiClient.put(`/admin/ads/${adId}`, adData);
 };
 
 export const deleteAd = (adId: number): Promise<void> => {
-  return apiService.delete(`/admin/ads/${adId}`);
+  return apiClient.delete(`/admin/ads/${adId}`);
 };
 
 // Ad Statistics
 export const getAdStatsPerLink = (): Promise<AdStatsPerLink[]> => {
-  return apiService.get('/admin/stats/ads-per-link');
+  return apiClient.get('/admin/stats/ads-per-link');
 };
 
 export const getAdStatsPerUser = (): Promise<AdStatsPerUser[]> => {
-  return apiService.get('/admin/stats/ads-per-user');
+  return apiClient.get('/admin/stats/ads-per-user');
 };
