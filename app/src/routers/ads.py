@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy import func
 from sqlalchemy.orm import selectinload
 from datetime import datetime
 
@@ -44,28 +45,37 @@ async def get_user_ad_rewards(
 @router.get("/stats/{domain}/{short_code}")
 @limiter.limit("100/minute")
 async def get_link_ad_stats(request: Request, domain: str, short_code: str, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(
-        select(models.Link)
-        .options(selectinload(models.Link.ad_rewards))
-        .where(models.Link.short_code == short_code)
+    # 1. Find the link
+    link_result = await db.execute(
+        select(models.Link).where(models.Link.short_code == short_code)
     )
-    link = result.scalars().first()
+    link = link_result.scalars().first()
     if not link:
-        return {"error": "Link not found"}
+        raise HTTPException(status_code=404, detail="Link not found")
 
-    # فرض بر اینکه هر لینک فقط یک آمار تبلیغی داره
-    reward = await db.execute(
-        select(models.UserAdReward)
-        .where(models.UserAdReward.link_id == link.id)
-        .order_by(models.UserAdReward.last_view_at.desc())
+    # 2. Get aggregated stats from UserAdReward (total views, points)
+    # We sum them up in case there are multiple reward entries for a link (shouldn't happen, but safe)
+    reward_stats_result = await db.execute(
+        select(
+            func.sum(models.UserAdReward.ad_view_count).label("total_views"),
+            func.sum(models.UserAdReward.total_points).label("total_points"),
+            func.max(models.UserAdReward.last_view_at).label("last_view")
+        ).where(models.UserAdReward.link_id == link.id)
     )
-    r = reward.scalars().first()
+    reward_stats = reward_stats_result.first()
+
+    # 3. Get the accurate unique view count directly from AdViewEvent
+    unique_views_result = await db.execute(
+        select(func.count(func.distinct(models.AdViewEvent.ip_hash)))
+        .where(models.AdViewEvent.link_id == link.id)
+    )
+    unique_views_count = unique_views_result.scalar_one_or_none() or 0
 
     return {
-        "views": r.ad_view_count if r else 0,
-        "unique_views": r.unique_view_count if r else 0,
-        "points": r.total_points if r else 0,
-        "last_view_at": r.last_view_at if r else None,
+        "views": (reward_stats.total_views or 0) if reward_stats else 0,
+        "unique_views": unique_views_count,
+        "points": (reward_stats.total_points or 0) if reward_stats else 0,
+        "last_view_at": reward_stats.last_view if reward_stats else None,
     }
 
 
