@@ -22,7 +22,7 @@ export interface AdStatsPerLink {
 
 export interface AdStatsPerUser {
   user_id: number;
-  user_email: string;
+  user: string;
   total_views: number;
   total_points: number;
 }

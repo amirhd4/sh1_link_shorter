@@ -11,6 +11,8 @@ export function AdStatsPage() {
   const [tabIndex, setTabIndex] = useState(0);
 
   useEffect(() => {
+  if (typeof window === 'undefined') return null;
+
   const fetchStats = async () => {
     try {
       if (tabIndex === 0) {
@@ -93,7 +95,7 @@ export function AdStatsPage() {
             <TableHead>
               <TableRow>
                 <TableCell>شناسه کاربر</TableCell>
-                <TableCell>ایمیل کاربر</TableCell>
+                <TableCell>کاربر</TableCell>
                 <TableCell>مجموع بازدیدها</TableCell>
                 <TableCell>مجموع امتیازات</TableCell>
               </TableRow>
@@ -102,7 +104,7 @@ export function AdStatsPage() {
               {statsUser.map((stat) => (
                 <TableRow key={stat.user_id}>
                   <TableCell>{stat.user_id}</TableCell>
-                  <TableCell>{stat.user_email}</TableCell>
+                  <TableCell>{stat.user}</TableCell>
                   <TableCell>{stat.total_views}</TableCell>
                   <TableCell>{stat.total_points}</TableCell>
                 </TableRow>

@@ -1,4 +1,6 @@
-from pydantic import BaseModel, HttpUrl, EmailStr
+import re
+
+from pydantic import BaseModel, HttpUrl, EmailStr, validator, field_validator
 from typing import Optional, List
 from datetime import date, datetime
 
@@ -34,9 +36,16 @@ class AdStatsPerLink(BaseModel):
 
 class AdStatsPerUser(BaseModel):
     user_id: int
-    user_email: EmailStr
+    user: str
     total_views: int
     total_points: int
+
+    @field_validator("user")
+    def validate_user(cls, v):
+        phone_pattern = re.compile(r"^\+?\d{9,15}$")
+        if re.match(phone_pattern, v) or "@" in v:
+            return v
+        raise ValueError("user must be a valid email or phone number")
 
 
 # Schemas for Ads

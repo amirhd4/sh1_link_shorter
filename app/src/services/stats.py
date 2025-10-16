@@ -38,6 +38,7 @@ async def get_ad_stats_per_user(db: AsyncSession) -> List[dict]:
         select(
             models.User.id,
             models.User.email,
+            models.User.phone_number,
             func.sum(models.UserAdReward.ad_view_count).label("total_views"),
             func.sum(models.UserAdReward.total_points).label("total_points")
         )
@@ -49,7 +50,7 @@ async def get_ad_stats_per_user(db: AsyncSession) -> List[dict]:
     return [
         {
             "user_id": row.id,
-            "user_email": row.email,
+            "user": row.email or row.phone_number,
             "total_views": row.total_views,
             "total_points": row.total_points,
         }
