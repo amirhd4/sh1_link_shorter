@@ -6,6 +6,8 @@ import { Helmet } from "react-helmet-async";
 
 import { adService } from "../../../services/adService";
 import type { Ad } from "../../../types";
+import { Megaphone } from "lucide-react";
+
 
 export default function AdRedirectPage() {
   const { domainId, shortCode } = useParams<{ domainId: string; shortCode: string }>();
@@ -120,10 +122,11 @@ export default function AdRedirectPage() {
           style={{ width: '100%' }}
         >
           <Grid container justifyContent="center">
-            <Grid item xs={12} sm={10} md={8} lg={6}>
+            <Grid size={{xs: 12, sm: 10, md: 8, lg: 6}}>
               <Paper sx={{ p: { xs: 2, sm: 3, md: 4 }, borderRadius: 4, textAlign: "center", width: "100%" }}>
                 <Typography variant="h5" sx={{ mb: 2, fontWeight: "bold" }}>
-                  🎬 {ad.title}
+
+                  <Megaphone className="w-6 h-6 text-blue-500" />  {ad.title}
                 </Typography>
 
                 <Box sx={{ width: '100%', borderRadius: 2, overflow: 'hidden', maxHeight: '60vh', mb: 3 }}>
