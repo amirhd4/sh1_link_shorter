@@ -2,10 +2,11 @@ import { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import {TextField, Button, Box, Typography, Alert, Modal, CircularProgress, Grid, Stack} from '@mui/material';
+import {TextField, Button, Box, Typography, Alert, Modal, CircularProgress, Grid, Stack, IconButton} from '@mui/material';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { linkService } from '../../../services/linkService';
 import type {LinkDetails, UpdateLinkPayload} from '../../../types/api';
+import CloseIcon from "@mui/icons-material/Close";
 
 
 const modalStyle = {
@@ -104,10 +105,25 @@ export function EditLinkForm({ isOpen, onClose, link }: EditLinkFormProps) {
 
         });
   };
-
+const handleClose = () => {
+    reset();
+    updateLinkMutation.reset();
+    onClose();
+  };
   return (
     <Modal open={isOpen} onClose={onClose} aria-labelledby="edit-link-modal-title">
           <Box sx={{ ...modalStyle, width: { xs: '90%', sm: 600 } }}> {/* افزایش عرض برای فیلدهای UTM */}
+              <IconButton
+  onClick={handleClose}
+  sx={{
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    color: 'grey.700'
+  }}
+>
+  <CloseIcon />
+</IconButton>
             <Typography id="edit-link-modal-title" variant="h6" component="h2">
               ویرایش لینک
             </Typography>

@@ -3,12 +3,14 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import {
     TextField, Button, Box, Typography, Alert, Modal, CircularProgress, Autocomplete, Grid, Stack,
-    useMediaQuery, useTheme
+    useMediaQuery, useTheme,
+    IconButton
 } from '@mui/material';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { linkService } from '../../../services/linkService';
 import { domainService } from '../../../services/domainService';
 import type { DomainResponse, URLCreate, URLResponse } from '../../../types/api';
+import CloseIcon from '@mui/icons-material/Close';
 
 
 // 1. استایل برای قرارگیری مودال در مرکز صفحه (افزایش عرض برای فیلدهای UTM)
@@ -150,6 +152,17 @@ export function CreateLinkForm({ isOpen, onClose }: CreateLinkFormProps) {
   return (
     <Modal open={isOpen} onClose={handleClose} aria-labelledby="create-link-modal-title">
       <Box sx={modalStyle}>
+          <IconButton
+  onClick={handleClose}
+  sx={{
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    color: 'grey.700'
+  }}
+>
+  <CloseIcon />
+</IconButton>
         <Typography id="create-link-modal-title" variant="h5" component="h2" sx={{ mb: 3 }}>
           ایجاد لینک کوتاه جدید
         </Typography>
