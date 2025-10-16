@@ -170,7 +170,7 @@ export function LinkDetailsPage() {
             <Box textAlign="center">
               <MouseIcon color="primary" sx={{ fontSize: 40 }} />
               <Typography variant="h6">مجموع کلیک‌ها</Typography>
-              <Typography variant="h3" fontWeight="bold">{analytics.total_clicks.toLocaleString('fa-IR')}</Typography>
+              <Typography variant="h3" fontWeight="bold">{analytics.total_clicks?.toLocaleString('fa-IR') ?? '0'}</Typography>
             </Box>
 
             {/* کلیک بات‌ها */}
@@ -274,7 +274,8 @@ export function LinkDetailsPage() {
           <Paper sx={{ p: 2, textAlign: 'center', borderRadius: 2, boxShadow: 2 }}>
             <Typography variant="subtitle1" fontWeight="bold">👤 بازدیدهای یکتا</Typography>
             <Typography variant="h4" color="secondary" fontWeight="bold">
-              {analytics.ad_stats.unique_views.toLocaleString('fa-IR')}
+              {analytics.ad_stats?.unique_views?.toLocaleString('fa-IR') ?? '0'}
+
             </Typography>
           </Paper>
         </Grid>

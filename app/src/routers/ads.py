@@ -141,10 +141,9 @@ async def register_ad_view(
         )
         db.add(reward)
 
-    # 6. آمار و امتیازات را آپدیت کن
-    reward.ad_view_count += 1  # همچنان تعداد کل بازدیدها را نگه می‌داریم
-    reward.unique_view_count = reward.unique_view_count + 1 #  تعداد بازدیدهای یونیک را هم اضافه می‌کنیم
-    reward.total_points += 10  # امتیاز برای هر مشاهده یونیک
+    reward.ad_view_count = (reward.ad_view_count or 0) + 1
+    reward.unique_view_count = (reward.unique_view_count or 0) + 1
+    reward.total_points = (reward.total_points or 0) + 10
     reward.last_view_at = datetime.utcnow()
 
     await db.commit()
