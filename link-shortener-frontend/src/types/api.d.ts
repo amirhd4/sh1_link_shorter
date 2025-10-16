@@ -171,3 +171,9 @@ export interface AdReward {
   points: number;
   last_view_at: string;
 }
+
+export interface AdSystemStats {
+  total_ad_views: number;
+  total_unique_ad_views: number;
+  total_points_rewarded: number;
+}

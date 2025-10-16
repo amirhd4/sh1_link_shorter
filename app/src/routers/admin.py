@@ -227,6 +227,30 @@ async def get_system_stats(db: AsyncSession = Depends(get_db)):
     )
 
 
+class AdSystemStats(BaseModel):
+    total_ad_views: int
+    total_unique_ad_views: int
+    total_points_rewarded: int
+
+
+@router.get("/stats/ads", response_model=AdSystemStats)
+async def get_ad_system_stats(db: AsyncSession = Depends(get_db)):
+    """آمار کلی سیستم تبلیغات را برمی‌گرداند."""
+    total_views_result = await db.execute(select(func.sum(models.UserAdReward.ad_view_count)))
+    total_unique_views_result = await db.execute(select(func.sum(models.UserAdReward.unique_view_count)))
+    total_points_result = await db.execute(select(func.sum(models.UserAdReward.total_points)))
+
+    total_views = total_views_result.scalar_one_or_none() or 0
+    total_unique_views = total_unique_views_result.scalar_one_or_none() or 0
+    total_points = total_points_result.scalar_one_or_none() or 0
+
+    return AdSystemStats(
+        total_ad_views=total_views,
+        total_unique_ad_views=total_unique_views,
+        total_points_rewarded=total_points
+    )
+
+
 @router.patch("/users/{user_id}/toggle-active", response_model=schemas.UserResponse)
 async def toggle_user_active_status(user_id: int, db: AsyncSession = Depends(get_db)):
     """وضعیت فعال/غیرفعال یک کاربر را تغییر می‌دهد."""

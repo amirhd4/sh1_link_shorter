@@ -7,6 +7,9 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 import PeopleIcon from '@mui/icons-material/People';
 import LinkIcon from '@mui/icons-material/Link';
 import MouseIcon from '@mui/icons-material/Mouse';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
+import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 
 
 export function AdminDashboardPage() {
@@ -15,8 +18,13 @@ export function AdminDashboardPage() {
     queryFn: adminService.getSystemStats,
   });
 
-  if (isLoading) return <CircularProgress />;
-  if (isError) return <Alert severity="error">خطا در دریافت آمار سیستم.</Alert>;
+  const { data: adStats, isLoading: isAdStatsLoading, isError: isAdStatsError } = useQuery({
+    queryKey: ['ad-system-stats'],
+    queryFn: adminService.getAdSystemStats,
+  });
+
+  if (isLoading || isAdStatsLoading) return <CircularProgress />;
+  if (isError || isAdStatsError) return <Alert severity="error">خطا در دریافت آمار سیستم.</Alert>;
 
   // فرمت کردن داده برای نمودار
   const chartData = stats?.new_users_last_7_days.map(item => ({
@@ -38,6 +46,16 @@ export function AdminDashboardPage() {
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md:4 }}>
           <StatCard title="مجموع کل کلیک‌ها" value={stats?.total_clicks ?? 0} icon={<MouseIcon fontSize="inherit" />} />
+        </Grid>
+
+        <Grid  size={{ xs: 12, sm: 6, md: 4 }}>
+          <StatCard title="بازدید کل تبلیغات" value={adStats?.total_ad_views ?? 0} icon={<VisibilityIcon fontSize="inherit" />} color="info.main" />
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, md:4 }}>
+          <StatCard title="بازدید یکتای تبلیغات" value={adStats?.total_unique_ad_views ?? 0} icon={<VerifiedUserIcon fontSize="inherit" />} color="warning.main" />
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, md:4 }}>
+          <StatCard title="کل امتیازات داده‌شده" value={adStats?.total_points_rewarded ?? 0} icon={<MonetizationOnIcon fontSize="inherit" />} color="success.main" />
         </Grid>
       </Grid>
       <Paper sx={{ mt: 4, p: 2 }}>

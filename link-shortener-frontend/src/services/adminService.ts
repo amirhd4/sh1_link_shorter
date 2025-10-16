@@ -45,4 +45,9 @@ export const adminService = {
   deleteUser: async (userId: number): Promise<void> => {
     await apiClient.delete(`/admin/users/${userId}`);
   },
+
+  getAdSystemStats: async (): Promise<AdSystemStats> => {
+    const response = await apiClient.get('/admin/stats/ads');
+    return response.data;
+  },
 };
