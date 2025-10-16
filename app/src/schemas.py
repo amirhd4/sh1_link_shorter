@@ -30,6 +30,7 @@ class LinkDetailsForAdmin(BaseModel):
 class AdStatsPerLink(BaseModel):
     short_code: str
     long_url: HttpUrl
+    unique_views: int
     total_views: int
     total_points: int
 
@@ -37,6 +38,7 @@ class AdStatsPerLink(BaseModel):
 class AdStatsPerUser(BaseModel):
     user_id: int
     user: str
+    unique_views: int
     total_views: int
     total_points: int
 
