@@ -63,6 +63,7 @@ async def get_link_ad_stats(request: Request, domain: str, short_code: str, db: 
 
     return {
         "views": r.ad_view_count if r else 0,
+        "unique_views": r.unique_view_count if r else 0,
         "points": r.total_points if r else 0,
         "last_view_at": r.last_view_at if r else None,
     }

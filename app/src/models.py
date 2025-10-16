@@ -199,7 +199,7 @@ class UserAdReward(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     link_id = Column(Integer, ForeignKey("links.id"), nullable=False, index=True)
     ad_view_count = Column(Integer, default=0) # Total views, including non-unique
-    unique_view_count = Column(Integer, default=0) # Unique views based on anti-fraud checks
+    unique_view_count = Column(Integer, default=0, nullable=False) # Unique views based on anti-fraud checks
     total_points = Column(Integer, default=0)
     last_view_at = Column(DateTime(timezone=True), server_default=func.now())
 

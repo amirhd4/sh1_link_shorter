@@ -261,16 +261,25 @@ export function LinkDetailsPage() {
       <CircularProgress sx={{ mt: 2 }} />
     ) : analytics.ad_stats ? (
       <Grid container spacing={2}>
-        <Grid size={{xs: 12, sm: 6, md: 4}}>
+        <Grid size={{xs: 12, sm: 6, md: 3}}>
           <Paper sx={{ p: 2, textAlign: 'center', borderRadius: 2, boxShadow: 2 }}>
-            <Typography variant="subtitle1" fontWeight="bold">👁 بازدیدهای تبلیغ</Typography>
+            <Typography variant="subtitle1" fontWeight="bold">👁️ کل بازدیدهای تبلیغ</Typography>
             <Typography variant="h4" color="primary" fontWeight="bold">
               {analytics.ad_stats.views.toLocaleString('fa-IR')}
             </Typography>
           </Paper>
         </Grid>
 
-        <Grid size={{xs: 12, sm: 6, md: 4}}>
+        <Grid size={{xs: 12, sm: 6, md: 3}}>
+          <Paper sx={{ p: 2, textAlign: 'center', borderRadius: 2, boxShadow: 2 }}>
+            <Typography variant="subtitle1" fontWeight="bold">👤 بازدیدهای یکتا</Typography>
+            <Typography variant="h4" color="secondary" fontWeight="bold">
+              {analytics.ad_stats.unique_views.toLocaleString('fa-IR')}
+            </Typography>
+          </Paper>
+        </Grid>
+
+        <Grid size={{xs: 12, sm: 6, md: 3}}>
           <Paper sx={{ p: 2, textAlign: 'center', borderRadius: 2, boxShadow: 2 }}>
             <Typography variant="subtitle1" fontWeight="bold">💰 امتیازات کسب‌شده</Typography>
             <Typography variant="h4" color="success.main" fontWeight="bold">
