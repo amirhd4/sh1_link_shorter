@@ -17,6 +17,7 @@ export interface AdStatsPerLink {
   short_code: string;
   long_url: string;
   total_views: number;
+    unique_views: number;
   total_points: number;
 }
 
@@ -24,5 +25,6 @@ export interface AdStatsPerUser {
   user_id: number;
   user: string;
   total_views: number;
+    unique_views: number;
   total_points: number;
 }
