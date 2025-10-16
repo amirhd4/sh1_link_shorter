@@ -14,6 +14,7 @@ async def get_ad_stats_per_link(db: AsyncSession) -> List[dict]:
             models.Link.short_code,
             models.Link.long_url,
             func.sum(models.UserAdReward.ad_view_count).label("total_views"),
+            func.sum(models.UserAdReward.unique_view_count).label("unique_views"),
             func.sum(models.UserAdReward.total_points).label("total_points")
         )
         .join(models.UserAdReward, models.Link.id == models.UserAdReward.link_id)
@@ -26,6 +27,7 @@ async def get_ad_stats_per_link(db: AsyncSession) -> List[dict]:
             "short_code": row.short_code,
             "long_url": row.long_url,
             "total_views": row.total_views,
+            "unique_views": row.unique_views,
             "total_points": row.total_points,
         }
         for row in result
@@ -40,6 +42,7 @@ async def get_ad_stats_per_user(db: AsyncSession) -> List[dict]:
             models.User.email,
             models.User.phone_number,
             func.sum(models.UserAdReward.ad_view_count).label("total_views"),
+            func.sum(models.UserAdReward.unique_view_count).label("unique_views"),
             func.sum(models.UserAdReward.total_points).label("total_points")
         )
         .join(models.UserAdReward, models.User.id == models.UserAdReward.user_id)
@@ -52,6 +55,7 @@ async def get_ad_stats_per_user(db: AsyncSession) -> List[dict]:
             "user_id": row.id,
             "user": row.email or row.phone_number,
             "total_views": row.total_views,
+            "unique_views": row.unique_views,
             "total_points": row.total_points,
         }
         for row in result

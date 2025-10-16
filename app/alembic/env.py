@@ -1,26 +1,48 @@
+import os
+import sys
 from logging.config import fileConfig
+from dotenv import load_dotenv
+
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 from alembic import context
 
-# این بخش برای دسترسی Alembic به مدل‌های شما ضروری است
-from src.models import Base
-from src.config import settings
+# Add project root to sys.path to allow imports from src
+sys.path.insert(0, os.path.realpath(os.path.join(os.path.dirname(__file__), '..')))
 
-# این شیء target_metadata مدل‌های شما را برای عملیات
-# 'autogenerate' در اختیار Alembic قرار می‌دهد.
-target_metadata = Base.metadata
+# Load .env file from the project root.
+# The alembic/env.py is two levels deep from the root.
+dotenv_path = os.path.join(os.path.dirname(__file__), '..', '..', '.env')
+if os.path.exists(dotenv_path):
+    load_dotenv(dotenv_path=dotenv_path)
+else:
+    print(f"Warning: .env file not found at {dotenv_path}")
 
-# سایر تنظیمات Alembic از فایل .ini خوانده می‌شود
+
+# this is the Alembic Config object, which provides
+# access to the values within the .ini file in use.
 config = context.config
 
-# تفسیر فایل کانفیگ برای لاگینگ پایتون.
+# Interpret the config file for Python logging.
+# This line sets up loggers basically.
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# تنظیم آدرس دیتابیس از طریق متغیرهای محیطی
-# ما از نسخه همزمان (sync) URL که در config.py ساختیم استفاده می‌کنیم
-config.set_main_option('sqlalchemy.url', settings.database_url_sync)
+# add your model's MetaData object here
+# for 'autogenerate' support
+from src.models import Base
+from src.config import settings
+
+target_metadata = Base.metadata
+
+# Set the database URL from the loaded settings
+# Use the synchronous URL for Alembic
+if settings.database_url_sync:
+    config.set_main_option('sqlalchemy.url', settings.database_url_sync)
+else:
+    # Fallback or error if the URL is not set
+    raise ValueError("DATABASE_URL_SYNC is not set in the environment or .env file.")
+
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode."""
@@ -38,9 +60,8 @@ def run_migrations_offline() -> None:
 
 def run_migrations_online() -> None:
     """Run migrations in 'online' mode."""
-    # در این روش، ما از یک موتور همزمان برای اتصال استفاده می‌کنیم
     connectable = engine_from_config(
-        config.get_section(config.config_ini_section),
+        config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )

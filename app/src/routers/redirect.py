@@ -191,10 +191,18 @@ async def redirect_to_long_url(
 
     # --- ۴. اگر لینک تبلیغ‌دار بود ---
     if show_ads:
-        return RedirectResponse(
-            url=f"{settings.frontend_url}/pages/{domain_id_for_ads}/{short_code}/ad",
-            status_code=307
-        )
+        # اگر از دامنه پیش‌فرض استفاده می‌شود، 0 را به عنوان ID ارسال کن
+        effective_domain_id = domain_id_for_ads if domain_id_for_ads is not None else "0"
+
+        ad_page_url = f"{settings.frontend_url}/pages/{effective_domain_id}/{short_code}/ad"
+
+        response = RedirectResponse(url=ad_page_url, status_code=307)
+
+        # هدرهای امنیتی برای جلوگیری از کلیک‌جکینگ و ایندکس شدن
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-Robots-Tag"] = "noindex, nofollow"
+
+        return response
 
     # --- ۵. ثبت اطلاعات کلیک ---
     client_ip = (request.headers.get("x-forwarded-for") or request.client.host).split(",")[0].strip()

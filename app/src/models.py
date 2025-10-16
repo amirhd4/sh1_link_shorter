@@ -198,7 +198,8 @@ class UserAdReward(Base):
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     link_id = Column(Integer, ForeignKey("links.id"), nullable=False, index=True)
-    ad_view_count = Column(Integer, default=0)
+    ad_view_count = Column(Integer, default=0) # Total views, including non-unique
+    unique_view_count = Column(Integer, default=0) # Unique views based on anti-fraud checks
     total_points = Column(Integer, default=0)
     last_view_at = Column(DateTime(timezone=True), server_default=func.now())
 
@@ -228,3 +229,19 @@ class LinkAd(Base):
 
     link = relationship("Link", back_populates="ads")
     ad = relationship("Ad")
+
+
+class AdViewEvent(Base):
+    __tablename__ = "ad_view_events"
+
+    id = Column(BigInteger, primary_key=True)
+    link_id = Column(BigInteger, ForeignKey("links.id"), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)  # Can be anonymous
+    ip_hash = Column(String(128), nullable=False, index=True)
+    user_agent_hash = Column(String(128), nullable=False, index=True)
+    timestamp = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+    __table_args__ = (
+        Index("ix_ad_view_user_link_time", "user_id", "link_id", "timestamp"),
+        Index("ix_ad_view_ip_link_time", "ip_hash", "link_id", "timestamp"),
+    )

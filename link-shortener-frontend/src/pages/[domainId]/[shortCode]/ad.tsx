@@ -2,21 +2,23 @@ import { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { Box, Button, Typography, LinearProgress, Paper, CircularProgress } from "@mui/material";
 import { motion } from "framer-motion";
-import { adService } from "../services/adService";
+import { adService } from "../../../services/adService";
 import VisibilitySensor from "react-visibility-sensor";
 
 export default function AdRedirectPage() {
-  const { domainId, shortCode } = useParams();
+  const { domainId, shortCode } = useParams<{ domainId: string; shortCode: string }>();
   const [ad, setAd] = useState<any>(null);
   const [progress, setProgress] = useState(0);
   const [canSkip, setCanSkip] = useState(false);
-  const [isVisible, setIsVisible] = useState(true); // برای بررسی visibility
+  const [isVisible, setIsVisible] = useState(true);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const counterRef = useRef(0);
 
   // 📌 گرفتن تبلیغ از سرور
   useEffect(() => {
-    adService.getActiveAd(shortCode).then(setAd).catch(console.error);
+    if (shortCode) {
+      adService.getActiveAd(shortCode).then(setAd).catch(console.error);
+    }
   }, [shortCode]);
 
   // 📌 شروع شمارش
@@ -24,7 +26,7 @@ export default function AdRedirectPage() {
     if (!ad) return;
 
     const tick = () => {
-      if (!isVisible) return; // اگر صفحه دیده نشد، شمارش متوقف
+      if (!isVisible) return;
       counterRef.current++;
       const newProgress = (counterRef.current / ad.duration) * 100;
       setProgress(newProgress);
@@ -42,17 +44,25 @@ export default function AdRedirectPage() {
   }, [ad, isVisible]);
 
   const handleSkip = async () => {
-    if (!ad) return;
-    const domainValue = domainId && domainId !== "undefined" ? domainId : 0;
+    if (!ad || !shortCode) return;
+
+    // Normalize domainId: if it's "0", "null", or "undefined", treat as default domain.
+    const effectiveDomainId = (domainId === "0" || domainId === "null" || domainId === "undefined") ? "0" : domainId;
+
     try {
-      await adService.registerAdView(shortCode!, domainValue);
+      // Register the ad view before redirecting
+      await adService.registerAdView(shortCode, effectiveDomainId);
     } catch (e) {
-      console.error("Failed to register ad view", e);
+      console.error("Failed to register ad view. Proceeding with redirect.", e);
     }
-    window.location.href = `${import.meta.env.VITE_BACKEND_BASE_URL_ORIGIN}/ad/skip/${domainValue}/${shortCode}`;
+
+    // Redirect to the final destination via the backend skip endpoint
+    window.location.href = `${import.meta.env.VITE_BACKEND_BASE_URL_ORIGIN}/ad/skip/${effectiveDomainId}/${shortCode}`;
   };
 
-  if (!ad) return <CircularProgress sx={{ mt: 10, display: "block", mx: "auto" }} />;
+  if (!ad) {
+    return <CircularProgress sx={{ mt: 10, display: "block", mx: "auto" }} />;
+  }
 
   return (
     <VisibilitySensor onChange={(visible) => setIsVisible(visible)} partialVisibility>
@@ -76,7 +86,6 @@ export default function AdRedirectPage() {
               🎬 {ad.title}
             </Typography>
 
-            {/* 🔹 تبلیغ پویا */}
             {ad.media_type === "video" ? (
               <Box
                 component="video"
@@ -96,14 +105,12 @@ export default function AdRedirectPage() {
               />
             )}
 
-            {/* 🔹 نوار پیشرفت */}
             <LinearProgress
               variant="determinate"
               value={progress}
               sx={{ mt: 3, height: 10, borderRadius: 5 }}
             />
 
-            {/* 🔹 دکمه رفتن به لینک */}
             <Button
               variant="contained"
               color="success"
@@ -116,7 +123,6 @@ export default function AdRedirectPage() {
                 : `منتظر بمانید (${Math.ceil(ad.duration - (progress / 100) * ad.duration)}s)`}
             </Button>
 
-            {/* 🔹 اعلان حضور کاربر */}
             {!isVisible && (
               <Typography variant="body2" color="error" sx={{ mt: 2 }}>
                 ⚠️ صفحه فعال نیست! شمارش تا زمانی که در صفحه باشید متوقف می‌شود.

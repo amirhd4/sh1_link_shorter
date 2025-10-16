@@ -72,6 +72,7 @@ export function AdStatsPage() {
                 <TableCell>کد کوتاه</TableCell>
                 <TableCell>URL اصلی</TableCell>
                 <TableCell>مجموع بازدیدها</TableCell>
+                <TableCell>بازدیدهای منحصر به فرد</TableCell>
                 <TableCell>مجموع امتیازات</TableCell>
               </TableRow>
             </TableHead>
@@ -81,6 +82,7 @@ export function AdStatsPage() {
                   <TableCell>{stat.short_code}</TableCell>
                   <TableCell>{stat.long_url}</TableCell>
                   <TableCell>{stat.total_views}</TableCell>
+                  <TableCell>{stat.unique_views}</TableCell>
                   <TableCell>{stat.total_points}</TableCell>
                 </TableRow>
               ))}
@@ -97,6 +99,7 @@ export function AdStatsPage() {
                 <TableCell>شناسه کاربر</TableCell>
                 <TableCell>کاربر</TableCell>
                 <TableCell>مجموع بازدیدها</TableCell>
+                <TableCell>بازدیدهای منحصر به فرد</TableCell>
                 <TableCell>مجموع امتیازات</TableCell>
               </TableRow>
             </TableHead>
@@ -106,6 +109,7 @@ export function AdStatsPage() {
                   <TableCell>{stat.user_id}</TableCell>
                   <TableCell>{stat.user}</TableCell>
                   <TableCell>{stat.total_views}</TableCell>
+                  <TableCell>{stat.unique_views}</TableCell>
                   <TableCell>{stat.total_points}</TableCell>
                 </TableRow>
               ))}

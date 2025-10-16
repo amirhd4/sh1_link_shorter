@@ -31,7 +31,7 @@ import { LoginOtpPage } from './pages/login-otp.page.tsx';
 import { RegisterOtpPage } from "./pages/register-otp.page.tsx";
 import {ApiPage} from "./features/api/pages/ApiPage.tsx";
 import {DomainsManager} from "./pages/domains-manager.page.tsx";
-import AdRedirectPage from "./pages/[shortCode].tsx";
+import AdRedirectPage from "./pages/[domainId]/[shortCode]/ad.tsx";
 
 const router = createBrowserRouter([
   // --- روت‌های عمومی ---

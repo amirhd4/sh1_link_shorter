@@ -68,6 +68,9 @@ async def get_link_ad_stats(request: Request, domain: str, short_code: str, db: 
     }
 
 
+from datetime import timedelta
+from sqlalchemy import and_
+
 @router.post("/view/{domain}/{short_code}")
 @limiter.limit("100/minute")
 async def register_ad_view(
@@ -77,16 +80,47 @@ async def register_ad_view(
     current_user: models.User = Depends(security.get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    # لینک رو پیدا کن
+    # 1. لینک را پیدا کن
     result = await db.execute(
-        select(models.Link)
-        .where(models.Link.short_code == short_code)
+        select(models.Link).where(models.Link.short_code == short_code)
     )
     link = result.scalars().first()
     if not link:
         raise HTTPException(status_code=404, detail="Link not found")
 
-    # رکورد پاداش تبلیغاتی کاربر رو پیدا یا ایجاد کن
+    # 2. اطلاعات کاربر را برای سیستم ضد تقلب جمع‌آوری کن
+    client_ip = (request.headers.get("x-forwarded-for") or request.client.host).split(",")[0].strip()
+    user_agent = request.headers.get("user-agent", "")
+    ip_hash = security.hash_ip(client_ip, security.settings.ip_hash_secret)
+    user_agent_hash = security.hash_ip(user_agent, security.settings.ip_hash_secret)
+
+    # 3. بررسی کن آیا این بازدید تکراری است (در 24 ساعت گذشته)
+    twenty_four_hours_ago = datetime.utcnow() - timedelta(hours=24)
+    existing_view_result = await db.execute(
+        select(models.AdViewEvent)
+        .where(
+            and_(
+                models.AdViewEvent.link_id == link.id,
+                models.AdViewEvent.ip_hash == ip_hash,
+                models.AdViewEvent.user_agent_hash == user_agent_hash,
+                models.AdViewEvent.timestamp >= twenty_four_hours_ago
+            )
+        )
+    )
+    if existing_view_result.scalars().first():
+        raise HTTPException(status_code=409, detail="Ad view already registered from this IP/user for this link in the last 24 hours.")
+
+    # 4. بازدید جدید را در AdViewEvent ثبت کن
+    new_view = models.AdViewEvent(
+        link_id=link.id,
+        user_id=current_user.id,
+        ip_hash=ip_hash,
+        user_agent_hash=user_agent_hash,
+        timestamp=datetime.utcnow()
+    )
+    db.add(new_view)
+
+    # 5. رکورد پاداش کاربر را پیدا یا ایجاد کن
     reward_result = await db.execute(
         select(models.UserAdReward)
         .where(
@@ -101,17 +135,21 @@ async def register_ad_view(
             user_id=current_user.id,
             link_id=link.id,
             ad_view_count=0,
+            unique_view_count=0, # Add unique view counter
             total_points=0
         )
         db.add(reward)
 
-    # آمار رو آپدیت کن
-    reward.ad_view_count += 1
-    reward.total_points += 10  # مثلا ۱۰ امتیاز برای هر مشاهده
+    # 6. آمار و امتیازات را آپدیت کن
+    reward.ad_view_count += 1  # همچنان تعداد کل بازدیدها را نگه می‌داریم
+    reward.unique_view_count = reward.unique_view_count + 1 #  تعداد بازدیدهای یونیک را هم اضافه می‌کنیم
+    reward.total_points += 10  # امتیاز برای هر مشاهده یونیک
     reward.last_view_at = datetime.utcnow()
 
     await db.commit()
-    return {"message": "Ad view registered", "points": reward.total_points}
+    await db.refresh(reward)
+
+    return {"message": "Ad view registered successfully", "total_points": reward.total_points}
 
 
 @router.get("/active")
