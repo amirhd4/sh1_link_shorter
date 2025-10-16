@@ -1,7 +1,7 @@
 from secrets import token_urlsafe
 
 from sqlalchemy import Column, Integer, String, BigInteger, ForeignKey, Date, Enum as SQLAlchemyEnum, DateTime, func, \
-    Boolean, Text, UniqueConstraint
+    Boolean, Text, UniqueConstraint, case, Index, CheckConstraint
 
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from sqlalchemy.ext.declarative import declarative_base
@@ -92,11 +92,18 @@ class Link(Base):
 
     show_ads = Column(Boolean, default=False, nullable=False)
     ad_analytics = relationship("AdAnalytics", back_populates="link", lazy="noload")
+    ad_rewards = relationship("UserAdReward", back_populates="link", cascade="all, delete-orphan")
     ads = relationship("LinkAd", back_populates="link")
 
     __table_args__ = (
-        # short_code باید یکتا در هر دامنه باشه
         UniqueConstraint("short_code", "domain_id", name="uq_short_code_per_domain"),
+    )
+
+    Index(
+        "ix_unique_short_code_effective_domain",
+        func.coalesce(domain_id, 0),
+        short_code,
+        unique=True
     )
 
 
@@ -163,6 +170,12 @@ class Domain(Base):
     links = relationship("Link", back_populates="domain")
     ad_analytics = relationship("AdAnalytics", back_populates="domain", lazy="noload")
 
+    __table_args__ = (
+        UniqueConstraint("user_id", "is_primary", name="uq_user_primary_domain"),
+
+        CheckConstraint("is_primary IN (0, 1)", name="chk_is_primary_boolean"),
+    )
+
 
 class AdAnalytics(Base):
     __tablename__ = "ad_analytics"
@@ -172,7 +185,7 @@ class AdAnalytics(Base):
     domain_id = Column(Integer, ForeignKey("domains.id"), nullable=True)
     from_ad_page = Column(Boolean, default=False)
     ip_hash = Column(String(128), nullable=True)
-    user_agent = Column(String(255))
+    user_agent = Column(String(255), nullable=True)
     timestamp = Column(DateTime(timezone=True), server_default=func.now())
 
     link = relationship("Link", back_populates="ad_analytics")
@@ -190,7 +203,7 @@ class UserAdReward(Base):
     last_view_at = Column(DateTime(timezone=True), server_default=func.now())
 
     user = relationship("User", back_populates="ad_rewards")
-    link = relationship("Link")
+    link = relationship("Link", back_populates="ad_rewards")
 
 
 class Ad(Base):

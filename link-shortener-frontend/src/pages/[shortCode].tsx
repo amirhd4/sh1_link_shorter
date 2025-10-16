@@ -49,7 +49,7 @@ export default function AdRedirectPage() {
     } catch (e) {
       console.error("Failed to register ad view", e);
     }
-    window.location.href = `${import.meta.env.VITE_BACKEND_BASE_URL}/ad/skip/${domainValue}/${shortCode}`;
+    window.location.href = `${import.meta.env.VITE_BACKEND_BASE_URL_ORIGIN}/ad/skip/${domainValue}/${shortCode}`;
   };
 
   if (!ad) return <CircularProgress sx={{ mt: 10, display: "block", mx: "auto" }} />;
