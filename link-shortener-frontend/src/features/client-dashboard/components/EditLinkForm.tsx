@@ -61,10 +61,19 @@ export function EditLinkForm({ isOpen, onClose, link }: EditLinkFormProps) {
                 utmCampaign: link.utm_campaign,
                 utmTerm: link.utm_term,
                 utmContent: link.utm_content,
-                showAds: link.show_ads,
-
+                showAds: link.show_ads ?? true,
             });
-        }
+        } else {
+        reset({
+            longUrl: '',
+            utmSource: null,
+            utmMedium: null,
+            utmCampaign: null,
+            utmTerm: null,
+            utmContent: null,
+            showAds: true,
+        });
+    }
     }, [link, reset]);
 
   const updateLinkMutation = useMutation({
@@ -100,7 +109,7 @@ export function EditLinkForm({ isOpen, onClose, link }: EditLinkFormProps) {
     <Modal open={isOpen} onClose={onClose} aria-labelledby="edit-link-modal-title">
           <Box sx={{ ...modalStyle, width: { xs: '90%', sm: 600 } }}> {/* افزایش عرض برای فیلدهای UTM */}
             <Typography id="edit-link-modal-title" variant="h6" component="h2">
-              ویرایش لینک (UTM Enabled)
+              ویرایش لینک
             </Typography>
 
 

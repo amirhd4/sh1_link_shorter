@@ -298,33 +298,6 @@ export function LinkDetailsPage() {
   </Paper>
 </Box>
 
-
-        {adReward && (
-  <Box mt={4}>
-    <Typography variant="h6" gutterBottom>🎯 امتیاز تبلیغاتی این لینک</Typography>
-    <Paper sx={{ p: 2, borderRadius: 2, boxShadow: 2 }}>
-      <Grid container spacing={2}>
-        <Grid size={{xs: 12, sm: 4}}>
-          <Typography variant="subtitle1" fontWeight="bold">👁 بازدید تبلیغ</Typography>
-          <Typography variant="h5" color="primary">{adReward.ad_views}</Typography>
-        </Grid>
-        <Grid size={{xs: 12, sm: 4}}>
-          <Typography variant="subtitle1" fontWeight="bold">💰 امتیاز</Typography>
-          <Typography variant="h5" color="success.main">{adReward.points}</Typography>
-        </Grid>
-        <Grid size={{xs: 12, sm: 4}}>
-          <Typography variant="subtitle1" fontWeight="bold">🕒 آخرین مشاهده</Typography>
-          <Typography variant="body2" color="text.secondary">
-            {new Date(adReward.last_view_at).toLocaleString('fa-IR')}
-          </Typography>
-        </Grid>
-      </Grid>
-    </Paper>
-  </Box>
-)}
-
-
-
       <Snackbar
         open={isSnackbarOpen}
         autoHideDuration={3000}

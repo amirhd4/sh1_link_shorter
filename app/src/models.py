@@ -91,7 +91,7 @@ class Link(Base):
     utm_content: Mapped[str | None] = mapped_column(String, nullable=True)
 
     show_ads = Column(Boolean, default=False, nullable=False)
-    ad_analytics = relationship("AdAnalytics", back_populates="link", lazy="noload")
+    ad_analytics = relationship("AdAnalytics", back_populates="link", lazy="noload", cascade="all, delete-orphan")
     ad_rewards = relationship("UserAdReward", back_populates="link", cascade="all, delete-orphan")
     ads = relationship("LinkAd", back_populates="link")
 
@@ -181,7 +181,7 @@ class AdAnalytics(Base):
     __tablename__ = "ad_analytics"
 
     id = Column(Integer, primary_key=True, index=True)
-    link_id = Column(Integer, ForeignKey("links.id"), nullable=False)
+    link_id = Column(Integer, ForeignKey("links.id", ondelete="CASCADE"), nullable=False)
     domain_id = Column(Integer, ForeignKey("domains.id"), nullable=True)
     from_ad_page = Column(Boolean, default=False)
     ip_hash = Column(String(128), nullable=True)

@@ -151,7 +151,7 @@ export function CreateLinkForm({ isOpen, onClose }: CreateLinkFormProps) {
     <Modal open={isOpen} onClose={handleClose} aria-labelledby="create-link-modal-title">
       <Box sx={modalStyle}>
         <Typography id="create-link-modal-title" variant="h5" component="h2" sx={{ mb: 3 }}>
-          ایجاد لینک کوتاه جدید (با UTM)
+          ایجاد لینک کوتاه جدید
         </Typography>
 
         <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
