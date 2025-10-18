@@ -78,7 +78,7 @@ export default function AdRedirectPage() {
     } catch (e) {
       console.error("Failed to register ad view. Proceeding with redirect.", e);
     }
-    window.location.href = `${import.meta.env.VITE_BACKEND_BASE_URL}/ad/skip/${effectiveDomainId}/${shortCode}`;
+    window.location.href = `${import.meta.env.VITE_BACKEND_BASE_URL_ORIGIN}/ad/skip/${effectiveDomainId}/${shortCode}`;
   };
 
   const remainingSeconds = ad ? Math.ceil(ad.duration - (progress / 100) * ad.duration) : 0;
