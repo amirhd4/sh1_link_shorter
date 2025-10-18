@@ -142,8 +142,28 @@ export default function AdRedirectPage() {
                         style={{ width: "100%", height: '100%', objectFit: "cover" }}
                     />
                     ) : ad.media_type === "image" ? (
-                    <Box component="img" src={ad.media_url} alt={ad.title} sx={{ width: "100%", height: '100%', objectFit: "cover" }} />
-                    ) : (
+  <Box
+    component="img"
+    src={ad.media_url}
+    alt={ad.title}
+    sx={{
+      width: "100%",
+      height: '100%',
+      objectFit: "cover",
+      cursor: 'pointer'  // ← نمایش cursor دست
+    }}
+    onClick={async () => {
+      if (!ad || !shortCode) return;
+      try {
+        await adService.registerAdView(shortCode, domainId ? parseInt(domainId) : undefined);
+      } catch (e) {
+        console.error("Failed to register ad view.", e);
+      }
+      if (ad.target_url) window.open(ad.target_url, "_blank");
+
+    }}
+  />
+) : (
                     <Box
                         sx={{ position: 'relative', paddingTop: '56.25%', height: 0 }} /* 16:9 Aspect Ratio */
                         dangerouslySetInnerHTML={{ __html: ad.media_url }}

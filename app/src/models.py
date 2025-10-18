@@ -176,7 +176,7 @@ class Domain(Base):
     __table_args__ = (
         UniqueConstraint("user_id", "is_primary", name="uq_user_primary_domain"),
 
-        CheckConstraint("is_primary IN (0, 1)", name="chk_is_primary_boolean"),
+        # CheckConstraint("is_primary IN (0, 1)", name="chk_is_primary_boolean"),
     )
 
 
