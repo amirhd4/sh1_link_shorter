@@ -74,7 +74,7 @@ export default function AdRedirectPage() {
     const effectiveDomainId = (domainId === "0" || domainId === "null" || domainId === "undefined") ? "0" : domainId;
 
     try {
-      await adService.registerAdView(shortCode, effectiveDomainId);
+      await adService.registerAdView(shortCode, parseInt(effectiveDomainId));
     } catch (e) {
       console.error("Failed to register ad view. Proceeding with redirect.", e);
     }

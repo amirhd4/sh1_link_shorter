@@ -1,5 +1,5 @@
 import apiClient from '../lib/axios';
-import type { UserResponse, LinkDetailsForAdmin } from '../types/api';
+import type {UserResponse, LinkDetailsForAdmin, AdSystemStats} from '../types/api';
 import type { SystemStats } from '../types/api';
 
 
@@ -28,9 +28,14 @@ export const adminService = {
     return response.data;
   },
 
-  deleteLink: async (shortCode: string): Promise<void> => {
-    await apiClient.delete(`/admin/links/${shortCode}`);
+  // deleteLink: async (shortCode: string): Promise<void> => {
+  //   await apiClient.delete(`/admin/links/${shortCode}`);
+  // },
+  deleteLink: async (shortCode: string, domainId?: number | null): Promise<void> => {
+      const params = domainId != null ? { domain_id: domainId } : undefined;
+      await apiClient.delete(`/admin/links/${shortCode}`, { params });
   },
+
 
   getSystemStats: async (): Promise<SystemStats> => {
     const response = await apiClient.get('/admin/stats');

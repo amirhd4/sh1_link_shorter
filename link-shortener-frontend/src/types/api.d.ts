@@ -72,6 +72,7 @@ export interface LinkDetailsForAdmin {
   short_code: string;
   clicks: number;
   created_at: string;
+  domain_id: number | null;
   owner: {
     id: number;
     email: string;

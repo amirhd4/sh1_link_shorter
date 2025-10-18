@@ -7,15 +7,16 @@ export const adService = {
     return res.data;
   },
 
-  async getLinkAdStats(shortCode: string, domainId?: string | number) {
-    const domain = (domainId && domainId !== 'undefined' && domainId !== 'null') ? domainId : '0';
-    const res = await apiClient.get(`/ads/stats/${domain}/${shortCode}`);
+  async getLinkAdStats(shortCode: string, domainId?: number | null) {
+    const params = domainId != null ? { domain_id: domainId } : undefined;
+    const res = await apiClient.get(`/ads/stats/${shortCode}`, { params });
     return res.data;
   },
 
-  async registerAdView(shortCode: string, domainId?: string | number) {
-    const domain = (domainId && domainId !== 'undefined' && domainId !== 'null') ? domainId : '0';
-    const res = await apiClient.post(`/ads/view/${domain}/${shortCode}`);
+  async registerAdView(shortCode: string, domainId?: number | null) {
+    const params = domainId != null ? { domain_id: domainId } : undefined;
+
+    const res = await apiClient.post(`/ads/view/${shortCode}`, undefined, { params });
     return res.data;
   },
 

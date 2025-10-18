@@ -78,7 +78,7 @@ export function LinkDetailsPage() {
     // queryFn: () => linkService.getLinkStats(shortCode!, domainId),
     queryFn: async () => {
       const stats = await linkService.getLinkStats(shortCode!, domainId);
-      const adStats = await adService.getLinkAdStats(shortCode!, domainId);
+      const adStats = await adService.getLinkAdStats(shortCode!, parseInt(domainId));
       return { ...stats, ad_stats: adStats };
     },
     enabled: !!shortCode

@@ -42,12 +42,24 @@ async def get_user_ad_rewards(
     ]
 
 
-@router.get("/stats/{domain}/{short_code}")
 @limiter.limit("100/minute")
-async def get_link_ad_stats(request: Request, domain: str, short_code: str, db: AsyncSession = Depends(get_db)):
+@router.get("/stats/{short_code}")
+async def get_link_ad_stats(
+        request: Request,
+        short_code: str,
+        domain_id: int | None = None,
+        db: AsyncSession = Depends(get_db)
+):
     # 1. Find the link
+    # link_result = await db.execute(
+    #     select(models.Link).where(models.Link.short_code == short_code)
+    # )
     link_result = await db.execute(
-        select(models.Link).where(models.Link.short_code == short_code)
+        select(models.Link)
+        .where(
+            models.Link.short_code == short_code,
+            models.Link.domain_id == int(domain_id) if domain_id else models.Link.domain_id.is_(None)
+        )
     )
     link = link_result.scalars().first()
     if not link:
@@ -82,19 +94,29 @@ async def get_link_ad_stats(request: Request, domain: str, short_code: str, db: 
 from datetime import timedelta
 from sqlalchemy import and_
 
-@router.post("/view/{domain}/{short_code}")
+@router.post("/view/{short_code}")
 @limiter.limit("100/minute")
 async def register_ad_view(
     request: Request,
     domain: str,
     short_code: str,
+    domain_id: int | None = None,
     current_user: models.User = Depends(security.get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     # 1. لینک را پیدا کن
+    # result = await db.execute(
+    #     select(models.Link).where(models.Link.short_code == short_code)
+    # )
+
     result = await db.execute(
-        select(models.Link).where(models.Link.short_code == short_code)
+        select(models.Link)
+        .where(
+            models.Link.short_code == short_code,
+            models.Link.domain_id == int(domain_id) if domain_id else models.Link.domain_id.is_(None)
+        )
     )
+
     link = result.scalars().first()
     if not link:
         raise HTTPException(status_code=404, detail="Link not found")

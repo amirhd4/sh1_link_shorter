@@ -21,6 +21,7 @@ class LinkDetailsForAdmin(BaseModel):
     clicks: int
     created_at: datetime
     owner: UserSummary
+    domain_id: Optional[int] = None
 
     class Config:
         from_attributes = True

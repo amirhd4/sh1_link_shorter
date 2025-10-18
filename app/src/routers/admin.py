@@ -11,12 +11,20 @@ from .. import models, schemas
 from ..database import get_db
 from ..schemas import DailyStat, SystemStats
 from ..services import security, ads as ads_service, stats as stats_service
+from ..config import settings
+from fastapi import Request
+import redis.asyncio as redis
+
 
 router = APIRouter(
     prefix="/admin",
     tags=["Admin"],
     dependencies=[Depends(security.get_current_admin_user)]
 )
+
+
+async def get_redis_client(request: Request) -> redis.Redis:
+    return request.app.state.redis
 
 
 class AssignPlanRequest(schemas.BaseModel):
@@ -47,9 +55,11 @@ async def list_all_links(db: AsyncSession = Depends(get_db)):
     """لیست تمام لینک‌های موجود در سیستم را برمی‌گرداند."""
     stmt = (
         select(models.Link)
-        .options(selectinload(models.Link.owner)) # <<<< Eager Loading برای اطلاعات صاحب لینک
+        .options(selectinload(models.Link.owner))
+        .options(selectinload(models.Link.domain))
         .order_by(models.Link.id.desc())
     )
+
     result = await db.execute(stmt)
     links = result.scalars().all()
     return links
@@ -191,13 +201,25 @@ async def delete_user_by_admin(user_id: int, db: AsyncSession = Depends(get_db))
 @router.delete("/links/{short_code}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_link_by_admin(
         short_code: str,
+        domain_id: int | None = None,
         db: AsyncSession = Depends(get_db),
-        current_admin: models.User = Depends(security.get_current_admin_user)
+        current_admin: models.User = Depends(security.get_current_admin_user),
+        redis_client: redis.Redis = Depends(get_redis_client)
 ):
-    result = await db.execute(select(models.Link).where(models.Link.short_code == short_code))
+    # result = await db.execute(select(models.Link).where(models.Link.short_code == short_code))
+    result = await db.execute(
+        select(models.Link).where(
+            models.Link.short_code == short_code,
+            models.Link.domain_id == domain_id if domain_id else models.Link.domain_id.is_(None)
+        )
+    )
+
     link = result.scalar_one_or_none()
     if not link:
         raise HTTPException(status_code=404, detail="Link not found")
+
+    host = link.domain.name if link.domain else settings.origin_backend_url
+    await redis_client.delete(f"link:{host}:{link.short_code}")
 
     await db.delete(link)
     await db.commit()

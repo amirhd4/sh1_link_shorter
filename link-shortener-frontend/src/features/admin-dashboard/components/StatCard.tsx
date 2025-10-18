@@ -5,11 +5,13 @@ interface StatCardProps {
   title: string;
   value: string | number;
   icon: ReactNode;
+  color?: string;
 }
 
-export function StatCard({ title, value, icon }: StatCardProps) {
+export function StatCard({ title, value, icon, color }: StatCardProps) {
   return (
-    <Card>
+    <Card sx={{ color: color || 'inherit' }}>
+
       <CardContent sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Box>
           <Typography color="text.secondary" gutterBottom>{title}</Typography>

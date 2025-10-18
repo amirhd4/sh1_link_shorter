@@ -12,7 +12,7 @@ import { usePersianDataGridLocale } from '../../../hooks/usePersianDataGridLocal
 
 export function LinkManagementPage() {
   const queryClient = useQueryClient();
-  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<LinkDetailsForAdmin | null>(null);
   const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
   const localeText = usePersianDataGridLocale();
 
@@ -21,8 +21,10 @@ export function LinkManagementPage() {
     queryFn: adminService.getAllLinks,
   });
 
-  const deleteMutation = useMutation({
-    mutationFn: adminService.deleteLink,
+  type DeletePayload = { shortCode: string; domainId?: number | null };
+
+  const deleteMutation = useMutation<void, Error, DeletePayload>({
+    mutationFn: ({ shortCode, domainId }) => adminService.deleteLink(shortCode, domainId),
     onSuccess: () => {
       setSnackbarMessage("لینک با موفقیت توسط ادمین حذف شد.");
       queryClient.invalidateQueries({ queryKey: ['admin-all-links'] });
@@ -35,14 +37,18 @@ export function LinkManagementPage() {
     },
   });
 
-  const handleDeleteClick = (shortCode: string) => () => {
-    setDeleteTarget(shortCode);
+  const handleDeleteClick = (row: LinkDetailsForAdmin) => () => {
+    setDeleteTarget(row);
   };
 
   const handleConfirmDelete = () => {
-    if (deleteTarget) {
-      deleteMutation.mutate(deleteTarget);
-    }
+    // if (deleteTarget) {
+    //   deleteMutation.mutate({ shortCode: deleteTarget!, domainId: myDomainId });
+    // }
+      if (deleteTarget) {
+        deleteMutation.mutate({ shortCode: deleteTarget.short_code, domainId: deleteTarget.domain_id ?? null });
+      }
+
   };
 
   const columns: GridColDef[] = [
@@ -70,7 +76,7 @@ export function LinkManagementPage() {
         <GridActionsCellItem
           icon={<DeleteIcon />}
           label="Delete"
-          onClick={handleDeleteClick(row.short_code as string)}
+          onClick={handleDeleteClick(row)}
           color="inherit"
         />,
       ],

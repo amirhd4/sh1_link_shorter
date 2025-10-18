@@ -48,10 +48,11 @@ async def increment_click_counter(
                 if is_custom_domain:
                     # کوئری برای دامنه‌های سفارشی (نیاز به JOIN به Domain برای پیدا کردن ID)
                     result = await session.execute(
-                        select(models.Link).join(models.Domain).where(
-                            models.Domain.name == host,
-                            models.Link.short_code == short_code
-                        )
+                        select(models.Link)
+                        .options(selectinload(models.Link.domain))
+                        .join(models.Domain)
+                        .where(models.Domain.name == host, models.Link.short_code == short_code
+                               )
                     )
                 else:
                     # کوئری برای دامنه پیش‌فرض (بدون JOIN به Domain و با شرط domain_id == None)
