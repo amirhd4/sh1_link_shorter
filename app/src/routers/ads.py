@@ -98,7 +98,6 @@ from sqlalchemy import and_
 @limiter.limit("100/minute")
 async def register_ad_view(
     request: Request,
-    domain: str,
     short_code: str,
     domain_id: int | None = None,
     current_user: models.User = Depends(security.get_current_user),
