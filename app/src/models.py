@@ -132,7 +132,8 @@ class ClickEvent(Base):
     __tablename__ = "click_events"
 
     id = Column(BigInteger, primary_key=True)
-    link_id = Column(BigInteger, ForeignKey("links.id"), nullable=False, index=True)
+    link_id = Column(BigInteger, ForeignKey("links.id", ondelete="CASCADE"), nullable=False, index=True)
+
     timestamp = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     link = relationship("Link", back_populates="click_events")
@@ -160,7 +161,9 @@ class Domain(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, index=True, nullable=False)
 
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    # user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+
     is_verified = Column(Boolean, default=False)
     is_primary = Column(Boolean, default=False)  # NEW
     verification_token = Column(String(128), nullable=True)  # NEW
@@ -196,8 +199,6 @@ class UserAdReward(Base):
     __tablename__ = "user_ad_rewards"
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
-    link_id = Column(Integer, ForeignKey("links.id"), nullable=False, index=True)
     ad_view_count = Column(Integer, default=0) # Total views, including non-unique
     unique_view_count = Column(Integer, default=0, nullable=False) # Unique views based on anti-fraud checks
     total_points = Column(Integer, default=0)
@@ -205,6 +206,9 @@ class UserAdReward(Base):
 
     user = relationship("User", back_populates="ad_rewards")
     link = relationship("Link", back_populates="ad_rewards")
+
+    link_id = Column(Integer, ForeignKey("links.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
 
 
 class Ad(Base):
@@ -224,8 +228,11 @@ class LinkAd(Base):
     __tablename__ = "link_ads"
 
     id = Column(Integer, primary_key=True)
-    link_id = Column(Integer, ForeignKey("links.id"), nullable=False)
-    ad_id = Column(Integer, ForeignKey("ads.id"), nullable=False)
+    # link_id = Column(Integer, ForeignKey("links.id"), nullable=False)
+    # ad_id = Column(Integer, ForeignKey("ads.id"), nullable=False)
+
+    link_id = Column(Integer, ForeignKey("links.id", ondelete="CASCADE"), nullable=False)
+    ad_id = Column(Integer, ForeignKey("ads.id", ondelete="CASCADE"), nullable=False)
 
     link = relationship("Link", back_populates="ads")
     ad = relationship("Ad")
@@ -235,7 +242,8 @@ class AdViewEvent(Base):
     __tablename__ = "ad_view_events"
 
     id = Column(BigInteger, primary_key=True)
-    link_id = Column(BigInteger, ForeignKey("links.id"), nullable=False, index=True)
+    link_id = Column(BigInteger, ForeignKey("links.id", ondelete="CASCADE"), nullable=False, index=True)
+
     user_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)  # Can be anonymous
     ip_hash = Column(String(128), nullable=False, index=True)
     user_agent_hash = Column(String(128), nullable=False, index=True)
