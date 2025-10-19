@@ -57,7 +57,7 @@ export function LinkManagementPage() {
       field: 'owner',
       headerName: 'صاحب لینک',
       width: 250,
-      valueGetter: (value, row) => row.owner?.email || '---',
+      valueGetter: (value, row) => row.owner?.phone_number || row.owner?.email || '---',
     },
     { field: 'long_url', headerName: 'آدرس اصلی', flex: 1, minWidth: 250 },
     { field: 'clicks', headerName: 'تعداد کلیک', type: 'number', width: 100 },
