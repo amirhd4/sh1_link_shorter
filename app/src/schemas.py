@@ -10,7 +10,8 @@ from datetime import date
 
 class UserSummary(BaseModel):
     id: int
-    email: EmailStr
+    email: Optional[EmailStr] = None
+    phone_number: Optional[str] = None
     class Config:
         from_attributes = True
 

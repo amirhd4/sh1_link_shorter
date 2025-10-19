@@ -75,7 +75,8 @@ export interface LinkDetailsForAdmin {
   domain_id: number | null;
   owner: {
     id: number;
-    email: string;
+    email?: string | null;
+    phone_number?: string | null;
   };
 }
 
