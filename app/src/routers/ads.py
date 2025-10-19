@@ -71,21 +71,22 @@ async def get_link_ad_stats(
         select(
             func.sum(models.UserAdReward.ad_view_count).label("total_views"),
             func.sum(models.UserAdReward.total_points).label("total_points"),
+            func.sum(models.UserAdReward.unique_view_count).label("unique_views"),
             func.max(models.UserAdReward.last_view_at).label("last_view")
         ).where(models.UserAdReward.link_id == link.id)
     )
     reward_stats = reward_stats_result.first()
 
     # 3. Get the accurate unique view count directly from AdViewEvent
-    unique_views_result = await db.execute(
-        select(func.count(func.distinct(models.AdViewEvent.ip_hash)))
-        .where(models.AdViewEvent.link_id == link.id)
-    )
-    unique_views_count = unique_views_result.scalar_one_or_none() or 0
+    # unique_views_result = await db.execute(
+    #     select(func.count(func.distinct(models.AdViewEvent.ip_hash)))
+    #     .where(models.AdViewEvent.link_id == link.id)
+    # )
+    # unique_views_count = unique_views_result.scalar_one_or_none() or 0
 
     return {
         "views": (reward_stats.total_views or 0) if reward_stats else 0,
-        "unique_views": unique_views_count,
+        "unique_views": reward_stats.unique_views or 0,
         "points": (reward_stats.total_points or 0) if reward_stats else 0,
         "last_view_at": reward_stats.last_view if reward_stats else None,
     }

@@ -86,10 +86,14 @@ async def get_ad_stats_per_user(db: AsyncSession) -> List[dict]:
             func.coalesce(rewards_subquery.c.total_points, 0).label("total_points")
         )
         .select_from(models.User)  # Explicit from clause
+        .join(models.UserAdReward, models.User.id == models.UserAdReward.user_id, isouter=True)
         .join(rewards_subquery, models.User.id == rewards_subquery.c.user_id, isouter=True)
         .join(unique_views_subquery, models.User.id == unique_views_subquery.c.user_id, isouter=True)
         # Filter out users who have neither rewards nor views to avoid cluttering the stats page
         .where((rewards_subquery.c.user_id != None) | (unique_views_subquery.c.user_id != None))
+        .group_by(models.User.id, models.User.email, models.User.phone_number,
+              rewards_subquery.c.total_views, rewards_subquery.c.total_points,
+              unique_views_subquery.c.unique_views_count)
         .order_by(func.coalesce(rewards_subquery.c.total_points, 0).desc())
     )
     result = await db.execute(stmt)
