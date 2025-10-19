@@ -26,7 +26,9 @@ async def get_ad_stats_per_link(db: AsyncSession) -> List[dict]:
             models.Link.long_url,
             func.sum(models.UserAdReward.ad_view_count).label("total_views"),
             # Use the count from the subquery, defaulting to 0 if no unique views
-            func.coalesce(unique_views_subquery.c.unique_views_count, 0).label("unique_views"),
+            # func.coalesce(unique_views_subquery.c.unique_views_count, 0).label("unique_views"),
+            func.sum(models.UserAdReward.unique_view_count).label("unique_views"),
+
             func.sum(models.UserAdReward.total_points).label("total_points")
         )
         .join(models.UserAdReward, models.Link.id == models.UserAdReward.link_id)
@@ -79,7 +81,8 @@ async def get_ad_stats_per_user(db: AsyncSession) -> List[dict]:
             models.User.email,
             models.User.phone_number,
             func.coalesce(rewards_subquery.c.total_views, 0).label("total_views"),
-            func.coalesce(unique_views_subquery.c.unique_views_count, 0).label("unique_views"),
+            # func.coalesce(unique_views_subquery.c.unique_views_count, 0).label("unique_views"),
+            func.sum(models.UserAdReward.unique_view_count).label("unique_views"),
             func.coalesce(rewards_subquery.c.total_points, 0).label("total_points")
         )
         .select_from(models.User)  # Explicit from clause
