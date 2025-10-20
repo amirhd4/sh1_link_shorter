@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy import func
+from sqlalchemy import func, tuple_
 from sqlalchemy.orm import selectinload
 from datetime import datetime
 
@@ -71,22 +71,21 @@ async def get_link_ad_stats(
         select(
             func.sum(models.UserAdReward.ad_view_count).label("total_views"),
             func.sum(models.UserAdReward.total_points).label("total_points"),
-            func.sum(models.UserAdReward.unique_view_count).label("unique_views"),
             func.max(models.UserAdReward.last_view_at).label("last_view")
         ).where(models.UserAdReward.link_id == link.id)
     )
     reward_stats = reward_stats_result.first()
 
     # 3. Get the accurate unique view count directly from AdViewEvent
-    # unique_views_result = await db.execute(
-    #     select(func.count(func.distinct(models.AdViewEvent.ip_hash)))
-    #     .where(models.AdViewEvent.link_id == link.id)
-    # )
-    # unique_views_count = unique_views_result.scalar_one_or_none() or 0
+    unique_views_result = await db.execute(
+        select(func.count(func.distinct(tuple_(models.AdViewEvent.ip_hash, models.AdViewEvent.user_agent_hash))))
+        .where(models.AdViewEvent.link_id == link.id)
+    )
+    unique_views_count = unique_views_result.scalar_one() or 0
 
     return {
         "views": (reward_stats.total_views or 0) if reward_stats else 0,
-        "unique_views": reward_stats.unique_views or 0,
+        "unique_views": unique_views_count,
         "points": (reward_stats.total_points or 0) if reward_stats else 0,
         "last_view_at": reward_stats.last_view if reward_stats else None,
     }
@@ -127,10 +126,22 @@ async def register_ad_view(
     ip_hash = security.hash_ip(client_ip, security.settings.ip_hash_secret)
     user_agent_hash = security.hash_ip(user_agent, security.settings.ip_hash_secret)
 
-    # 3. بررسی کن آیا این بازدید تکراری است (در 24 ساعت گذشته)
+    # 3. بررسی کن آیا این بازدید واقعاً یکتا است (برای شمارشگر یکتا)
+    is_truly_unique_result = await db.execute(
+        select(models.AdViewEvent.id)
+        .where(
+            models.AdViewEvent.link_id == link.id,
+            models.AdViewEvent.ip_hash == ip_hash,
+            models.AdViewEvent.user_agent_hash == user_agent_hash
+        )
+        .limit(1)
+    )
+    is_first_ever_view = is_truly_unique_result.scalars().first() is None
+
+    # 4. بررسی کن آیا این بازدید تکراری است (در 24 ساعت گذشته برای جلوگیری از تقلب در امتیاز)
     twenty_four_hours_ago = datetime.utcnow() - timedelta(hours=24)
-    existing_view_result = await db.execute(
-        select(models.AdViewEvent)
+    recent_view_result = await db.execute(
+        select(models.AdViewEvent.id)
         .where(
             and_(
                 models.AdViewEvent.link_id == link.id,
@@ -139,11 +150,12 @@ async def register_ad_view(
                 models.AdViewEvent.timestamp >= twenty_four_hours_ago
             )
         )
+        .limit(1)
     )
-    if existing_view_result.scalars().first():
+    if recent_view_result.scalars().first():
         raise HTTPException(status_code=409, detail="Ad view already registered from this IP/user for this link in the last 24 hours.")
 
-    # 4. بازدید جدید را در AdViewEvent ثبت کن
+    # 5. بازدید جدید را در AdViewEvent ثبت کن
     new_view = models.AdViewEvent(
         link_id=link.id,
         user_id=current_user.id,
@@ -153,7 +165,7 @@ async def register_ad_view(
     )
     db.add(new_view)
 
-    # 5. رکورد پاداش کاربر را پیدا یا ایجاد کن
+    # 6. رکورد پاداش کاربر را پیدا یا ایجاد کن
     reward_result = await db.execute(
         select(models.UserAdReward)
         .where(
@@ -168,13 +180,15 @@ async def register_ad_view(
             user_id=current_user.id,
             link_id=link.id,
             ad_view_count=0,
-            unique_view_count=0, # Add unique view counter
+            unique_view_count=0,
             total_points=0
         )
         db.add(reward)
 
+    # 7. شمارشگرها را به‌روزرسانی کن
     reward.ad_view_count = (reward.ad_view_count or 0) + 1
-    reward.unique_view_count = (reward.unique_view_count or 0) + 1
+    if is_first_ever_view:
+        reward.unique_view_count = (reward.unique_view_count or 0) + 1
     reward.total_points = (reward.total_points or 0) + 10
     reward.last_view_at = datetime.utcnow()
 
