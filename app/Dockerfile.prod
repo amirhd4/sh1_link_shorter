@@ -5,8 +5,8 @@ FROM docker.arvancloud.ir/python:3.11-slim
 WORKDIR /app
 
 # نصب وابستگی‌ها
-COPY ./alembic.ini /app/alembic.ini
-COPY ./alembic /app/alembic
+# COPY ./alembic.ini /app/alembic.ini
+# COPY ./alembic /app/alembic
 COPY ./requirements.txt /app/requirements.txt
 RUN pip install --upgrade pip && pip install -r requirements.txt
 
@@ -23,4 +23,7 @@ RUN pip install gunicorn uvicorn
 EXPOSE 8000
 
 # دستور شروع اپ با Gunicorn
-CMD ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "src.main:app", "--bind", "0.0.0.0:8000", "--workers", "4", "--log-level", "info"]
+# CMD ["alembic upgrade head", "gunicorn", "-k", "uvicorn.workers.UvicornWorker", "src.main:app", "--bind", "0.0.0.0:8000", "--workers", "4", "--log-level", "info"]
+CMD ["sh", "-c", "alembic upgrade head && gunicorn -k uvicorn.workers.UvicornWorker src.main:app --bind 0.0.0.0:8000 --workers 4 --log-level info"]
+
+
