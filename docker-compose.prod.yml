@@ -14,8 +14,9 @@ services:
           memory: 512M
 
     volumes:
-      - ./alembic:/app/alembic
-      - ./alembic.ini:/app/alembic.ini
+      - ./app/alembic:/app/alembic
+      - ./app/alembic.ini:/app/alembic.ini
+
 
     depends_on:
       - db
@@ -73,8 +74,9 @@ services:
     image: docker.arvancloud.ir/postgres:16-alpine
     volumes:
       - postgres_data:/var/lib/postgresql/data/
-      - ./alembic:/app/alembic
-      - ./alembic.ini:/app/alembic.ini
+      - ./app/alembic:/app/alembic
+      - ./app/alembic.ini:/app/alembic.ini
+      
     env_file: .env
     # ports:
     #   - "5432:5432"  # Add this line to expose the port
