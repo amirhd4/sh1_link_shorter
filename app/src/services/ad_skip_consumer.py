@@ -35,16 +35,13 @@ async def init_consumer_group(rds: redis.Redis):
 
 
 async def process_event(session: AsyncSession, event_data: dict):
-    """ذخیره‌ی event در دیتابیس + امتیاز تبلیغاتی"""
     try:
         short_code = event_data.get("short_code")
         domain_id = event_data.get("domain_id")
-        from_ad_page = event_data.get("from_ad_page") == "true"
         ip = event_data.get("ip")
         user_agent = event_data.get("user_agent")
         timestamp = event_data.get("timestamp")
 
-        # --- پیدا کردن لینک بر اساس short_code و domain ---
         query = select(models.Link).where(models.Link.short_code == short_code)
         if domain_id and domain_id != "default":
             query = query.where(models.Link.domain_id == int(domain_id))
@@ -59,41 +56,41 @@ async def process_event(session: AsyncSession, event_data: dict):
 
         ip_hash = security.hash_ip(ip, settings.ip_hash_secret)
 
-        # --- ثبت آمار تبلیغ ---
+        # ثبت آمار تبلیغ
         record = models.AdAnalytics(
             link_id=link.id,
             domain_id=link.domain_id,
-            from_ad_page=from_ad_page,
+            from_ad_page=True,
             ip_hash=ip_hash,
             user_agent=user_agent,
             timestamp=datetime.fromisoformat(timestamp),
         )
         session.add(record)
 
-        # --- امتیازدهی تبلیغاتی ---
-        owner_id = link.owner_id
+        # امتیاز برای صاحب لینک
         reward = await session.scalar(
             select(models.UserAdReward)
-            .where(models.UserAdReward.user_id == owner_id)
+            .where(models.UserAdReward.user_id == link.owner_id)
             .where(models.UserAdReward.link_id == link.id)
         )
-
         if not reward:
             reward = models.UserAdReward(
-                user_id=owner_id,
+                user_id=link.owner_id,
                 link_id=link.id,
                 ad_view_count=1,
-                total_points=1,
+                unique_view_count=1,
+                total_points=10,
                 last_view_at=datetime.utcnow()
             )
             session.add(reward)
         else:
             reward.ad_view_count += 1
-            reward.total_points += 1
+            reward.unique_view_count += 1
+            reward.total_points += 10
             reward.last_view_at = datetime.utcnow()
 
         await session.commit()
-        logger.info(f"✅ Ad analytics + reward stored for {short_code}")
+        logger.info(f"✅ Ad analytics stored for link {short_code}")
 
     except Exception as e:
         logger.exception("Error saving ad analytics: %s", e)

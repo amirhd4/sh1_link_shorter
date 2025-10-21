@@ -194,6 +194,10 @@ class AdAnalytics(Base):
     link = relationship("Link", back_populates="ad_analytics")
     domain = relationship("Domain", back_populates="ad_analytics", lazy="joined")
 
+    __table_args__ = (
+        UniqueConstraint("link_id", "ip_hash", "user_agent", name="uq_adanalytics_unique_view"),
+    )
+
 
 class UserAdReward(Base):
     __tablename__ = "user_ad_rewards"

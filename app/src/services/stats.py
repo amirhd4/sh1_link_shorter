@@ -11,43 +11,33 @@ async def get_ad_stats_per_link(db: AsyncSession) -> List[dict]:
     """آمار بازدید و امتیازات تبلیغات را به تفکیک لینک برمی‌گرداند. (با محاسبه دقیق بازدید یکتا)"""
 
     # Subquery to get the count of unique IPs (views) per link from AdViewEvent
-    unique_views_subquery = (
-        select(
-            models.AdViewEvent.link_id,
-            func.count(func.distinct(models.AdViewEvent.ip_hash)).label("unique_views_count")
-        )
-        .group_by(models.AdViewEvent.link_id)
-        .subquery()
-    )
-
     stmt = (
         select(
             models.Link.short_code,
             models.Link.long_url,
-            func.sum(models.UserAdReward.ad_view_count).label("total_views"),
-            # Use the count from the subquery, defaulting to 0 if no unique views
-            # func.coalesce(unique_views_subquery.c.unique_views_count, 0).label("unique_views"),
-            func.sum(models.UserAdReward.unique_view_count).label("unique_views"),
-
-            func.sum(models.UserAdReward.total_points).label("total_points")
+            func.count(models.AdViewEvent.id).label("total_views"),
+            func.count(func.distinct(models.AdViewEvent.ip_hash)).label("unique_views"),
+            func.coalesce(func.sum(models.UserAdReward.total_points), 0).label("total_points")
         )
-        .join(models.UserAdReward, models.Link.id == models.UserAdReward.link_id)
-        # Use an outer join in case a link has rewards but no unique views recorded yet
-        .join(unique_views_subquery, models.Link.id == unique_views_subquery.c.link_id, isouter=True)
-        .group_by(models.Link.id, models.Link.short_code, models.Link.long_url, unique_views_subquery.c.unique_views_count)
-        .order_by(func.sum(models.UserAdReward.total_points).desc())
+        .join(models.AdViewEvent, models.Link.id == models.AdViewEvent.link_id)
+        .join(models.UserAdReward, models.Link.id == models.UserAdReward.link_id, isouter=True)
+        .group_by(models.Link.id, models.Link.short_code, models.Link.long_url)
+        .order_by(func.count(models.AdViewEvent.id).desc())
     )
+
     result = await db.execute(stmt)
-    return [
-        {
-            "short_code": row.short_code,
-            "long_url": row.long_url,
-            "total_views": row.total_views or 0,
-            "unique_views": row.unique_views or 0,
-            "total_points": row.total_points or 0,
-        }
-        for row in result
-    ]
+    return [dict(row._asdict()) for row in result.all()]
+
+    # return [
+    #     {
+    #         "short_code": row.short_code,
+    #         "long_url": row.long_url,
+    #         "total_views": row.total_views or 0,
+    #         "unique_views": row.unique_views or 0,
+    #         "total_points": row.total_points or 0,
+    #     }
+    #     for row in result
+    # ]
 
 
 async def get_ad_stats_per_user(db: AsyncSession) -> List[dict]:

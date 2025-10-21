@@ -10,6 +10,8 @@ from .. import models
 from ..database import get_db
 from ..services import security
 from ..rate_limiter import limiter
+from datetime import timedelta
+from sqlalchemy import and_
 
 
 router = APIRouter(prefix="/ads", tags=["Advertising"])
@@ -91,8 +93,7 @@ async def get_link_ad_stats(
     }
 
 
-from datetime import timedelta
-from sqlalchemy import and_
+
 
 @router.post("/view/{short_code}")
 @limiter.limit("100/minute")
@@ -100,14 +101,9 @@ async def register_ad_view(
     request: Request,
     short_code: str,
     domain_id: int | None = None,
-    current_user: models.User = Depends(security.get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    # 1. لینک را پیدا کن
-    # result = await db.execute(
-    #     select(models.Link).where(models.Link.short_code == short_code)
-    # )
-
+    # لینک را پیدا کن
     result = await db.execute(
         select(models.Link)
         .where(
@@ -115,82 +111,61 @@ async def register_ad_view(
             models.Link.domain_id == int(domain_id) if domain_id else models.Link.domain_id.is_(None)
         )
     )
-
     link = result.scalars().first()
     if not link:
         raise HTTPException(status_code=404, detail="Link not found")
 
-    # 2. اطلاعات کاربر را برای سیستم ضد تقلب جمع‌آوری کن
+    # استخراج IP و UA
     client_ip = (request.headers.get("x-forwarded-for") or request.client.host).split(",")[0].strip()
     user_agent = request.headers.get("user-agent", "")
     ip_hash = security.hash_ip(client_ip, security.settings.ip_hash_secret)
     user_agent_hash = security.hash_ip(user_agent, security.settings.ip_hash_secret)
 
-    # 3. بررسی کن آیا این بازدید واقعاً یکتا است (برای شمارشگر یکتا)
-    is_truly_unique_result = await db.execute(
+    # بررسی بازدید تکراری در 24 ساعت اخیر
+    twenty_four_hours_ago = datetime.utcnow() - timedelta(hours=24)
+    recent_view = await db.execute(
         select(models.AdViewEvent.id)
         .where(
             models.AdViewEvent.link_id == link.id,
             models.AdViewEvent.ip_hash == ip_hash,
-            models.AdViewEvent.user_agent_hash == user_agent_hash
+            models.AdViewEvent.user_agent_hash == user_agent_hash,
+            models.AdViewEvent.timestamp >= twenty_four_hours_ago
         )
         .limit(1)
     )
-    is_first_ever_view = is_truly_unique_result.scalars().first() is None
+    if recent_view.scalar_one_or_none():
+        raise HTTPException(status_code=409, detail="Ad view already counted in the last 24 hours.")
 
-    # 4. بررسی کن آیا این بازدید تکراری است (در 24 ساعت گذشته برای جلوگیری از تقلب در امتیاز)
-    twenty_four_hours_ago = datetime.utcnow() - timedelta(hours=24)
-    recent_view_result = await db.execute(
-        select(models.AdViewEvent.id)
-        .where(
-            and_(
-                models.AdViewEvent.link_id == link.id,
-                models.AdViewEvent.ip_hash == ip_hash,
-                models.AdViewEvent.user_agent_hash == user_agent_hash,
-                models.AdViewEvent.timestamp >= twenty_four_hours_ago
-            )
-        )
-        .limit(1)
-    )
-    if recent_view_result.scalars().first():
-        raise HTTPException(status_code=409, detail="Ad view already registered from this IP/user for this link in the last 24 hours.")
-
-    # 5. بازدید جدید را در AdViewEvent ثبت کن
-    new_view = models.AdViewEvent(
+    # ثبت بازدید جدید
+    db.add(models.AdViewEvent(
         link_id=link.id,
-        user_id=current_user.id,
         ip_hash=ip_hash,
         user_agent_hash=user_agent_hash,
         timestamp=datetime.utcnow()
-    )
-    db.add(new_view)
+    ))
 
-    # 6. رکورد پاداش کاربر را پیدا یا ایجاد کن
-    reward_result = await db.execute(
+    # افزایش آمار برای صاحب لینک
+    owner_id = link.owner_id
+    reward = await db.scalar(
         select(models.UserAdReward)
-        .where(
-            models.UserAdReward.user_id == current_user.id,
-            models.UserAdReward.link_id == link.id
-        )
+        .where(models.UserAdReward.user_id == owner_id)
+        .where(models.UserAdReward.link_id == link.id)
     )
-    reward = reward_result.scalars().first()
-
     if not reward:
         reward = models.UserAdReward(
-            user_id=current_user.id,
+            user_id=owner_id,
             link_id=link.id,
-            ad_view_count=0,
-            unique_view_count=0,
-            total_points=0
+            ad_view_count=1,
+            unique_view_count=1,
+            total_points=10,
+            last_view_at=datetime.utcnow()
         )
         db.add(reward)
-
-    # 7. شمارشگرها را به‌روزرسانی کن
-    reward.ad_view_count = (reward.ad_view_count or 0) + 1
-    if is_first_ever_view:
+    else:
+        reward.ad_view_count = (reward.ad_view_count or 0) + 1
         reward.unique_view_count = (reward.unique_view_count or 0) + 1
-    reward.total_points = (reward.total_points or 0) + 10
-    reward.last_view_at = datetime.utcnow()
+        reward.total_points = (reward.total_points or 0) + 10
+        reward.last_view_at = datetime.utcnow()
 
     await db.commit()
     await db.refresh(reward)
