@@ -220,7 +220,7 @@ export function PublicLayout({ children }: PublicLayoutProps) {
       href="tel:09960074607"
       sx={{ color: "#6b21a8", fontWeight: 500, textDecoration: "none" }}
     >
-      تبلیغات: 09960074607
+      طراحی سایت، پشتیبانی و تبلیغات: 09960074607
     </Link>
     <div dangerouslySetInnerHTML={{ __html: enamadCode }} />
   </Box>
