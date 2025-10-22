@@ -95,7 +95,9 @@ async def create_payment(
 
 
 @router.get("/verify-zarinpal")
+@limiter.limit("30/minute")
 async def verify_zarinpal_payment(
+        request: Request,
         Authority: str = Query(...),
         Status: str = Query(...),
         db: AsyncSession = Depends(get_db)
