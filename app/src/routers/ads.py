@@ -52,47 +52,44 @@ async def get_link_ad_stats(
         domain_id: int | None = None,
         db: AsyncSession = Depends(get_db)
 ):
-    # 1. Find the link
-    # link_result = await db.execute(
-    #     select(models.Link).where(models.Link.short_code == short_code)
-    # )
+    """
+    دریافت آمار بازدیدهای تبلیغاتی برای یک لینک خاص.
+    آمار از جدول تجمیعی UserAdReward خوانده می‌شود تا هماهنگی تضمین شود.
+    """
+    # 1. پیدا کردن لینک
     link_result = await db.execute(
-        select(models.Link)
+        select(models.Link.id)
         .where(
             models.Link.short_code == short_code,
             models.Link.domain_id == int(domain_id) if domain_id else models.Link.domain_id.is_(None)
         )
     )
-    link = link_result.scalars().first()
-    if not link:
+    link_id = link_result.scalar_one_or_none()
+    if not link_id:
         raise HTTPException(status_code=404, detail="Link not found")
 
-    # 2. Get aggregated stats from UserAdReward (total views, points)
-    # We sum them up in case there are multiple reward entries for a link (shouldn't happen, but safe)
+    # 2. خواندن آمار تجمیعی از UserAdReward
     reward_stats_result = await db.execute(
         select(
             func.sum(models.UserAdReward.ad_view_count).label("total_views"),
+            func.sum(models.UserAdReward.unique_view_count).label("unique_views"),
             func.sum(models.UserAdReward.total_points).label("total_points"),
             func.max(models.UserAdReward.last_view_at).label("last_view")
-        ).where(models.UserAdReward.link_id == link.id)
+        ).where(models.UserAdReward.link_id == link_id)
     )
     reward_stats = reward_stats_result.first()
 
-    # 3. Get the accurate unique view count directly from AdViewEvent
-    unique_views_result = await db.execute(
-        select(func.count(func.distinct(tuple_(models.AdViewEvent.ip_hash, models.AdViewEvent.user_agent_hash))))
-        .where(models.AdViewEvent.link_id == link.id)
-    )
-    unique_views_count = unique_views_result.scalar_one() or 0
-
     return {
-        "views": (reward_stats.total_views or 0) if reward_stats else 0,
-        "unique_views": unique_views_count,
-        "points": (reward_stats.total_points or 0) if reward_stats else 0,
+        "views": reward_stats.total_views if reward_stats and reward_stats.total_views else 0,
+        "unique_views": reward_stats.unique_views if reward_stats and reward_stats.unique_views else 0,
+        "points": reward_stats.total_points if reward_stats and reward_stats.total_points else 0,
         "last_view_at": reward_stats.last_view if reward_stats else None,
     }
 
 
+
+
+from ..services import ads as ads_service
 
 
 @router.post("/view/{short_code}")
@@ -103,74 +100,24 @@ async def register_ad_view(
     domain_id: int | None = None,
     db: AsyncSession = Depends(get_db)
 ):
-    # لینک را پیدا کن
-    result = await db.execute(
-        select(models.Link)
-        .where(
-            models.Link.short_code == short_code,
-            models.Link.domain_id == int(domain_id) if domain_id else models.Link.domain_id.is_(None)
-        )
-    )
-    link = result.scalars().first()
-    if not link:
-        raise HTTPException(status_code=404, detail="Link not found")
-
-    # استخراج IP و UA
+    """
+    ثبت بازدید تبلیغ با استفاده از سرویس مرکزی.
+    این اندپوینت می‌تواند توسط فرانت‌اند فراخوانی شود.
+    """
     client_ip = (request.headers.get("x-forwarded-for") or request.client.host).split(",")[0].strip()
     user_agent = request.headers.get("user-agent", "")
-    ip_hash = security.hash_ip(client_ip, security.settings.ip_hash_secret)
-    user_agent_hash = security.hash_ip(user_agent, security.settings.ip_hash_secret)
 
-    # بررسی بازدید تکراری در 24 ساعت اخیر
-    twenty_four_hours_ago = datetime.utcnow() - timedelta(hours=24)
-    recent_view = await db.execute(
-        select(models.AdViewEvent.id)
-        .where(
-            models.AdViewEvent.link_id == link.id,
-            models.AdViewEvent.ip_hash == ip_hash,
-            models.AdViewEvent.user_agent_hash == user_agent_hash,
-            models.AdViewEvent.timestamp >= twenty_four_hours_ago
-        )
-        .limit(1)
+    await ads_service.process_ad_view(
+        session=db,
+        short_code=short_code,
+        domain_id=domain_id,
+        ip=client_ip,
+        user_agent=user_agent
     )
-    if recent_view.scalar_one_or_none():
-        raise HTTPException(status_code=409, detail="Ad view already counted in the last 24 hours.")
-
-    # ثبت بازدید جدید
-    db.add(models.AdViewEvent(
-        link_id=link.id,
-        ip_hash=ip_hash,
-        user_agent_hash=user_agent_hash,
-        timestamp=datetime.utcnow()
-    ))
-
-    # افزایش آمار برای صاحب لینک
-    owner_id = link.owner_id
-    reward = await db.scalar(
-        select(models.UserAdReward)
-        .where(models.UserAdReward.user_id == owner_id)
-        .where(models.UserAdReward.link_id == link.id)
-    )
-    if not reward:
-        reward = models.UserAdReward(
-            user_id=owner_id,
-            link_id=link.id,
-            ad_view_count=1,
-            unique_view_count=1,
-            total_points=10,
-            last_view_at=datetime.utcnow()
-        )
-        db.add(reward)
-    else:
-        reward.ad_view_count = (reward.ad_view_count or 0) + 1
-        reward.unique_view_count = (reward.unique_view_count or 0) + 1
-        reward.total_points = (reward.total_points or 0) + 10
-        reward.last_view_at = datetime.utcnow()
 
     await db.commit()
-    await db.refresh(reward)
 
-    return {"message": "Ad view registered successfully", "total_points": reward.total_points}
+    return {"message": "Ad view processed successfully."}
 
 
 @router.get("/active")

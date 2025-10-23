@@ -34,66 +34,36 @@ async def init_consumer_group(rds: redis.Redis):
             logger.warning("Failed to create group (maybe exists): %s", e)
 
 
+from ..services import ads as ads_service
+
+
 async def process_event(session: AsyncSession, event_data: dict):
+    """
+    رویداد بازدید تبلیغ را با استفاده از سرویس مرکزی پردازش می‌کند.
+    """
     try:
         short_code = event_data.get("short_code")
         domain_id = event_data.get("domain_id")
         ip = event_data.get("ip")
         user_agent = event_data.get("user_agent")
-        timestamp = event_data.get("timestamp")
 
-        query = select(models.Link).where(models.Link.short_code == short_code)
-        if domain_id and domain_id != "default":
-            query = query.where(models.Link.domain_id == int(domain_id))
-        else:
-            query = query.where(models.Link.domain_id == None)
-
-        result = await session.execute(query)
-        link = result.scalar_one_or_none()
-        if not link:
-            logger.warning("Link not found for ad skip analytics: %s", short_code)
+        if not all([short_code, ip, user_agent]):
+            logger.warning("Skipping incomplete ad skip event: %s", event_data)
             return
 
-        ip_hash = security.hash_ip(ip, settings.ip_hash_secret)
-
-        # ثبت آمار تبلیغ
-        record = models.AdAnalytics(
-            link_id=link.id,
-            domain_id=link.domain_id,
-            from_ad_page=True,
-            ip_hash=ip_hash,
+        await ads_service.process_ad_view(
+            session=session,
+            short_code=short_code,
+            domain_id=domain_id,
+            ip=ip,
             user_agent=user_agent,
-            timestamp=datetime.fromisoformat(timestamp),
         )
-        session.add(record)
-
-        # امتیاز برای صاحب لینک
-        reward = await session.scalar(
-            select(models.UserAdReward)
-            .where(models.UserAdReward.user_id == link.owner_id)
-            .where(models.UserAdReward.link_id == link.id)
-        )
-        if not reward:
-            reward = models.UserAdReward(
-                user_id=link.owner_id,
-                link_id=link.id,
-                ad_view_count=1,
-                unique_view_count=1,
-                total_points=10,
-                last_view_at=datetime.utcnow()
-            )
-            session.add(reward)
-        else:
-            reward.ad_view_count += 1
-            reward.unique_view_count += 1
-            reward.total_points += 10
-            reward.last_view_at = datetime.utcnow()
 
         await session.commit()
-        logger.info(f"✅ Ad analytics stored for link {short_code}")
+        logger.info("Successfully processed ad view event for %s.", short_code)
 
     except Exception as e:
-        logger.exception("Error saving ad analytics: %s", e)
+        logger.exception("Error processing ad skip event for %s: %s", event_data.get("short_code"), e)
         await session.rollback()
 
 

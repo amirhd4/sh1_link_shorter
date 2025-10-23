@@ -57,6 +57,15 @@ async def update_ad(db: AsyncSession, ad_id: int, ad_update: schemas.AdUpdate) -
 
 
 
+from sqlalchemy import and_
+from datetime import datetime, timedelta, timezone
+from . import security
+from ..config import settings
+import logging
+
+logger = logging.getLogger(__name__)
+
+
 async def delete_ad(db: AsyncSession, ad_id: int) -> bool:
     """حذف یک تبلیغ"""
     db_ad = await get_ad(db, ad_id)
@@ -66,3 +75,98 @@ async def delete_ad(db: AsyncSession, ad_id: int) -> bool:
     await db.delete(db_ad)
     await db.commit()
     return True
+
+
+async def process_ad_view(
+    session: AsyncSession,
+    short_code: str,
+    domain_id: int | str | None,
+    ip: str,
+    user_agent: str,
+):
+    """
+    سرویس مرکزی برای پردازش بازدید تبلیغ، بررسی یکتایی و تخصیص امتیاز.
+    """
+    # 1. پیدا کردن لینک
+    query = select(models.Link).where(models.Link.short_code == short_code)
+    if domain_id and domain_id not in ["default", "0", "None", None]:
+        query = query.where(models.Link.domain_id == int(domain_id))
+    else:
+        query = query.where(models.Link.domain_id.is_(None))
+
+    result = await session.execute(query)
+    link = result.scalar_one_or_none()
+
+    if not link:
+        logger.warning("Link not found for ad view processing: %s (domain_id: %s)", short_code, domain_id)
+        return
+
+    # 2. بررسی فعال بودن نمایش تبلیغ برای لینک
+    if not link.show_ads:
+        logger.info("Ad view processing skipped for link %s because show_ads is false.", link.id)
+        return
+
+    # 3. هش کردن اطلاعات کاربر برای حریم خصوصی
+    ip_hash = security.hash_ip(ip, settings.ip_hash_secret)
+    user_agent_hash = security.hash_ip(user_agent, settings.ip_hash_secret)
+
+    # 4. بررسی اینکه آیا این بازدید در 24 ساعت گذشته ثبت شده است یا خیر
+    twenty_four_hours_ago = datetime.now(timezone.utc) - timedelta(hours=24)
+    recent_view_result = await session.execute(
+        select(models.AdViewEvent)
+        .where(
+            and_(
+                models.AdViewEvent.link_id == link.id,
+                models.AdViewEvent.ip_hash == ip_hash,
+                models.AdViewEvent.user_agent_hash == user_agent_hash,
+                models.AdViewEvent.timestamp >= twenty_four_hours_ago
+            )
+        )
+        .limit(1)
+    )
+    is_unique_view = recent_view_result.scalar_one_or_none() is None
+
+    # 5. پیدا کردن یا ایجاد رکورد پاداش کاربر
+    reward_result = await session.execute(
+        select(models.UserAdReward).where(
+            models.UserAdReward.user_id == link.owner_id,
+            models.UserAdReward.link_id == link.id
+        )
+    )
+    reward = reward_result.scalar_one_or_none()
+
+    if not reward:
+        reward = models.UserAdReward(
+            user_id=link.owner_id,
+            link_id=link.id,
+            ad_view_count=0,
+            unique_view_count=0,
+            total_points=0
+        )
+        session.add(reward)
+
+    # همیشه تعداد بازدید کل را افزایش بده
+    reward.ad_view_count += 1
+    reward.last_view_at = datetime.now(timezone.utc)
+
+    # 6. اگر بازدید یکتا بود، آمار مربوطه را به‌روز کن
+    if is_unique_view:
+        # ثبت رکورد بازدید یکتا
+        new_view_event = models.AdViewEvent(
+            link_id=link.id,
+            ip_hash=ip_hash,
+            user_agent_hash=user_agent_hash,
+            timestamp=datetime.now(timezone.utc)
+        )
+        session.add(new_view_event)
+
+        # افزایش شمارنده بازدید یکتا و امتیاز
+        reward.unique_view_count += 1
+        reward.total_points += 10  # امتیاز برای هر بازدید یکتا
+
+    logger.info(
+        "Ad view processed for link %s. Unique: %s. Total views: %s, Unique views: %s",
+        link.id, is_unique_view, reward.ad_view_count, reward.unique_view_count
+    )
+
+    # تغییرات در دیتابیس ذخیره خواهد شد توسط вызываنده (consumer یا router)
