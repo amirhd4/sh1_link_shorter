@@ -59,6 +59,7 @@ async def update_ad(db: AsyncSession, ad_id: int, ad_update: schemas.AdUpdate) -
 
 from sqlalchemy import and_
 from datetime import datetime, timedelta, timezone
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 from . import security
 from ..config import settings
 import logging
@@ -80,17 +81,18 @@ async def delete_ad(db: AsyncSession, ad_id: int) -> bool:
 async def process_ad_view(
     session: AsyncSession,
     short_code: str,
-    domain_id: int | str | None,
+    domain_id: int | None,
     ip: str,
     user_agent: str,
 ):
     """
     سرویس مرکزی برای پردازش بازدید تبلیغ، بررسی یکتایی و تخصیص امتیاز.
+    این تابع از دستور UPSERT برای جلوگیری از Race Condition استفاده می‌کند.
     """
     # 1. پیدا کردن لینک
     query = select(models.Link).where(models.Link.short_code == short_code)
-    if domain_id and domain_id not in ["default", "0", "None", None]:
-        query = query.where(models.Link.domain_id == int(domain_id))
+    if domain_id:
+        query = query.where(models.Link.domain_id == domain_id)
     else:
         query = query.where(models.Link.domain_id.is_(None))
 
@@ -113,7 +115,7 @@ async def process_ad_view(
     # 4. بررسی اینکه آیا این بازدید در 24 ساعت گذشته ثبت شده است یا خیر
     twenty_four_hours_ago = datetime.now(timezone.utc) - timedelta(hours=24)
     recent_view_result = await session.execute(
-        select(models.AdViewEvent)
+        select(models.AdViewEvent.id) # .id to make the query lighter
         .where(
             and_(
                 models.AdViewEvent.link_id == link.id,
@@ -126,32 +128,8 @@ async def process_ad_view(
     )
     is_unique_view = recent_view_result.scalar_one_or_none() is None
 
-    # 5. پیدا کردن یا ایجاد رکورد پاداش کاربر
-    reward_result = await session.execute(
-        select(models.UserAdReward).where(
-            models.UserAdReward.user_id == link.owner_id,
-            models.UserAdReward.link_id == link.id
-        )
-    )
-    reward = reward_result.scalar_one_or_none()
-
-    if not reward:
-        reward = models.UserAdReward(
-            user_id=link.owner_id,
-            link_id=link.id,
-            ad_view_count=0,
-            unique_view_count=0,
-            total_points=0
-        )
-        session.add(reward)
-
-    # همیشه تعداد بازدید کل را افزایش بده
-    reward.ad_view_count += 1
-    reward.last_view_at = datetime.now(timezone.utc)
-
-    # 6. اگر بازدید یکتا بود، آمار مربوطه را به‌روز کن
+    # 5. اگر بازدید یکتا بود، رکورد بازدید را ثبت کن
     if is_unique_view:
-        # ثبت رکورد بازدید یکتا
         new_view_event = models.AdViewEvent(
             link_id=link.id,
             ip_hash=ip_hash,
@@ -160,13 +138,32 @@ async def process_ad_view(
         )
         session.add(new_view_event)
 
-        # افزایش شمارنده بازدید یکتا و امتیاز
-        reward.unique_view_count += 1
-        reward.total_points += 10  # امتیاز برای هر بازدید یکتا
+    # 6. رکورد پاداش کاربر را با استفاده از UPSERT به‌روز کن (اتمیک)
+    points_to_add = settings.AD_VIEW_REWARD_POINTS if is_unique_view else 0
+    unique_views_to_add = 1 if is_unique_view else 0
 
-    logger.info(
-        "Ad view processed for link %s. Unique: %s. Total views: %s, Unique views: %s",
-        link.id, is_unique_view, reward.ad_view_count, reward.unique_view_count
+    insert_stmt = pg_insert(models.UserAdReward).values(
+        user_id=link.owner_id,
+        link_id=link.id,
+        ad_view_count=1,
+        unique_view_count=unique_views_to_add,
+        total_points=points_to_add,
+        last_view_at=datetime.now(timezone.utc)
     )
 
-    # تغییرات در دیتابیس ذخیره خواهد شد توسط вызываنده (consumer یا router)
+    upsert_stmt = insert_stmt.on_conflict_do_update(
+        constraint="uq_user_link_ad_reward",
+        set_={
+            "ad_view_count": models.UserAdReward.ad_view_count + 1,
+            "unique_view_count": models.UserAdReward.unique_view_count + unique_views_to_add,
+            "total_points": models.UserAdReward.total_points + points_to_add,
+            "last_view_at": datetime.now(timezone.utc),
+        }
+    )
+
+    await session.execute(upsert_stmt)
+
+    logger.info(
+        "Ad view processed for link %s. Unique: %s.",
+        link.id, is_unique_view
+    )

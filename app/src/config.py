@@ -47,6 +47,9 @@ class Settings(BaseSettings):
 
     geoip_db_path: str = "/app/GeoLite2-City.mmdb"
 
+    # Ad system settings
+    AD_VIEW_REWARD_POINTS: int = 10
+
     @property
     def database_url_sync(self) -> str:
         return self.database_url.replace("+asyncpg", "")

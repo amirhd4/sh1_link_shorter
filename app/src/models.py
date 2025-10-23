@@ -214,6 +214,10 @@ class UserAdReward(Base):
     link_id = Column(Integer, ForeignKey("links.id", ondelete="CASCADE"), nullable=False, index=True)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
 
+    __table_args__ = (
+        UniqueConstraint("user_id", "link_id", name="uq_user_link_ad_reward"),
+    )
+
 
 class Ad(Base):
     __tablename__ = "ads"
