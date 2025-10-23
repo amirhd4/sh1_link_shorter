@@ -9,6 +9,13 @@ import type { Ad } from "../../../types";
 import { Megaphone } from "lucide-react";
 
 
+const normalizeDomainId = (domainId: string | undefined): number | undefined => {
+  if (domainId === undefined || domainId === "0" || domainId === "null" || domainId === "undefined") {
+    return undefined;
+  }
+  return parseInt(domainId, 10);
+};
+
 export default function AdRedirectPage() {
   const { domainId, shortCode } = useParams<{ domainId: string; shortCode: string }>();
   const [ad, setAd] = useState<Ad | null>(null);
@@ -16,6 +23,7 @@ export default function AdRedirectPage() {
   const [progress, setProgress] = useState(0);
   const [canSkip, setCanSkip] = useState(false);
   const [isPageVisible, setIsPageVisible] = useState(document.visibilityState === 'visible');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const counterRef = useRef(0);
@@ -70,15 +78,19 @@ export default function AdRedirectPage() {
   }, [ad, isPageVisible]); // Reruns when ad is loaded or page visibility changes
 
   const handleSkip = async () => {
-    if (!ad || !shortCode) return;
-    const effectiveDomainId = (domainId === "0" || domainId === "null" || domainId === "undefined") ? "0" : domainId;
+    if (!ad || !shortCode || isSubmitting) return;
+    setIsSubmitting(true);
+    const normalizedDomainId = normalizeDomainId(domainId);
 
     try {
-      await adService.registerAdView(shortCode, parseInt(effectiveDomainId));
+      await adService.registerAdView(shortCode, normalizedDomainId);
     } catch (e) {
       console.error("Failed to register ad view. Proceeding with redirect.", e);
+      // Optional: Show a user-friendly error message
+    } finally {
+      const redirectDomain = normalizedDomainId ?? 0;
+      window.location.href = `${import.meta.env.VITE_BACKEND_BASE_URL_ORIGIN}/ad/skip/${redirectDomain}/${shortCode}`;
     }
-    window.location.href = `${import.meta.env.VITE_BACKEND_BASE_URL_ORIGIN}/ad/skip/${effectiveDomainId}/${shortCode}`;
   };
 
   const remainingSeconds = ad ? Math.ceil(ad.duration - (progress / 100) * ad.duration) : 0;
@@ -153,14 +165,18 @@ export default function AdRedirectPage() {
       cursor: 'pointer'  // ← نمایش cursor دست
     }}
     onClick={async () => {
-      if (!ad || !shortCode) return;
+      if (!ad || !shortCode || isSubmitting) return;
+      setIsSubmitting(true);
+      const normalizedDomainId = normalizeDomainId(domainId);
       try {
-        await adService.registerAdView(shortCode, domainId ? parseInt(domainId) : undefined);
+        await adService.registerAdView(shortCode, normalizedDomainId);
       } catch (e) {
         console.error("Failed to register ad view.", e);
+        // Optional: Show a user-friendly error message
+      } finally {
+        setIsSubmitting(false); // Reset submitting state
+        if (ad.target_url) window.open(ad.target_url, "_blank");
       }
-      if (ad.target_url) window.open(ad.target_url, "_blank");
-
     }}
   />
 ) : (
@@ -187,11 +203,11 @@ export default function AdRedirectPage() {
                   variant="contained"
                   color={canSkip ? "success" : "primary"}
                   onClick={handleSkip}
-                  disabled={!canSkip}
+                  disabled={!canSkip || isSubmitting}
                   size="large"
                   sx={{ borderRadius: 3, px: 5, py: 1.5, fontWeight: "bold", fontSize: "1.1rem", width: '100%', maxWidth: '400px' }}
                 >
-                  {canSkip ? "🚀 رفتن به لینک مقصد" : `لطفاً ${remainingSeconds} ثانیه منتظر بمانید`}
+                  {isSubmitting ? <CircularProgress size={24} color="inherit" /> : (canSkip ? "🚀 رفتن به لینک مقصد" : `لطفاً ${remainingSeconds} ثانیه منتظر بمانید`)}
                 </Button>
               </Paper>
             </Grid>
