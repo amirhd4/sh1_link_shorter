@@ -104,18 +104,21 @@ async def register_ad_view(
     ثبت بازدید تبلیغ با استفاده از سرویس مرکزی.
     این اندپوینت می‌تواند توسط فرانت‌اند فراخوانی شود.
     """
-    client_ip = (request.headers.get("x-forwarded-for") or request.client.host).split(",")[0].strip()
-    user_agent = request.headers.get("user-agent", "")
+    # if request.headers.get("X-From-Ad-Page") == "true":
+    #     return {"message": "Handled via consumer"}
 
-    await ads_service.process_ad_view(
-        session=db,
-        short_code=short_code,
-        domain_id=domain_id,
-        ip=client_ip,
-        user_agent=user_agent
-    )
-
-    await db.commit()
+    # client_ip = (request.headers.get("x-forwarded-for") or request.client.host).split(",")[0].strip()
+    # user_agent = request.headers.get("user-agent", "")
+    #
+    # await ads_service.process_ad_view(
+    #     session=db,
+    #     short_code=short_code,
+    #     domain_id=domain_id,
+    #     ip=client_ip,
+    #     user_agent=user_agent
+    # )
+    #
+    # await db.commit()
 
     return {"message": "Ad view processed successfully."}
 

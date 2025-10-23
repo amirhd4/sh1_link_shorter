@@ -90,8 +90,19 @@ async def process_ad_view(
     این تابع از دستور UPSERT برای جلوگیری از Race Condition استفاده می‌کند.
     """
     # 1. پیدا کردن لینک
+
+    # ✅ نرمال‌سازی domain_id برای جلوگیری از خطای نوع داده
+    if not domain_id or str(domain_id).lower() in ["none", "null", "undefined", "", "nan", "0"]:
+        domain_id = None
+    else:
+        try:
+            domain_id = int(domain_id)
+        except (TypeError, ValueError):
+            domain_id = None
+
+    # 1. پیدا کردن لینک
     query = select(models.Link).where(models.Link.short_code == short_code)
-    if domain_id:
+    if domain_id is not None:
         query = query.where(models.Link.domain_id == domain_id)
     else:
         query = query.where(models.Link.domain_id.is_(None))
