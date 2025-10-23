@@ -18,6 +18,9 @@ import phonenumbers
 import logging
 import httpx
 from google.auth.transport.requests import Request as google_request
+import string
+import secrets
+import random
 
 from ..schemas import RegisterOtpRequest
 from ..services.sms_service import send_otp
@@ -39,6 +42,28 @@ router = APIRouter(
     prefix="/auth",
     tags=["Authentication"]
 )
+
+
+ALL_CHARS = string.ascii_letters + string.digits + string.punctuation
+
+def generate_secure_random_password(length: int = 16) -> str:
+
+    password_parts = [
+        secrets.choice(string.digits),
+        secrets.choice(string.punctuation),
+        secrets.choice(string.ascii_lowercase),
+        secrets.choice(string.ascii_uppercase)
+    ]
+
+    remaining_length = length - len(password_parts)
+    if remaining_length > 0:
+        remaining_chars = ''.join(secrets.choice(ALL_CHARS) for _ in range(remaining_length))
+        password_parts.append(remaining_chars)
+
+    password_list = list("".join(password_parts))
+    random.SystemRandom().shuffle(password_list)
+
+    return "".join(password_list)
 
 
 class RegisterRequest(schemas.UserCreate):
@@ -384,7 +409,8 @@ async def google_callback(code: str, db: AsyncSession = Depends(get_db)):
         free_plan = free_plan_result.scalar_one()
         new_user = models.User(
             email=email,
-            hashed_password=security.get_password_hash(str(email)),
+            # hashed_password=security.get_password_hash(str(email)),
+            hashed_password=security.get_password_hash(generate_secure_random_password(length=24)),
             is_verified=True,
             plan_id=free_plan.id,
             subscription_start_date=date.today(),

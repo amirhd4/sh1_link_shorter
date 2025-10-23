@@ -295,7 +295,8 @@ export function LoginForm() {
               </motion.div>
 
               <Divider sx={{ my: 2 }}>یا</Divider>
-              <GoogleLoginButton />
+              {/*<GoogleLoginButton />*/}
+              {/*    TODO: Change here to enable google login mode!    */}
             </Stack>
 
             <Grid container sx={{ mt: 4 }} justifyContent="space-between" alignItems="center">

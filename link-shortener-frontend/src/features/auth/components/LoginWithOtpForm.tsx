@@ -12,6 +12,7 @@ import { getOtpErrorMessage } from "../../../utils/otpErrorHandler";
 import { Turnstile } from "@marsidev/react-turnstile";
 import i18n from "../../../i18n";
 
+
 export function LoginWithOtpForm() {
   const isClient = typeof window !== "undefined";
   const navigate = useNavigate();
@@ -125,7 +126,7 @@ export function LoginWithOtpForm() {
                 placeholder="مثال: 09922768848"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                helperText={i18n.t("otp.phoneHelper") || "شماره موبایل خود را بدون فاصله وارد کنید"}
+                helperText={i18n.t("otp.notFoundPhone") || "شماره موبایل خود را بدون فاصله وارد کنید"}
                 error={sendOtpMutation.isError}
                 InputProps={{ startAdornment: <InputAdornment position="start">📱</InputAdornment> }}
               />
