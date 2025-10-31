@@ -7,6 +7,8 @@ from sqlalchemy.future import select
 import redis.asyncio as redis
 from datetime import date, timedelta
 from urllib.parse import urlparse
+import json
+import logging
 
 from ..rate_limiter import limiter
 from ..services import url_checker
@@ -15,6 +17,7 @@ from .. import models, schemas
 from ..config import settings
 from ..database import get_db
 from ..services.kgs import generate_unique_short_key
+
 
 api_router = APIRouter(prefix="/v1", tags=["Public API"])
 
@@ -75,6 +78,13 @@ async def api_shorten_url(
         link_domain_id = None
         link_domain_name = settings.origin_backend_url
 
+    try:
+        show_ads = url_data.show_ads
+    except Exception as e:
+        logging.error(f"Failed reading show_ads from url_data {e}", exc_info=True)
+        show_ads = False
+
+
     for _ in range(5):
         short_code = await generate_unique_short_key(redis_client)
         new_link = models.Link(
@@ -82,6 +92,7 @@ async def api_shorten_url(
             short_code=short_code,
             owner_id=user.id,
             domain_id=link_domain_id,
+            show_ads=show_ads,
             utm_source=url_data.utm_source,
             utm_medium=url_data.utm_medium,
             utm_campaign=url_data.utm_campaign,
