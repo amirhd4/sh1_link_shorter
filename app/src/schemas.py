@@ -5,7 +5,7 @@ from typing import Optional, List
 from datetime import date, datetime
 
 from . import models
-from datetime import date
+from . import schemas
 
 
 class UserSummary(BaseModel):
@@ -261,3 +261,15 @@ class DomainResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class LinkAdCreate(schemas.BaseModel):
+    link_id: int
+    ad_id: int
+
+class LinkAdResponse(schemas.BaseModel):
+    id: int
+    link_id: int
+    ad_id: int
+    class Config:
+        orm_mode = True

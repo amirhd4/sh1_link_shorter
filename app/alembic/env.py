@@ -1,47 +1,38 @@
 import os
 import sys
 from logging.config import fileConfig
-from dotenv import load_dotenv
+from dotenv import load_dotenv, find_dotenv
 
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
+from sqlalchemy import engine_from_config, pool
 from alembic import context
 
 # Add project root to sys.path to allow imports from src
 sys.path.insert(0, os.path.realpath(os.path.join(os.path.dirname(__file__), '..')))
 
-# Load .env file from the project root.
-# The alembic/env.py is two levels deep from the root.
-dotenv_path = os.path.join(os.path.dirname(__file__), '..', '..', '.env')
-if os.path.exists(dotenv_path):
-    load_dotenv(dotenv_path=dotenv_path)
+# --- Load environment variables ---
+# Try to load .env if it exists (for local/dev), otherwise rely on Docker env vars
+dotenv_path = find_dotenv()
+if dotenv_path:
+    load_dotenv(dotenv_path)
 else:
-    print(f"Warning: .env file not found at {dotenv_path}")
+    print("⚠️ .env file not found — using environment variables from Docker.")
 
-
-# this is the Alembic Config object, which provides
-# access to the values within the .ini file in use.
+# --- Alembic Config ---
 config = context.config
-
-# Interpret the config file for Python logging.
-# This line sets up loggers basically.
-if config.config_file_name is not None:
+if config.config_file_name:
     fileConfig(config.config_file_name)
 
-# add your model's MetaData object here
-# for 'autogenerate' support
+# --- Import models and settings ---
 from src.models import Base
 from src.config import settings
 
 target_metadata = Base.metadata
 
-# Set the database URL from the loaded settings
-# Use the synchronous URL for Alembic
+# --- Set DB URL dynamically ---
 if settings.database_url_sync:
-    config.set_main_option('sqlalchemy.url', settings.database_url_sync)
+    config.set_main_option("sqlalchemy.url", settings.database_url_sync)
 else:
-    # Fallback or error if the URL is not set
-    raise ValueError("DATABASE_URL_SYNC is not set in the environment or .env file.")
+    raise ValueError("DATABASE_URL_SYNC is not set in environment or .env file.")
 
 
 def run_migrations_offline() -> None:
@@ -67,10 +58,7 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
-
+        context.configure(connection=connection, target_metadata=target_metadata)
         with context.begin_transaction():
             context.run_migrations()
 
