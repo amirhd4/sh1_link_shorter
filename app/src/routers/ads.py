@@ -95,32 +95,42 @@ from ..services import ads as ads_service
 @router.post("/view/{short_code}")
 @limiter.limit("100/minute")
 async def register_ad_view(
-    request: Request,
-    short_code: str,
-    domain_id: int | None = None,
-    db: AsyncSession = Depends(get_db)
+        request: Request,
+        short_code: str,
+        domain_id: int | None = None,
+        db: AsyncSession = Depends(get_db)
 ):
     """
-    ثبت بازدید تبلیغ با استفاده از سرویس مرکزی.
-    این اندپوینت می‌تواند توسط فرانت‌اند فراخوانی شود.
+    (بازنویسی شده)
+    ثبت بازدید تبلیغ و تخصیص امتیاز با استفاده از سرویس مرکزی.
+    این اندپوینت توسط فرانت‌اند (در زمان کلیک روی skip یا خود تبلیغ) فراخوانی می‌شود.
     """
-    # if request.headers.get("X-From-Ad-Page") == "true":
-    #     return {"message": "Handled via consumer"}
+    client_ip = (request.headers.get("x-forwarded-for") or request.client.host).split(",")[0].strip()
+    user_agent = request.headers.get("user-agent", "")
 
-    # client_ip = (request.headers.get("x-forwarded-for") or request.client.host).split(",")[0].strip()
-    # user_agent = request.headers.get("user-agent", "")
-    #
-    # await ads_service.process_ad_view(
-    #     session=db,
-    #     short_code=short_code,
-    #     domain_id=domain_id,
-    #     ip=client_ip,
-    #     user_agent=user_agent
-    # )
-    #
-    # await db.commit()
+    if not client_ip or not user_agent:
+        raise HTTPException(status_code=400, detail="Missing client information")
 
-    return {"message": "Ad view processed successfully."}
+    try:
+        # فراخوانی سرویس اصلی که منطق UPSERT را دارد
+        # (این همان تابعی است که قبلاً process_ad_view نام داشت)
+        await ads_service.process_ad_skip_and_reward_view_by_code(
+            session=db,
+            short_code=short_code,
+            domain_id_str=str(domain_id) if domain_id is not None else "0",  # تبدیل int به str
+            ip=client_ip,
+            user_agent=user_agent
+        )
+
+        await db.commit()
+        return {"message": "Ad view processed successfully."}
+
+    except Exception as e:
+        logger.exception("Error in register_ad_view: %s", e)
+        await db.rollback()
+        # حتی اگر خطا داد، نباید جلوی کاربر را بگیریم
+        # فرانت‌اند خودش ریدایرکت را انجام می‌دهد
+        return {"message": "Processing error, but proceeding."}
 
 
 @router.get("/active")

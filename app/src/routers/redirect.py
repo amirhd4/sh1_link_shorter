@@ -159,6 +159,8 @@ async def redirect_to_long_url(
         long_url = link.long_url
         show_ads = link.show_ads
         domain_id_for_ads = link.domain_id if link else None
+        link_id = link.id
+        owner_id = link.owner_id
 
         utm_params = {
             'utm_source': link.utm_source,
@@ -175,7 +177,9 @@ async def redirect_to_long_url(
                 "long_url": long_url,
                 "show_ads": show_ads,
                 "domain_id": domain_id_for_ads,
-                "utm_params": {k: v for k, v in utm_params.items() if v}
+                "utm_params": {k: v for k, v in utm_params.items() if v},
+                "link_id": link_id,
+                "owner_id": owner_id,
             }),
             ex=3600
         )
@@ -261,6 +265,8 @@ async def skip_ad_and_redirect(
         long_url = data.get("long_url")
         show_ads = data.get("show_ads", False)
         utm_params = data.get("utm_params", {})
+        link_id = data.get("link_id")  # <-- از کش بخوانید
+        owner_id = data.get("owner_id")  # <-- از کش بخوانید
     else:
         # جستجوی لینک در دیتابیس
         if domain_id is None:
@@ -291,10 +297,16 @@ async def skip_ad_and_redirect(
             'utm_content': link.utm_content,
         }
 
+        link_id = link.id
+        owner_id = link.owner_id
+
         # ذخیره در کش همراه با UTMها
         await redis_client.set(cache_key, json.dumps({
             "long_url": long_url,
             "show_ads": show_ads,
+            "domain_id": domain_id,
+            "link_id": link_id,
+            "owner_id": owner_id,
             "utm_params": {k: v for k, v in utm_params.items() if v}
         }), ex=3600)
 
@@ -329,19 +341,26 @@ async def skip_ad_and_redirect(
         redis_client,
     )
 
-    try:
-        await redis_client.xadd("ad_skip_events_stream", {
-            "short_code": short_code,
-            "domain_id": str(domain_id) if domain_id is not None else "default",
-            "from_ad_page": "true",
-            "ip": client_ip,
-            "user_agent": user_agent,
-            # "timestamp": datetime.utcnow().isoformat(),
-            "timestamp": datetime.now(timezone.utc).isoformat()
-
-        })
-        logger.info("Ad skip event sent to stream for %s", short_code)
-    except Exception as e:
-        logger.exception("Failed to push ad skip event: %s", e)
+    # try:
+    #     if link_id and owner_id:
+    #         await redis_client.xadd("ad_skip_events_stream", {
+    #             "link_id": str(link_id),  # <-- ارسال ID لینک
+    #             "owner_id": str(owner_id),  # <-- ارسال ID مالک
+    #             "ip": client_ip,
+    #             "user_agent": user_agent,
+    #             "timestamp": datetime.now(timezone.utc).isoformat()
+    #         })
+    #         logger.info("Ad skip event sent to stream for link_id %s", link_id)
+    #     else:
+    #         logger.warning("Falling back to old stream message for %s", short_code)
+    #         await redis_client.xadd("ad_skip_events_stream", {
+    #             "short_code": short_code,
+    #             "domain_id": str(domain_id) if domain_id is not None else "default",
+    #             "ip": client_ip,
+    #             "user_agent": user_agent,
+    #             "timestamp": datetime.now(timezone.utc).isoformat()
+    #         })
+    # except Exception as e:
+    #     logger.exception("Failed to push ad skip event: %s", e)
 
     return RedirectResponse(url=long_url, status_code=307)

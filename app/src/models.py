@@ -91,7 +91,7 @@ class Link(Base):
     utm_content: Mapped[str | None] = mapped_column(String, nullable=True)
 
     show_ads = Column(Boolean, default=False, nullable=False)
-    ad_analytics = relationship("AdAnalytics", back_populates="link", lazy="noload", cascade="all, delete-orphan")
+    # ad_analytics = relationship("AdAnalytics", back_populates="link", lazy="noload", cascade="all, delete-orphan")
     ad_rewards = relationship("UserAdReward", back_populates="link", cascade="all, delete-orphan")
     ads = relationship("LinkAd", back_populates="link")
 
@@ -171,7 +171,7 @@ class Domain(Base):
 
     owner = relationship("User", back_populates="domains")
     links = relationship("Link", back_populates="domain")
-    ad_analytics = relationship("AdAnalytics", back_populates="domain", lazy="noload")
+    # ad_analytics = relationship("AdAnalytics", back_populates="domain", lazy="noload")
 
     __table_args__ = (
         UniqueConstraint("user_id", "is_primary", name="uq_user_primary_domain"),
@@ -180,23 +180,23 @@ class Domain(Base):
     )
 
 
-class AdAnalytics(Base):
-    __tablename__ = "ad_analytics"
-
-    id = Column(Integer, primary_key=True, index=True)
-    link_id = Column(Integer, ForeignKey("links.id", ondelete="CASCADE"), nullable=False)
-    domain_id = Column(Integer, ForeignKey("domains.id"), nullable=True)
-    from_ad_page = Column(Boolean, default=False)
-    ip_hash = Column(String(128), nullable=True)
-    user_agent = Column(String(255), nullable=True)
-    timestamp = Column(DateTime(timezone=True), server_default=func.now())
-
-    link = relationship("Link", back_populates="ad_analytics")
-    domain = relationship("Domain", back_populates="ad_analytics", lazy="joined")
-
-    __table_args__ = (
-        UniqueConstraint("link_id", "ip_hash", "user_agent", name="uq_adanalytics_unique_view"),
-    )
+# class AdAnalytics(Base):
+#     __tablename__ = "ad_analytics"
+#
+#     id = Column(Integer, primary_key=True, index=True)
+#     link_id = Column(Integer, ForeignKey("links.id", ondelete="CASCADE"), nullable=False)
+#     domain_id = Column(Integer, ForeignKey("domains.id"), nullable=True)
+#     from_ad_page = Column(Boolean, default=False)
+#     ip_hash = Column(String(128), nullable=True)
+#     user_agent = Column(String(255), nullable=True)
+#     timestamp = Column(DateTime(timezone=True), server_default=func.now())
+#
+#     link = relationship("Link", back_populates="ad_analytics")
+#     domain = relationship("Domain", back_populates="ad_analytics", lazy="joined")
+#
+#     __table_args__ = (
+#         UniqueConstraint("link_id", "ip_hash", "user_agent", name="uq_adanalytics_unique_view"),
+#     )
 
 
 class UserAdReward(Base):

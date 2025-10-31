@@ -38,32 +38,49 @@ from ..services import ads as ads_service
 
 
 async def process_event(session: AsyncSession, event_data: dict):
-    """
-    رویداد بازدید تبلیغ را با استفاده از سرویس مرکزی پردازش می‌کند.
-    """
     try:
-        short_code = event_data.get("short_code")
-        domain_id = event_data.get("domain_id")
         ip = event_data.get("ip")
         user_agent = event_data.get("user_agent")
 
-        if not all([short_code, ip, user_agent]):
-            logger.warning("Skipping incomplete ad skip event: %s", event_data)
+        # مسیر جدید و بهینه
+        link_id_str = event_data.get("link_id")
+        owner_id_str = event_data.get("owner_id")
+
+        if not ip or not user_agent:
+            logger.warning("Skipping incomplete ad skip event (no ip/ua): %s", event_data)
             return
 
-        await ads_service.process_ad_view(
-            session=session,
-            short_code=short_code,
-            domain_id=domain_id,
-            ip=ip,
-            user_agent=user_agent,
-        )
+        if link_id_str and owner_id_str:
+            # ✅ مسیر بهینه
+            await ads_service.process_ad_skip_and_reward_view(
+                session=session,
+                link_id=int(link_id_str),
+                owner_id=int(owner_id_str),
+                ip=ip,
+                user_agent=user_agent
+            )
+        else:
+            # ⚠️ مسیر قدیمی (Fallback)
+            short_code = event_data.get("short_code")
+            domain_id_str = event_data.get("domain_id") or event_data.get("domain_id_str")  # پشتیبانی از هر دو کلید
+
+            if not short_code:
+                logger.warning("Skipping event with no link_id or short_code: %s", event_data)
+                return
+
+            await ads_service.process_ad_skip_and_reward_view_by_code(
+                session=session,
+                short_code=short_code,
+                domain_id_str=domain_id_str,
+                ip=ip,
+                user_agent=user_agent
+            )
 
         await session.commit()
-        logger.info("Successfully processed ad view event for %s.", short_code)
+        logger.info("Successfully processed ad skip event for %s.", link_id_str or event_data.get("short_code"))
 
     except Exception as e:
-        logger.exception("Error processing ad skip event for %s: %s", event_data.get("short_code"), e)
+        logger.exception("Error processing ad skip event: %s", e)
         await session.rollback()
 
 

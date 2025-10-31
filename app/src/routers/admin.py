@@ -284,3 +284,67 @@ async def toggle_user_active_status(user_id: int, db: AsyncSession = Depends(get
     await db.commit()
     await db.refresh(user)
     return user
+
+
+@router.post("/ads/assign-to-link", response_model=schemas.LinkAdResponse, status_code=status.HTTP_201_CREATED)
+async def assign_ad_to_link(
+        assignment: schemas.LinkAdCreate,  # فرض می‌کنیم این اسکیما را ساخته‌اید
+        db: AsyncSession = Depends(get_db)
+):
+    """
+    (جدید) یک تبلیغ خاص را به یک لینک خاص اختصاص می‌دهد.
+    این کار باعث می‌شود لینک مذکور، تبلیغ جهانی را نادیده بگیرد.
+    """
+    # 1. بررسی وجود لینک
+    link_exists = await db.get(models.Link, assignment.link_id)
+    if not link_exists:
+        raise HTTPException(status_code=404, detail="Link not found")
+
+    # 2. بررسی وجود تبلیغ
+    ad_exists = await db.get(models.Ad, assignment.ad_id)
+    if not ad_exists:
+        raise HTTPException(status_code=404, detail="Ad not found")
+
+    # 3. بررسی اینکه آیا از قبل تخصیص داده شده؟
+    existing_assignment = await db.scalar(
+        select(models.LinkAd).where(models.LinkAd.link_id == assignment.link_id)
+    )
+
+    if existing_assignment:
+        # اگر وجود داشت، آپدیت کن
+        existing_assignment.ad_id = assignment.ad_id
+        db.add(existing_assignment)
+        await db.commit()
+        await db.refresh(existing_assignment)
+        return existing_assignment
+    else:
+        # اگر نه، جدید بساز
+        new_assignment = models.LinkAd(
+            link_id=assignment.link_id,
+            ad_id=assignment.ad_id
+        )
+        db.add(new_assignment)
+        await db.commit()
+        await db.refresh(new_assignment)
+        return new_assignment
+
+
+@router.delete("/ads/unassign-from-link/{link_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def unassign_ad_from_link(
+        link_id: int,
+        db: AsyncSession = Depends(get_db)
+):
+    """
+    (جدید) تخصیص تبلیغ اختصاصی را از یک لینک حذف می‌کند.
+    لینک به استفاده از تبلیغ جهانی برمی‌گردد.
+    """
+    assignment = await db.scalar(
+        select(models.LinkAd).where(models.LinkAd.link_id == link_id)
+    )
+
+    if not assignment:
+        raise HTTPException(status_code=404, detail="No specific ad assignment found for this link")
+
+    await db.delete(assignment)
+    await db.commit()
+    return None
