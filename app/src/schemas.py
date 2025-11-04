@@ -272,4 +272,4 @@ class LinkAdResponse(schemas.BaseModel):
     link_id: int
     ad_id: int
     class Config:
-        orm_mode = True
+        from_attributes = True
