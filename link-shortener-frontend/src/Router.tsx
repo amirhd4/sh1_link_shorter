@@ -32,6 +32,7 @@ import { RegisterOtpPage } from "./pages/register-otp.page.tsx";
 import {ApiPage} from "./features/api/pages/ApiPage.tsx";
 import {DomainsManager} from "./pages/domains-manager.page.tsx";
 import AdRedirectPage from "./pages/[domainId]/[shortCode]/ad.tsx";
+import PasswordProtectedPage from "./pages/[domainId]/[shortCode]/password-protected.tsx";
 
 const router = createBrowserRouter([
   // --- روت‌های عمومی ---
@@ -49,6 +50,7 @@ const router = createBrowserRouter([
       { path: '/login-otp', element: <LoginOtpPage /> },
       { path: '/register-otp', element: <RegisterOtpPage /> },
       { path: '/:domainId/:shortCode/ad', element: <AdRedirectPage /> },
+      { path: '/password/:domainId/:shortCode', element: <PasswordProtectedPage /> },
     ],
   },
 

@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import {useForm, Controller, useWatch} from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import {TextField, Button, Box, Typography, Alert, Modal, CircularProgress, Grid, Stack, IconButton} from '@mui/material';
@@ -29,7 +29,8 @@ const editLinkSchema = z.object({
   utmTerm: z.string().nullable().optional(),
   utmContent: z.string().nullable().optional(),
   showAds: z.boolean(),
-
+  isProtected: z.boolean(),
+  password: z.string().nullable().optional(),
 });
 
 
@@ -42,7 +43,7 @@ interface EditLinkFormProps {
 }
 
 export function EditLinkForm({ isOpen, onClose, link }: EditLinkFormProps) {
-  const queryClient = useQueryClient();
+    const queryClient = useQueryClient();
 
   const {
     control,
@@ -52,6 +53,8 @@ export function EditLinkForm({ isOpen, onClose, link }: EditLinkFormProps) {
   } = useForm<EditLinkFormInputs>({
     resolver: zodResolver(editLinkSchema),
   });
+
+  const isProtected = useWatch({ control, name: 'isProtected' });
 
   useEffect(() => {
         if (link) {
@@ -63,6 +66,8 @@ export function EditLinkForm({ isOpen, onClose, link }: EditLinkFormProps) {
                 utmTerm: link.utm_term,
                 utmContent: link.utm_content,
                 showAds: link.show_ads ?? true,
+                isProtected: link.is_protected ?? false,
+                password: "",
             });
         } else {
         reset({
@@ -73,6 +78,8 @@ export function EditLinkForm({ isOpen, onClose, link }: EditLinkFormProps) {
             utmTerm: null,
             utmContent: null,
             showAds: true,
+            isProtected: false,
+            password: "",
         });
     }
     }, [link, reset]);
@@ -89,7 +96,7 @@ export function EditLinkForm({ isOpen, onClose, link }: EditLinkFormProps) {
   const onSubmit = (data: EditLinkFormInputs) => {
     if (!link) return;
 
-    const domainIdToUse = link.domain_id || "0";
+    const domainIdToUse = link.domain_id ?? 0;
 
     // updateLinkMutation.mutate({ shortCode: link.short_code, longUrl: data.longUrl, domainId: domainIdToUse });
     updateLinkMutation.mutate({
@@ -102,7 +109,8 @@ export function EditLinkForm({ isOpen, onClose, link }: EditLinkFormProps) {
             utm_term: data.utmTerm,
             utm_content: data.utmContent,
             show_ads: data.showAds,
-
+            is_protected: data.isProtected,
+            password: data.password || null,
         });
   };
 const handleClose = () => {
@@ -257,6 +265,42 @@ const handleClose = () => {
               />
             </Grid>
 
+            <Grid size={{ xs: 12 }}>
+              <Controller
+                name="isProtected"
+                control={control}
+                render={({ field }) => (
+                  <Stack direction="row" alignItems="center" spacing={1}>
+                    <input
+                      type="checkbox"
+                      checked={field.value}
+                      onChange={(e) => field.onChange(e.target.checked)}
+                      id="isProtectedEdit"
+                    />
+                    <label htmlFor="isProtectedEdit">لینک رمزدار باشد (is_protected)</label>
+                  </Stack>
+                )}
+              />
+            </Grid>
+
+            {/* اگر لینک رمزدار است، فیلد رمز نمایش داده شود */}
+            {isProtected && (
+              <Grid size={{ xs: 12 }}>
+                <Controller
+                  name="password"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      fullWidth
+                      label="رمز جدید (در صورت تغییر)"
+                      type="password"
+                      sx={{ mt: 2 }}
+                    />
+                  )}
+                />
+              </Grid>
+            )}
 
               <Button
                 type="submit"

@@ -47,6 +47,7 @@ export interface LinkDetails {
     utm_content: string | null;
 
     show_ads: boolean;
+    is_protected: boolean | false;
 }
 
 export interface URLResponse {
@@ -149,6 +150,7 @@ export interface URLCreate {
   domain_id?: number | 0;
 
   show_ads?: boolean;
+  password?: string;
 }
 
 type UpdateLinkPayload = {
@@ -163,6 +165,8 @@ type UpdateLinkPayload = {
     utm_content?: string | null;
 
     show_ads?: boolean;
+    is_protected: boolean,
+    password: string | null,
 };
 
 

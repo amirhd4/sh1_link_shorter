@@ -17,7 +17,8 @@ from .. import models, schemas
 from ..config import settings
 from ..database import get_db
 from ..services.kgs import generate_unique_short_key
-
+from .. services.security import get_password_hash, verify_password
+from ..services.url_checker import is_url_malicious
 
 api_router = APIRouter(prefix="/v1", tags=["Public API"])
 
@@ -32,20 +33,27 @@ async def get_redis_client(request: Request) -> redis.Redis:
 @limiter.limit("100/minute")
 @api_router.post("/shorten", response_model=schemas.URLResponse)
 async def api_shorten_url(
-        request: Request,
-        url_data: schemas.URLCreate,
-        user: models.User = Depends(get_user_by_api_key),
-        db: AsyncSession = Depends(get_db),
-        redis_client: redis.Redis = Depends(get_redis_client),
+    request: Request,
+    url_data: schemas.URLCreate,
+    user: models.User = Depends(get_user_by_api_key),
+    db: AsyncSession = Depends(get_db),
+    redis_client: redis.Redis = Depends(get_redis_client),
 ):
+    """
+    ایجاد لینک کوتاه جدید با پشتیبانی از:
+    - پارامترهای UTM
+    - رمز اختیاری
+    - دامنه سفارشی کاربر
+    - کنترل پلن و تاریخ انقضا
+    """
+
+    # ✅ بررسی پلن و اعتبار اشتراک
     if not user.plan:
         raise HTTPException(status_code=403, detail="No active plan found for user.")
-
-    # محدودیت پلن و تاریخ انقضا
     if user.subscription_end_date is None or user.subscription_end_date < date.today():
         raise HTTPException(status_code=403, detail="Subscription has expired.")
 
-
+    # ✅ محدودیت تعداد لینک در ۳۰ روز
     thirty_days_ago = datetime.now(timezone.utc) - timedelta(days=30)
     link_count_result = await db.execute(
         select(func.count(models.Link.id))
@@ -55,19 +63,20 @@ async def api_shorten_url(
     if link_count_result.scalar_one() >= user.plan.link_limit_per_month:
         raise HTTPException(403, "Monthly link limit reached.")
 
-    if await url_checker.is_url_malicious(str(url_data.long_url)):
+    # ✅ بررسی بدافزار بودن لینک
+    if await is_url_malicious(str(url_data.long_url)):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="The provided URL is flagged as malicious and cannot be shortened."
+            detail="The provided URL is flagged as malicious and cannot be shortened.",
         )
 
-    # تعیین دامنه و domain_id
+    # ✅ تعیین دامنه معتبر
     if url_data.domain_id:
         domain = await db.scalar(
             select(models.Domain).where(
                 models.Domain.id == url_data.domain_id,
                 models.Domain.user_id == user.id,
-                models.Domain.is_verified == True
+                models.Domain.is_verified == True,
             )
         )
         if not domain:
@@ -78,13 +87,19 @@ async def api_shorten_url(
         link_domain_id = None
         link_domain_name = settings.origin_backend_url
 
+    # ✅ فیلد show_ads
     try:
         show_ads = url_data.show_ads
     except Exception as e:
         logging.error(f"Failed reading show_ads from url_data {e}", exc_info=True)
         show_ads = False
 
+    # ✅ هش کردن رمز (در صورت وجود)
+    password_hash = None
+    if url_data.password:
+        password_hash = get_password_hash(url_data.password)
 
+    # ✅ ایجاد لینک جدید با تلاش مجدد برای short_code یکتا
     for _ in range(5):
         short_code = await generate_unique_short_key(redis_client)
         new_link = models.Link(
@@ -98,6 +113,8 @@ async def api_shorten_url(
             utm_campaign=url_data.utm_campaign,
             utm_term=url_data.utm_term,
             utm_content=url_data.utm_content,
+            is_protected=bool(url_data.password),
+            hashed_password=password_hash,
         )
 
         db.add(new_link)
@@ -105,27 +122,31 @@ async def api_shorten_url(
             await db.commit()
             await db.refresh(new_link)
 
-            # ذخیره در Redis همراه با UTMها
+            # ✅ ذخیره در Redis (بدون رمز واقعی)
             cache_key = f"link:{link_domain_name.lower()}:{new_link.short_code}"
             await redis_client.set(
                 cache_key,
                 json.dumps({
                     "long_url": new_link.long_url,
-                    "show_ads": getattr(new_link, "show_ads", False),
-                    "utm_params": {k: v for k, v in {
-                        'utm_source': new_link.utm_source,
-                        'utm_medium': new_link.utm_medium,
-                        'utm_campaign': new_link.utm_campaign,
-                        'utm_term': new_link.utm_term,
-                        'utm_content': new_link.utm_content
-                    }.items() if v}
+                    "show_ads": new_link.show_ads,
+                    "is_protected": new_link.is_protected,
+                    "utm_params": {
+                        k: v for k, v in {
+                            "utm_source": new_link.utm_source,
+                            "utm_medium": new_link.utm_medium,
+                            "utm_campaign": new_link.utm_campaign,
+                            "utm_term": new_link.utm_term,
+                            "utm_content": new_link.utm_content,
+                        }.items() if v
+                    },
                 }),
-                ex=3600
+                ex=3600,  # یک ساعت کش
             )
 
             return schemas.URLResponse(
                 long_url=new_link.long_url,
-                short_url=f"{link_domain_name}/{new_link.short_code}"
+                short_url=f"{link_domain_name}/{new_link.short_code}",
+                # show_ads=new_link.show_ads,
             )
         except IntegrityError:
             await db.rollback()

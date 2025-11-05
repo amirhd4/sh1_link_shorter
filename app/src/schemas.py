@@ -150,6 +150,8 @@ class URLCreate(BaseModel):
     utm_term: Optional[str] = None
     utm_content: Optional[str] = None
 
+    password: Optional[str] = None
+
 
 class URLResponse(BaseModel):
     long_url: HttpUrl
@@ -182,6 +184,7 @@ class LinkDetails(BaseModel):
     utm_campaign: Optional[str] = None
     utm_term: Optional[str] = None
     utm_content: Optional[str] = None
+    is_protected: bool = False
 
     class Config:
         from_attributes = True
@@ -197,6 +200,8 @@ class LinkUpdate(BaseModel):
     utm_content: Optional[str] = None
 
     show_ads: bool = True
+    is_protected: bool = False
+    password: Optional[str] = None
 
 class DailyStat(BaseModel):
     date: date

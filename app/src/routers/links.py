@@ -128,6 +128,8 @@ async def create_short_url(
             utm_term=url_data.utm_term,
             utm_content=url_data.utm_content,
         )
+        if url_data.password:
+            db_link.set_password(url_data.password)
 
         db.add(db_link)
 
@@ -137,7 +139,24 @@ async def create_short_url(
 
             short_url_full = f"https://{domain_name}/{db_link.short_code}"
             # Optionally warm the cache:
-            await redis_client.set(make_cache_key(domain_name, db_link.short_code), db_link.long_url, ex=3600)
+            await redis_client.set(
+                make_cache_key(domain_name, db_link.short_code),
+                json.dumps({
+                    "long_url": db_link.long_url,
+                    "show_ads": db_link.show_ads,
+                    "domain_id": db_link.domain_id,
+                    "utm_params": {
+                        "utm_source": db_link.utm_source,
+                        "utm_medium": db_link.utm_medium,
+                        "utm_campaign": db_link.utm_campaign,
+                        "utm_term": db_link.utm_term,
+                        "utm_content": db_link.utm_content,
+                    },
+                    "is_protected": db_link.is_protected,
+                    "hashed_password": db_link.hashed_password,
+                }),
+                ex=3600
+            )
 
             return schemas.URLResponse(long_url=db_link.long_url, short_url=short_url_full)
 
@@ -175,7 +194,8 @@ async def get_user_links(
             clicks=link.clicks,
             created_at=link.created_at,
             domain_id=link.domain_id,
-            domain_name=domain_name
+            domain_name=domain_name,
+            is_protected=link.is_protected,
         ))
 
     return my_links
@@ -247,6 +267,8 @@ async def update_link(
     for key, value in update_data.items():
         if hasattr(db_link, key) and value is not None:
             setattr(db_link, key, str(value) if key == "long_url" else value)
+    if link_update.password:
+        db_link.set_password(link_update.password)
     await db.commit()
     await db.refresh(db_link)
 
@@ -259,10 +281,29 @@ async def update_link(
     else:
         domain_name_for_cache = settings.origin_backend_url
 
-    domain_name = db_link.domain.name if db_link.domain else settings.origin_backend_url
+    # domain_name = db_link.domain.name if db_link.domain else settings.origin_backend_url
 
     cache_key = make_cache_key(domain_name_for_cache, db_link.short_code)
     await redis_client.delete(cache_key)
+
+    await redis_client.set(
+        cache_key,
+        json.dumps({
+            "long_url": db_link.long_url,
+            "show_ads": db_link.show_ads,
+            "domain_id": db_link.domain_id,
+            "utm_params": {
+                "utm_source": db_link.utm_source,
+                "utm_medium": db_link.utm_medium,
+                "utm_campaign": db_link.utm_campaign,
+                "utm_term": db_link.utm_term,
+                "utm_content": db_link.utm_content,
+            },
+            "is_protected": db_link.is_protected,
+            "hashed_password": db_link.hashed_password,
+        }),
+        ex=3600
+    )
 
     return schemas.LinkDetails(
         long_url=db_link.long_url,
@@ -270,12 +311,13 @@ async def update_link(
         clicks=db_link.clicks,
         created_at=db_link.created_at,
         domain_id=db_link.domain_id,
-        domain_name=domain_name,
+        domain_name=domain_name_for_cache,
         utm_source=db_link.utm_source,
         utm_medium=db_link.utm_medium,
         utm_campaign=db_link.utm_campaign,
         utm_term=db_link.utm_term,
         utm_content=db_link.utm_content,
+        is_protected=db_link.is_protected,
     )
     # return schemas.LinkDetails.model_validate(db_link)
 
@@ -430,7 +472,8 @@ async def get_link_details(
         clicks=link.clicks,
         created_at=link.created_at,
         domain_id=link.domain_id,
-        domain_name=domain_name
+        domain_name=domain_name,
+        is_protected=link.is_protected,
     )
 
 

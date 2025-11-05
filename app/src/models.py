@@ -1,14 +1,16 @@
 from secrets import token_urlsafe
 
+from passlib.context import CryptContext
 from sqlalchemy import Column, Integer, String, BigInteger, ForeignKey, Date, Enum as SQLAlchemyEnum, DateTime, func, \
     Boolean, Text, UniqueConstraint, case, Index, CheckConstraint
-
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from sqlalchemy.ext.declarative import declarative_base
 import enum
 from datetime import datetime
 
+
 Base = declarative_base()
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 class UserRole(str, enum.Enum):
@@ -95,6 +97,9 @@ class Link(Base):
     ad_rewards = relationship("UserAdReward", back_populates="link", cascade="all, delete-orphan")
     ads = relationship("LinkAd", back_populates="link")
 
+    is_protected = Column(Boolean, default=False, nullable=False)
+    hashed_password = Column(String(255), nullable=True)
+
     __table_args__ = (
         UniqueConstraint("short_code", "domain_id", name="uq_short_code_per_domain"),
     )
@@ -105,6 +110,22 @@ class Link(Base):
         short_code,
         unique=True
     )
+
+    def set_password(self, password: str | None) -> None:
+        """ Optionally set password(hashed) """
+        if password:
+            self.is_protected = True
+            self.hashed_password = pwd_context.hash(password)
+        else:
+            sef.is_protected = False
+            self.hashed_password = None
+
+    def verify_password(self, password: str) -> bool:
+        """ Verify password against hashed password """
+        if not self.is_protected or not self.hashed_password:
+            return True
+        else:
+            return pwd_context.verify(password, self.hashed_password)
 
 
 class TransactionStatus(str, enum.Enum):

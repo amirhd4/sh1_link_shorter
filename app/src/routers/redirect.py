@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, Request, BackgroundTasks, Depends, HTTPException, Path
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy import update
+from sqlalchemy import update, or_
 import logging
 import hashlib
 from urllib.parse import urlparse, parse_qs, urlencode, urlunparse  # <--- اضافه شد
@@ -103,12 +103,13 @@ async def increment_click_counter(
 @router.get("/{short_code}")
 @limiter.limit("1000/minute")
 async def redirect_to_long_url(
-        request: Request,
-        short_code: str,
-        background_tasks: BackgroundTasks,
-        fingerprint: str | None = None,
-        db: AsyncSession = Depends(get_db),
-        redis_client: redis.Redis = Depends(get_redis_client)
+    request: Request,
+    short_code: str,
+    background_tasks: BackgroundTasks,
+    fingerprint: str | None = None,
+    domainId: str | None = None,
+    db: AsyncSession = Depends(get_db),
+    redis_client: redis.Redis = Depends(get_redis_client)
 ):
     host = (request.headers.get("host") or "").lower()
     cache_key = f"link:{host}:{short_code}"
@@ -117,8 +118,10 @@ async def redirect_to_long_url(
     show_ads = False
     domain_id_for_ads = None
     utm_params = {}
+    is_protected = False
+    hashed_password = None
 
-    # --- ۱. سعی کن از کش بخونی ---
+    # --- ۱. تلاش برای خواندن از کش ---
     cached_data = await redis_client.get(cache_key)
     if cached_data:
         try:
@@ -127,15 +130,20 @@ async def redirect_to_long_url(
             show_ads = cache_obj.get("show_ads", False)
             domain_id_for_ads = cache_obj.get("domain_id", None)
             utm_params = cache_obj.get("utm_params", {})
+            is_protected = cache_obj.get("is_protected", False)
+            hashed_password = cache_obj.get("hashed_password")
         except Exception:
-            long_url = None
-            show_ads = False
-            utm_params = {}
-            domain_id_for_ads = None
+            pass
 
-    is_custom_domain = (host != DEFAULT_HOST.lower())
+    # مشخص کن آیا دامنه سفارشی است
+    try:
+        domainId = int(domainId)
+    except Exception as e:
+        logger.info(f"domainId {domainId} failed to parse: {e}")
+        domainId = 0
+    is_custom_domain = (host != DEFAULT_HOST.lower() or domainId != 0)
 
-    # --- ۲. اگر تو کش نبود، از دیتابیس بخون ---
+    # --- ۲. اگر کش وجود ندارد، از دیتابیس بخوان ---
     if not long_url:
         if not is_custom_domain:
             result = await db.execute(
@@ -149,25 +157,32 @@ async def redirect_to_long_url(
                 select(models.Link)
                 .options(selectinload(models.Link.domain))
                 .join(models.Domain)
-                .where(models.Domain.name == host, models.Link.short_code == short_code)
+                .where(
+                    or_(
+                        models.Domain.name == host,
+                        models.Domain.id == int(domainId)
+                    ),
+                    models.Link.short_code == short_code
+                )
             )
 
         link = result.scalar_one_or_none()
         if not link:
             raise HTTPException(status_code=404, detail="URL not found")
 
+        # تنظیم داده‌ها
+        domain_id_for_ads = link.domain_id if link else None
         long_url = link.long_url
         show_ads = link.show_ads
-        domain_id_for_ads = link.domain_id if link else None
-        link_id = link.id
-        owner_id = link.owner_id
+        is_protected = link.is_protected
+        hashed_password = link.hashed_password
 
         utm_params = {
-            'utm_source': link.utm_source,
-            'utm_medium': link.utm_medium,
-            'utm_campaign': link.utm_campaign,
-            'utm_term': link.utm_term,
-            'utm_content': link.utm_content,
+            "utm_source": link.utm_source,
+            "utm_medium": link.utm_medium,
+            "utm_campaign": link.utm_campaign,
+            "utm_term": link.utm_term,
+            "utm_content": link.utm_content,
         }
 
         # ذخیره در کش
@@ -178,13 +193,29 @@ async def redirect_to_long_url(
                 "show_ads": show_ads,
                 "domain_id": domain_id_for_ads,
                 "utm_params": {k: v for k, v in utm_params.items() if v},
-                "link_id": link_id,
-                "owner_id": owner_id,
+                "is_protected": is_protected,
+                "hashed_password": hashed_password,
             }),
             ex=3600
         )
 
-    # --- ۳. اعمال UTM حتی اگر از کش خوند ---
+    # --- ۳. بررسی رمز عبور اگر لینک رمزدار است ---
+    if is_protected:
+        e_domain_id = domain_id_for_ads if domain_id_for_ads is not None else "0"
+        user_password = (
+            request.query_params.get("password")
+            or request.headers.get("X-Link-Password")
+        )
+
+        if not user_password:
+            password_page_url = f"{settings.frontend_url}/pages/password/{e_domain_id}/{short_code}?error=1"
+            return RedirectResponse(url=password_page_url, status_code=307)
+
+        if not security.verify_password(user_password, hashed_password):
+            password_page_url = f"{settings.frontend_url}/pages/password/{e_domain_id}/{short_code}?error=wrong_password"
+            return RedirectResponse(url=password_page_url, status_code=307)
+
+    # --- ۴. اضافه کردن UTMها ---
     active_utm_params = {k: v for k, v in utm_params.items() if v}
     if active_utm_params:
         parsed_url = urlparse(long_url)
@@ -194,22 +225,16 @@ async def redirect_to_long_url(
     else:
         long_url_with_utm = long_url
 
-    # --- ۴. اگر لینک تبلیغ‌دار بود ---
+    # --- ۵. اگر لینک تبلیغ‌دار بود ---
     if show_ads:
-        # اگر از دامنه پیش‌فرض استفاده می‌شود، 0 را به عنوان ID ارسال کن
         effective_domain_id = domain_id_for_ads if domain_id_for_ads is not None else "0"
-
         ad_page_url = f"{settings.frontend_url}/pages/{effective_domain_id}/{short_code}/ad"
-
         response = RedirectResponse(url=ad_page_url, status_code=307)
-
-        # هدرهای امنیتی برای جلوگیری از کلیک‌جکینگ و ایندکس شدن
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["X-Robots-Tag"] = "noindex, nofollow"
-
         return response
 
-    # --- ۵. ثبت اطلاعات کلیک ---
+    # --- ۶. ثبت کلیک ---
     client_ip = (request.headers.get("x-forwarded-for") or request.client.host).split(",")[0].strip()
     user_agent = request.headers.get("user-agent", "")
     accept_language = request.headers.get("accept-language")

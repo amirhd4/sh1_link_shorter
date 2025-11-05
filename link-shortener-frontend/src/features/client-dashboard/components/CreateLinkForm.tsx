@@ -29,7 +29,6 @@ const modalStyle = {
   overflowY: 'auto'
 };
 
-// 2. ✨ تعریف Schema برای اعتبارسنجی با Zod (با UTM)
 const createLinkSchema = z.object({
   longUrl: z.string().url('لطفاً یک آدرس اینترنتی معتبر وارد کنید.'),
   shortCode: z.string().optional(), // اضافه کردن فیلد shortCode
@@ -51,7 +50,7 @@ const createLinkSchema = z.object({
   utmTerm: z.string().nullable().optional(),
   utmContent: z.string().nullable().optional(),
   showAds: z.boolean(),
-
+  password: z.string().nullable().optional(),
 });
 
 type CreateLinkFormInputs = z.infer<typeof createLinkSchema>;
@@ -91,14 +90,14 @@ export function CreateLinkForm({ isOpen, onClose }: CreateLinkFormProps) {
     defaultValues: {
         longUrl: '',
         shortCode: '',
-        domain: DEFAULT_DOMAIN_OBJECT, // برای حفظ Autocomplete
+        domain: DEFAULT_DOMAIN_OBJECT,
         utmSource: null,
         utmMedium: null,
         utmCampaign: null,
         utmTerm: null,
         utmContent: null,
         showAds: true,
-
+        password: null
     },
   });
 
@@ -131,7 +130,10 @@ export function CreateLinkForm({ isOpen, onClose }: CreateLinkFormProps) {
       ...utmPayload,
     };
 
-    // فیلدهای اختیاری که در بک‌اند nullable هستند را حذف می‌کنیم اگر خالی باشند.
+    if (data.password) {
+      payload.password = data.password;
+    }
+
     Object.keys(payload).forEach(key => payload[key] === undefined && delete payload[key]);
 
     createLinkMutation.mutate(payload);
@@ -334,7 +336,23 @@ export function CreateLinkForm({ isOpen, onClose }: CreateLinkFormProps) {
               />
             </Grid>
 
-
+            <Grid size={{ xs: 12 }}>
+                <Controller
+                    name="password"
+                    control={control}
+                    render={({ field }) => (
+                      <TextField
+                          {...field}
+                          type="password"
+                          value={ field.value ?? "" }
+                          onChange={(e) => field.onChange(e.target.value || null )}
+                          fullWidth
+                          label="رمز عبور لینک (اختیاری)"
+                          placeholder="اگر میخواهید لینک رمزدار باشد، رمز را وارد کنید"
+                          />
+                    )}
+                    />
+            </Grid>
 
           <Button
             type="submit"
