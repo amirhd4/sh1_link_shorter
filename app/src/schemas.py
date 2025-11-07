@@ -151,6 +151,7 @@ class URLCreate(BaseModel):
     utm_content: Optional[str] = None
 
     password: Optional[str] = None
+    custom_alias: Optional[str] = None
 
 
 class URLResponse(BaseModel):

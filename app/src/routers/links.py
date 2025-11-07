@@ -1,5 +1,6 @@
 import io
 import json
+import re
 from urllib.parse import urlparse
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
@@ -114,7 +115,28 @@ async def create_short_url(
 
     MAX_RETRIES = 5
     for _ in range(MAX_RETRIES):
-        short_code = await generate_unique_short_key(redis_client)
+        if url_data.custom_alias:
+            if len(url_data.custom_alias) > 50:
+                raise HTTPException(status_code=400, detail="کد کوتاه نباید بیش از ۵۰ کاراکتر باشد.")
+            if not re.match(r"^[a-zA-Z0-9_-]+$", url_data.custom_alias):
+                raise HTTPException(status_code=400,
+                                    detail="کد کوتاه فقط می‌تواند شامل حروف، عدد، خط فاصله یا زیرخط باشد.")
+            existing = await db.scalar(
+                select(models.Link).options(selectinload(models.Link.domain))
+                .where(models.Link.short_code == url_data.custom_alias, models.Link.domain_id == domain_id)
+            )
+            if existing:
+                raise HTTPException(
+                    status_code=400,
+                    detail={
+                        "message": "این نام قبلاً استفاده شده است.",
+                        "field": "custom_alias"
+                    }
+                )
+
+            short_code = url_data.custom_alias
+        else:
+            short_code = await generate_unique_short_key(redis_client)
 
         db_link = models.Link(
             long_url=str(url_data.long_url),

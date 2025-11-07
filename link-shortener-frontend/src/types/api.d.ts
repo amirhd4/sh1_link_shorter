@@ -151,6 +151,7 @@ export interface URLCreate {
 
   show_ads?: boolean;
   password?: string;
+  custom_alias?: string | null
 }
 
 type UpdateLinkPayload = {

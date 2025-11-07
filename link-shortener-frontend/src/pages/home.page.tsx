@@ -39,6 +39,7 @@ import {
   Tooltip as ReTooltip,
   CartesianGrid,
 } from "recharts";
+import HomeLinkShortener from "../features/home/components/HomeLinkShortener.tsx";
 
 /* ---------------- Data ---------------- */
 const chartData = [
@@ -258,6 +259,8 @@ export const HomePage: React.FC = () => {
           </Stack>
         </motion.div>
       </Box>
+
+        <HomeLinkShortener />
 
      {/* Key new features banner – نسخه ارتقا یافته */}
     <Container sx={{ py: { xs: 4, md: 6 }, px: { xs: 2, md: 0 } }}>
