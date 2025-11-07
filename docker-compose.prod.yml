@@ -21,7 +21,7 @@ services:
     depends_on:
       - db
       - cache
-      - xray
+      # - xray
 
   click_processor:
     build:
@@ -57,18 +57,18 @@ services:
 #    restart: always # برای تضمین اجرای مداوم سرویس
 
       
-  xray:
-    build: ./xray
-    container_name: xray
-    ports:
-      # - "10808:10808"
-      # - "10809:10809"
-      - "127.0.0.1:10808:10808"  # فقط localhost کانتینر میزبان
-    deploy:
-      resources:
-        limits:
-          memory: 256M
-    restart: unless-stopped
+  # xray:
+  #   build: ./xray
+  #   container_name: xray
+  #   ports:
+  #     # - "10808:10808"
+  #     # - "10809:10809"
+  #     - "127.0.0.1:10808:10808"  # فقط localhost کانتینر میزبان
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 256M
+  #   restart: unless-stopped
 
   db:
     image: docker.arvancloud.ir/postgres:16-alpine
