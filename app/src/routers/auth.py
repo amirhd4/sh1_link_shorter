@@ -452,7 +452,9 @@ async def send_otp_for_login(payload: PhoneRequestCaptcha, request: Request, db:
     ارسال OTP برای ورود.
     شماره باید قبلاً در سیستم ثبت شده باشد.
     """
-    await verify_turnstile(request, payload.captcha_token)
+    if not settings.DEBUG:
+        await verify_turnstile(request, payload.captcha_token)
+
     phone = payload.phone
     try:
         pn = phonenumbers.parse(phone, "IR")
@@ -480,7 +482,8 @@ async def send_otp_for_register(payload: PhoneRequestCaptcha, request: Request, 
     ارسال OTP برای ثبت‌نام.
     شماره نباید قبلاً ثبت شده باشد.
     """
-    await verify_turnstile(request, payload.captcha_token)
+    if not settings.DEBUG:
+        await verify_turnstile(request, payload.captcha_token)
     phone = payload.phone
     try:
         pn = phonenumbers.parse(phone, "IR")
@@ -511,7 +514,8 @@ async def verify_otp_login(request: Request, payload: VerifyOtpRequestCaptcha, d
     """
     تایید OTP برای ورود.
     """
-    await verify_turnstile(request, payload.captcha_token)
+    if not settings.DEBUG:
+        await verify_turnstile(request, payload.captcha_token)
 
     phone = payload.phone
     code = payload.code
@@ -530,7 +534,6 @@ async def verify_otp_login(request: Request, payload: VerifyOtpRequestCaptcha, d
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-
 class RegisterOtpRequestCaptcha(RegisterOtpRequest):
     captcha_token: str
 
@@ -541,7 +544,10 @@ async def register_with_otp(request: Request, payload: RegisterOtpRequestCaptcha
     """
     ثبت‌نام با OTP.
     """
-    await verify_turnstile(request, payload.captcha_token)
+    if not settings.DEBUG:
+        await verify_turnstile(request, payload.captcha_token)
+
+
 
     phone = payload.phone
     code = payload.code

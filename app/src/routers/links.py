@@ -160,7 +160,13 @@ async def create_short_url(
             await db.commit()
             await db.refresh(db_link)
 
-            short_url_full = f"https://{domain_name}/{db_link.short_code}"
+            # short_url_full = f"https://{domain_name}/{db_link.short_code}"
+
+            if domain_name.startswith("http://") or domain_name.startswith("https://"):
+                short_url_full = f"{domain_name.rstrip('/')}/{db_link.short_code}"
+            else:
+                short_url_full = f"https://{domain_name.rstrip('/')}/{db_link.short_code}"
+
             # Optionally warm the cache:
             await redis_client.set(
                 make_cache_key(domain_name, db_link.short_code),

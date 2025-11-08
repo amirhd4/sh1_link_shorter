@@ -94,17 +94,17 @@ export const authService = {
     // OTP for Login/Register
     // -------------------------
     sendOtpLogin: async (phone: string, captchaToken: string) => {
-      const res = await apiClient.post('/auth/send-otp-login', { phone, captcha_token: captchaToken });
+      const res = await apiClient.post('/auth/send-otp-login', { phone, captcha_token: captchaToken || "dummy" });
       return res.data as { message: string };
     },
 
     verifyOtpLogin: async (phone: string, code: string, captchaToken: string) => {
-      const res = await apiClient.post('/auth/verify-otp-login', { phone, code, captcha_token: captchaToken });
+      const res = await apiClient.post('/auth/verify-otp-login', { phone, code, captcha_token: captchaToken || "dummy" });
       return res.data as OtpLoginResponse;
     },
 
     sendOtpRegister: async (phone: string, captchaToken: string) => {
-      const res = await apiClient.post('/auth/send-otp-register', { phone, captcha_token: captchaToken });
+      const res = await apiClient.post('/auth/send-otp-register', { phone, captcha_token: captchaToken || "dummy" });
       return res.data as { message: string };
     },
 
