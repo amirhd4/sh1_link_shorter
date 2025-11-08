@@ -404,11 +404,12 @@ export default function HomeLinkShortener(): JSX.Element {
               />
 
               <Turnstile
-                siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
-                onSuccess={(token) => setCaptchaTokenSend(token)}
-                onError={() => setCaptchaTokenSend(null)}
-                onExpire={() => setCaptchaTokenSend(null)}
-              />
+  key={`send-${otpStep}`}
+  siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
+  onSuccess={(token) => setCaptchaTokenSend(token)}
+  onError={() => setCaptchaTokenSend(null)}
+  onExpire={() => setCaptchaTokenSend(null)}
+/>
 
               <Button
                 variant="contained"
@@ -431,6 +432,7 @@ export default function HomeLinkShortener(): JSX.Element {
               />
 
               <Turnstile
+                key={`verify-${otpStep}`}
                 siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
                 onSuccess={(token) => setCaptchaTokenVerify(token)}
                 onError={() => setCaptchaTokenVerify(null)}
