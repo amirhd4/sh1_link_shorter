@@ -482,9 +482,8 @@ async def send_otp_for_register(payload: PhoneRequestCaptcha, request: Request, 
     ارسال OTP برای ثبت‌نام.
     شماره نباید قبلاً ثبت شده باشد.
     """
-    if not settings.DEBUG:
-        await verify_turnstile(request, payload.captcha_token)
     phone = payload.phone
+
     try:
         pn = phonenumbers.parse(phone, "IR")
         if not phonenumbers.is_valid_number(pn):
@@ -495,6 +494,10 @@ async def send_otp_for_register(payload: PhoneRequestCaptcha, request: Request, 
     existing_user = await db.scalar(select(models.User).where(models.User.phone_number == phone))
     if existing_user:
         raise HTTPException(status_code=400, detail="این شماره قبلاً ثبت شده است. لطفاً وارد شوید.")
+
+
+    if not settings.DEBUG:
+        await verify_turnstile(request, payload.captcha_token)
 
     code = str(random.randint(100000, 999999))
     # logger.info(f"OTP for registration {phone}: {code}")
@@ -546,8 +549,6 @@ async def register_with_otp(request: Request, payload: RegisterOtpRequestCaptcha
     """
     if not settings.DEBUG:
         await verify_turnstile(request, payload.captcha_token)
-
-
 
     phone = payload.phone
     code = payload.code
