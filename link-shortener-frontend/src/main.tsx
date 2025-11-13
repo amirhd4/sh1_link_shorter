@@ -19,6 +19,15 @@ const cacheRtl = createCache({
 })
 
 if (typeof window !== "undefined") {
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/pages/sw.js')
+          .then(reg => console.log('SW registered', reg))
+          .catch(err => console.log('SW reg failed', err));
+      });
+    }
+
   const root = document.getElementById('root')
   if (root) {
     hydrateRoot(
@@ -40,3 +49,5 @@ if (typeof window !== "undefined") {
     )
   }
 }
+
+
