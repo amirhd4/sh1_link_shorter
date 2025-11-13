@@ -6,7 +6,7 @@ export function RegisterPage() {
   return (
   <>
       <Helmet>
-        <title>ثبت‌نام در L1s</title>
+        <title>ثبت‌نام در لِس(l1s)</title>
         <meta
           name="description"
           content="اکانت رایگان خود را بسازید و لینک‌هایتان را کوتاه و مدیریت کنید."

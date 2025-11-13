@@ -40,10 +40,10 @@ export function PublicLayout({ children }: PublicLayoutProps) {
   return (
     <>
       <Helmet>
-        <title>کوتاه‌کننده لینک L1s | سریع، امن و حرفه‌ای</title>
+        <title>کوتاه‌کننده لینک (لِس)L1s | سریع، امن و حرفه‌ای</title>
         <meta
           name="description"
-          content="L1s یک سرویس کوتاه‌کننده لینک سریع و امن است که لینک‌های شما را کوتاه، قابل‌مدیریت و قابل‌ردیابی می‌کند."
+          content="L1s(لِس) یک سرویس کوتاه‌کننده لینک سریع و امن است که لینک‌های شما را کوتاه، قابل‌مدیریت و قابل‌ردیابی می‌کند."
         />
       </Helmet>
 
@@ -83,7 +83,7 @@ export function PublicLayout({ children }: PublicLayoutProps) {
             style={{ textDecoration: "none", color: "inherit" }}
             sx={{ fontWeight: 800, letterSpacing: "-0.5px" }}
           >
-            سرویس کوتاه‌کننده لینک (L1s)
+            سرویس کوتاه‌کننده لینک لِس(L1s)
           </Typography>
 
           <Box sx={{ flexGrow: 1 }} />
@@ -177,7 +177,7 @@ export function PublicLayout({ children }: PublicLayoutProps) {
         }}
       >
         <Typography variant="body2" sx={{ color: "#475569" }}>
-          © {new Date().getFullYear()} کوتاه‌کننده لینک L1s — ساخته‌شده با 💜
+          © {new Date().getFullYear()} کوتاه‌کننده لینک لِس(L1s) — ساخته‌شده با 💜
         </Typography>
 
         <Box
