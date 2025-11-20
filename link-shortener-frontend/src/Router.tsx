@@ -33,12 +33,26 @@ import {ApiPage} from "./features/api/pages/ApiPage.tsx";
 import {DomainsManager} from "./pages/domains-manager.page.tsx";
 import AdRedirectPage from "./pages/[domainId]/[shortCode]/ad.tsx";
 import PasswordProtectedPage from "./pages/[domainId]/[shortCode]/password-protected.tsx";
+import LinkShortenerPage from "./pages/link-shortener.page.tsx";
+import FreeUrlShortenerPage from "./pages/free-url-shortener.page.tsx";
+import BestUrlShortenerPage from "./pages/best-url-shortener.page.tsx";
+import ApiUrlShortenerPage from "./pages/url-shortener.page.tsx";
+import ShortUrlGeneratorPage from "./pages/short-url-generator.page.tsx";
+import FaqPage from "./pages/faq.page.tsx";
 
 const router = createBrowserRouter([
   // --- روت‌های عمومی ---
   {
     element: <PublicLayout />,
     children: [
+      //   Page for seo
+      { path: '/link-shortener', element: <LinkShortenerPage /> },
+      { path: '/free-url-shortener', element: <FreeUrlShortenerPage /> },
+      { path: '/best-url-shortener', element: <BestUrlShortenerPage /> },
+      { path: '/url-shortener', element: <ApiUrlShortenerPage /> },
+      { path: '/short-url-generator', element: <ShortUrlGeneratorPage /> },
+      { path: '/faq', element: <FaqPage /> },
+
       { path: '/home', element: <HomePage /> },
       { path: '/login', element: <LoginPage /> },
       { path: '/register', element: <RegisterPage /> },

@@ -11,6 +11,7 @@ import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { getOtpErrorMessage } from "../../../utils/otpErrorHandler";
 import { Turnstile } from "@marsidev/react-turnstile";
 import i18n from "../../../i18n";
+import {useTranslation} from "react-i18next";
 
 
 export function LoginWithOtpForm() {
@@ -28,6 +29,9 @@ export function LoginWithOtpForm() {
   const [snackbar, setSnackbar] = useState<{ message: string; severity: "success" | "error" } | null>(null);
 
   const turnstileRef = useRef<any>(null);
+  const { t, ready } = useTranslation();
+  if (!ready) return null;
+
 
   // --- ارسال OTP ---
   const sendOtpMutation = useMutation({
@@ -122,13 +126,23 @@ export function LoginWithOtpForm() {
             <>
               <TextField
                 fullWidth
-                label={i18n.t("otp.phoneLabel") || "شماره موبایل"}
+                label={t("otp.phoneLabel") || "شماره موبایل"}
                 placeholder="مثال: 09922768848"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                helperText={i18n.t("otp.notFoundPhone") || "شماره موبایل خود را بدون فاصله وارد کنید"}
+                onChange={(e) => {
+                  setPhone(e.target.value);
+                  if (sendOtpMutation.isError) {
+                    sendOtpMutation.reset();
+                  }
+                }}
+                helperText={
+                    sendOtpMutation.isError
+                      ? sendOtpMutation.error?.message
+                      : t("otp.phoneHelper")
+                  }
                 error={sendOtpMutation.isError}
                 InputProps={{ startAdornment: <InputAdornment position="start">📱</InputAdornment> }}
+
               />
 
               
@@ -158,7 +172,7 @@ export function LoginWithOtpForm() {
             <>
               <TextField
                 fullWidth
-                label={i18n.t("verify.codeLabel") || "کد تایید"}
+                label={t("verify.codeLabel") || "کد تایید"}
                 placeholder="کد ارسال شده به موبایل"
                 type={showCode ? "text" : "password"}
                 value={code}

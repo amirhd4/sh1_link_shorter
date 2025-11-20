@@ -262,6 +262,83 @@ export const HomePage: React.FC = () => {
 
         <HomeLinkShortener />
 
+
+{/* SEO Optimized Content Section */}
+<section
+  style={{
+    marginTop: "5rem",
+    padding: "0 1rem",
+    maxWidth: "64rem",
+    marginInline: "auto",
+    color: "#e2e8f0",
+    lineHeight: "2",
+    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+  }}
+>
+  <h1 style={{ fontSize: "2.25rem", fontWeight: "bold", marginBottom: "2rem", color: "#fff" }}>
+    بهترین کوتاه‌کننده لینک رایگان و حرفه‌ای
+  </h1>
+  <p style={{ marginBottom: "1.5rem", fontSize: "1.125rem" }}>
+    آیا لینک‌های شما طولانی و نامرتب هستند؟ با استفاده از کوتاه‌کننده لینک حرفه‌ای ما، می‌توانید لینک‌های بلند خود را به URLهای کوتاه، جذاب و قابل اشتراک‌گذاری تبدیل کنید. این کار باعث می‌شود لینک‌ها ظاهر حرفه‌ای داشته باشند و نرخ کلیک (CTR) شما افزایش یابد.
+  </p>
+
+  <h2 style={{ fontSize: "1.875rem", fontWeight: "bold", marginBottom: "1rem", color: "#fff" }}>
+    چرا کوتاه کردن لینک مهم است؟
+  </h2>
+  <ul style={{ marginBottom: "1.5rem", paddingInlineStart: "1.25rem", fontSize: "1.125rem" }}>
+    <li>لینک‌های کوتاه و مرتب ظاهر حرفه‌ای به کسب‌وکار شما می‌دهند.</li>
+    <li>اشتراک‌گذاری آسان در شبکه‌های اجتماعی و پیام‌رسان‌ها.</li>
+    <li>امکان ردیابی دقیق کلیک‌ها و تحلیل عملکرد لینک‌ها —
+      <a href="/pages/url-shortener" style={{ color: "#a855f7" }}>جزئیات آمار</a>
+    </li>
+    <li>کسب درآمد اختیاری از هر لینک کوتاه —
+      <a href="/pages/best-url-shortener" style={{ color: "#a855f7" }}>آموزش درآمدزایی</a>
+    </li>
+    <li>ساخت لینک با دامنه اختصاصی —
+      <a href="/pages/short-url-generator" style={{ color: "#a855f7" }}>اطلاعات بیشتر</a>
+    </li>
+    <li>بدون تبلیغات اجباری و تجربه کاربری عالی —
+      <a href="/pages/free-url-shortener" style={{ color: "#a855f7" }}>بیشتر بخوانید</a>
+    </li>
+    <li>امنیت و حفاظت لینک با رمز عبور —
+      <a href="/pages/link-shortener" style={{ color: "#a855f7" }}>اطلاعات امنیتی</a>
+    </li>
+  </ul>
+
+  <h2 style={{ fontSize: "1.875rem", fontWeight: "bold", marginBottom: "1rem", color: "#fff" }}>
+    چگونه لینک خود را کوتاه کنیم؟
+  </h2>
+  <ol style={{ paddingInlineStart: "1.25rem", marginBottom: "1.5rem", lineHeight: "2", fontSize: "1.125rem" }}>
+    <li>لینک بلند خود را در کادر بالای صفحه وارد کنید.</li>
+    <li>بر روی دکمه «کوتاه کن» کلیک کنید.</li>
+    <li>لینک کوتاه شده را کپی کرده و در شبکه‌های اجتماعی یا وبسایت خود استفاده کنید.</li>
+  </ol>
+
+  <h2 style={{ fontSize: "1.875rem", fontWeight: "bold", marginBottom: "1rem", color: "#fff" }}>
+    صفحات مرتبط و آموزش‌ها
+  </h2>
+  <p style={{ marginBottom: "1.5rem", fontSize: "1.125rem" }}>
+    برای دسترسی به امکانات بیشتر و یادگیری نکات حرفه‌ای، صفحات زیر را مشاهده کنید:
+  </p>
+  <ul style={{ marginBottom: "1.5rem", paddingInlineStart: "1.25rem", fontSize: "1.125rem" }}>
+    <li><a href="/pages/link-shortener" style={{ color: "#a855f7" }}>کوتاه‌کننده لینک حرفه‌ای</a></li>
+    <li><a href="/pages/free-url-shortener" style={{ color: "#a855f7" }}>کوتاه‌کننده لینک رایگان</a></li>
+    <li><a href="/pages/best-url-shortener" style={{ color: "#a855f7" }}>بهترین روش‌های کوتاه کردن لینک</a></li>
+    <li><a href="/pages/url-shortener" style={{ color: "#a855f7" }}>API کوتاه‌کننده لینک برای توسعه‌دهندگان</a></li>
+    <li><a href="/pages/short-url-generator" style={{ color: "#a855f7" }}>تولید لینک کوتاه با دامنه اختصاصی</a></li>
+  </ul>
+
+  <h2 style={{ fontSize: "1.875rem", fontWeight: "bold", marginBottom: "1rem", color: "#fff" }}>
+    پرسش‌های متداول
+  </h2>
+  <p style={{ marginBottom: "1rem", fontSize: "1.125rem" }}>
+    پاسخ به سوالات بیشتر و جزئیات کامل در <a href="/pages/faq" style={{ color: "#a855f7" }}>صفحه سوالات متداول</a> موجود است.
+  </p>
+</section>
+
+
+
+
      {/* Key new features banner – نسخه ارتقا یافته */}
     <Container sx={{ py: { xs: 4, md: 6 }, px: { xs: 2, md: 0 } }}>
       <motion.div
