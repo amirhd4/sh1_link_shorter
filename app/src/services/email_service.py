@@ -37,10 +37,13 @@ async def send_email(
 
     try:
         await request.app.state.smtp.send_message(msg)
-    except aiosmtplib.errors.SMTPServerDisconnected:
+        logger.info(f"✅ Email sent to {to_email}")
+    except aiosmtplib.errors.SMTPServerDisconnected as e:
         await request.app.state.smtp.connect()
         await request.app.state.smtp.login(settings.smtp_user, settings.smtp_pass)
         await request.app.state.smtp.send_message(msg)
+        logger.error(f"❌ Email failed: {e}")
+
 
     # try:
     #     request.app.state.smtp.send_message(msg)

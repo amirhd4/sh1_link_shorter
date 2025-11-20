@@ -30,6 +30,7 @@ async def lifespan(app: FastAPI):
 
 
     await app.state.smtp.connect()
+
     if settings.smtp_user:
         await app.state.smtp.login(settings.smtp_user, settings.smtp_pass)
         
