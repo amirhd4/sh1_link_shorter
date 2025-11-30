@@ -126,7 +126,7 @@ async def send_password_reset_email(request: Request, to_email: str, reset_token
     <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Tahoma', 'Arial', sans-serif; margin: 0; padding: 0; background-color: #f4f4f7;">
         <div class="container" style="max-width: 600px; margin: 40px auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
             <div class="header" style="background-color: #007bff; color: #ffffff; padding: 20px; text-align: center;">
-                <h1 style="margin: 0; font-size: 24px;">لِس | l1s</h1>
+                <h1 style="margin: 0; font-size: 24px;"> لِس | l1s</h1>
             </div>
             <div class="content" style="padding: 30px; text-align: right; line-height: 1.7; color: #333333;">
                 <p style="margin: 0 0 15px;">سلام،</p>

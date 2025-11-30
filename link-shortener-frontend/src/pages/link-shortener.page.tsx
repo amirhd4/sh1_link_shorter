@@ -6,14 +6,14 @@ export const LinkShortenerPage: React.FC = () => {
   return (
     <Container sx={{ py: 8 }}>
       <Helmet>
-        <title>کوتاه‌کننده لینک حرفه‌ای و امن | L1s</title>
+        <title>کوتاه‌کننده لینک حرفه‌ای و امن | لِس</title>
         <meta
           name="description"
-          content="کوتاه‌کننده لینک L1s سریع، امن و بدون تبلیغات است. لینک‌های بلند خود را کوتاه کنید و با امکانات پیشرفته ردیابی، کسب درآمد و مدیریت آسان استفاده کنید."
+          content="کوتاه‌کننده لینک لِس سریع، امن و بدون تبلیغات است. لینک‌های بلند خود را کوتاه کنید و با امکانات پیشرفته ردیابی، کسب درآمد و مدیریت آسان استفاده کنید."
         />
         <meta
           name="keywords"
-          content="کوتاه کننده لینک, کوتاه کردن لینک, ردیابی لینک, لینک کوتاه حرفه ای, لینک محافظت شده, L1s"
+          content="کوتاه کننده لینک, کوتاه کردن لینک, ردیابی لینک, لینک کوتاه حرفه ای, لینک محافظت شده, لِس"
         />
         <link rel="canonical" href="https://l1s.ir/link-shortener" />
 
@@ -35,7 +35,7 @@ export const LinkShortenerPage: React.FC = () => {
               {
                 "@type": "Question",
                 name: "آیا می‌توان لینک‌ها را با رمز محافظت کرد؟",
-                acceptedAnswer: { "@type": "Answer", text: "بله، L1s امکان ایجاد لینک محافظت‌شده با رمز عبور را فراهم می‌کند." }
+                acceptedAnswer: { "@type": "Answer", text: "بله، لِس امکان ایجاد لینک محافظت‌شده با رمز عبور را فراهم می‌کند." }
               },
               {
                 "@type": "Question",
@@ -47,9 +47,9 @@ export const LinkShortenerPage: React.FC = () => {
         </script>
       </Helmet>
 
-      <Typography variant="h3" mb={3}>کوتاه‌کننده لینک حرفه‌ای L1s</Typography>
+      <Typography variant="h3" mb={3}>کوتاه‌کننده لینک حرفه‌ای لِس</Typography>
       <Typography mb={2}>
-        با سرویس L1s، لینک‌های طولانی و پیچیده خود را به لینک کوتاه، زیبا و قابل اشتراک‌گذاری تبدیل کنید. از امنیت، سرعت و امکانات پیشرفته ما بهره‌مند شوید.
+        با سرویس لس، لینک‌های طولانی و پیچیده خود را به لینک کوتاه، زیبا و قابل اشتراک‌گذاری تبدیل کنید. از امنیت، سرعت و امکانات پیشرفته ما بهره‌مند شوید.
       </Typography>
       <Typography mb={2}>
         ویژگی‌های برجسته شامل: ردیابی دقیق کلیک‌ها، لینک‌های محافظت‌شده با رمز، دامنه اختصاصی، امکان کسب درآمد و مدیریت آسان لینک‌ها.
@@ -66,7 +66,7 @@ export const LinkShortenerPage: React.FC = () => {
       </Box>
 
       <Box mt={4}>
-        <Typography variant="h5" mb={2}>چرا L1s بهترین انتخاب است؟</Typography>
+        <Typography variant="h5" mb={2}>چرا لس بهترین انتخاب است؟</Typography>
         <Typography mb={1}>1. تجربه کاربری ساده و بدون تبلیغات</Typography>
         <Typography mb={1}>2. قابلیت ردیابی دقیق و آمار لحظه‌ای</Typography>
         <Typography mb={1}>3. پشتیبانی از دامنه اختصاصی و برندینگ حرفه‌ای</Typography>

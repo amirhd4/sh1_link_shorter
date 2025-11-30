@@ -83,7 +83,7 @@ export function PublicLayout({ children }: PublicLayoutProps) {
             style={{ textDecoration: "none", color: "inherit" }}
             sx={{ fontWeight: 800, letterSpacing: "-0.5px" }}
           >
-            سرویس کوتاه‌کننده لینک لِس(L1s)
+            سرویس کوتاه‌کننده لینک لِس (L1s)
           </Typography>
 
           <Box sx={{ flexGrow: 1 }} />
@@ -177,7 +177,7 @@ export function PublicLayout({ children }: PublicLayoutProps) {
         }}
       >
         <Typography variant="body2" sx={{ color: "#475569" }}>
-          © {new Date().getFullYear()} کوتاه‌کننده لینک لِس(L1s) — ساخته‌شده با 💜
+          © {new Date().getFullYear()} کوتاه‌کننده لینک لِس (L1s) — ساخته‌شده با 💜
         </Typography>
 
         <Box
