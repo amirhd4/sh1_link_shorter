@@ -1,7 +1,9 @@
+'use client';
+
 import { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { linkService } from '../../../services/linkService';
+import { linkService } from '@/services/linkService';
 import {
   Box,
   Typography,
@@ -33,9 +35,9 @@ import MouseIcon from '@mui/icons-material/Mouse';
 import PublicIcon from '@mui/icons-material/Public';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
-import config from '../../../config';
-import type { AdvancedLinkStats } from '../../../types/api';
-import {adService} from "../../../services/adService.ts";
+import config from '@/config';
+import type { AdvancedLinkStats } from '@/types/api';
+import {adService} from "@/services/adService";
 
 /**
  * نمودار کلیک ۷ روزه

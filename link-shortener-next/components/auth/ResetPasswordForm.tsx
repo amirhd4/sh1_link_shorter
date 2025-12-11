@@ -18,8 +18,9 @@ import {
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { useMutation } from "@tanstack/react-query";
-import { authService } from "../../services/authService";
-import { useSearchParams, Link as RouterLink } from "react-router-dom";
+import { authService } from "@/services/authService";
+import { useSearchParams, } from "next/navigation";
+import Link from "next/link";
 import { Turnstile } from "@marsidev/react-turnstile";
 
 /* اسکیمای اعتبارسنجی */
@@ -36,7 +37,7 @@ const resetPasswordSchema = z
 type ResetPasswordFormInputs = z.infer<typeof resetPasswordSchema>;
 
 export function ResetPasswordForm() {
-  const [searchParams] = useSearchParams();
+  const searchParams = useSearchParams();
   const token = searchParams.get("token");
 
   const [showNew, setShowNew] = useState(false);
@@ -55,7 +56,7 @@ export function ResetPasswordForm() {
 
   const mutation = useMutation({
     mutationFn: (data: { token: string; new_password: string; captcha_token: string }) =>
-      authService.resetPassword(data, captchaToken),
+      authService.resetPassword(data, captchaToken || "dummy"),
     onError: () => setSnackbarMessage("خطا در ثبت رمز جدید — لینک ممکن است منقضی شده باشد یا مشکلی پیش آمده است."),
     onSuccess: () => setSnackbarMessage("رمز عبور با موفقیت تغییر کرد 🎉"),
   });
@@ -109,7 +110,7 @@ export function ResetPasswordForm() {
         <Typography variant="body2" sx={{ color: "#6b7280", mb: 2 }}>
           اکنون می‌توانید با رمز جدید وارد شوید.
         </Typography>
-        <Button component={RouterLink} to="/login" variant="contained" sx={{ bgcolor: "#7c3aed" }}>
+        <Button component={Link} href="/login" variant="contained" sx={{ bgcolor: "#7c3aed" }}>
           بازگشت به صفحه ورود
         </Button>
       </Paper>
@@ -206,7 +207,7 @@ export function ResetPasswordForm() {
             />
 
             <Turnstile
-              siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
+              siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
               onSuccess={(token) => setCaptchaToken(token)}
               onError={() => setCaptchaToken(null)}
               onExpire={() => setCaptchaToken(null)}

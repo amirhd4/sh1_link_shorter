@@ -2,22 +2,23 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useMutation } from '@tanstack/react-query';
-import { authService } from '../../services/authService';
-import type { RegisterCredentials } from '../../types/auth';
+import { authService } from '@/services/authService';
+import type { RegisterCredentials } from '@/types/auth';
 import {
   TextField,
   Button,
   Box,
   Typography,
   Alert,
-  Link,
+  Link as MuiLink,
   Paper,
   InputAdornment,
   IconButton,
   Stack,
   Snackbar
 } from '@mui/material';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import Link from "next/link";
+import {useRouter} from "next/router";
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { useState } from 'react';
 import {Turnstile} from "@marsidev/react-turnstile";
@@ -32,7 +33,7 @@ const registerSchema = z.object({
 type RegisterFormInputs = z.infer<typeof registerSchema>;
 
 export function RegisterForm() {
-  const navigate = useNavigate();
+  const navigate = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
@@ -44,7 +45,13 @@ export function RegisterForm() {
 
   const registerMutation = useMutation({
     mutationFn: (credentials: any) => authService.register(credentials),
-    onSuccess: (data) => navigate('/email-sent', { state: { email: data.email } }),
+    onSuccess: (data) =>
+  navigate.push({
+    pathname: '/email-sent',
+    query: {
+      email: data.email, // ⬅️ اینجا از 'query' استفاده می‌کنیم
+    },
+  }),
   });
 
   const onSubmit = (data: RegisterFormInputs) => {
@@ -157,7 +164,7 @@ export function RegisterForm() {
             )}
           />
             <Turnstile
-              siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
+              siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
               onSuccess={(token) => setCaptchaToken(token)}
               onError={() => setCaptchaToken(null)}
               options={{ theme: "light", size: "normal" }}
@@ -190,16 +197,16 @@ export function RegisterForm() {
 
           <Typography variant="body2" sx={{ textAlign: 'center', color: '#4b5563' }}>
             حساب کاربری دارید؟{' '}
-            <Link component={RouterLink} to="/login" sx={{ color: '#9333ea', fontWeight: 600 }}>
+            <MuiLink component={Link} href="/login" sx={{ color: '#9333ea', fontWeight: 600 }}>
               وارد شوید
-            </Link>
+            </MuiLink>
           </Typography>
 
           <Typography variant="body2" sx={{ textAlign: 'center', color: '#4b5563' }}>
             ثبت‌نام با شماره موبایل{' '}
-            <Link component={RouterLink} to="/register-otp" sx={{ color: '#6b21a8', fontWeight: 600 }}>
+            <MuiLink component={Link} href="/register-otp" sx={{ color: '#6b21a8', fontWeight: 600 }}>
               ادامه
-            </Link>
+            </MuiLink>
           </Typography>
         </Stack>
       </Box>

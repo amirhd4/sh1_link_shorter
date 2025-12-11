@@ -1,9 +1,10 @@
 import { Box, Typography, Alert, Button } from '@mui/material';
-import { useLocation } from 'react-router-dom';
+import { useSearchParams } from 'next/navigation';
 
 export function EmailSentPage() {
-  const location = useLocation();
-  const email = location.state?.email;
+  const searchParams = useSearchParams();
+
+  const email = searchParams.get("email");
 
   return (
     <Box textAlign="center">

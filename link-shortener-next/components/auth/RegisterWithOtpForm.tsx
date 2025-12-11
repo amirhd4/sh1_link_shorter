@@ -4,16 +4,16 @@ import {
   InputAdornment, IconButton, Snackbar, Paper
 } from "@mui/material";
 import { useMutation } from "@tanstack/react-query";
-import { authService } from "../../services/authService";
-import { useNavigate } from "react-router-dom";
-import { useUserStore } from '../../store/userStore';
+import { authService } from "@/services/authService";
+import { useRouter } from "next/navigation";
+import { useUserStore } from '@/store/userStore';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import { getOtpErrorMessage } from "../../utils/otpErrorHandler";
+import { getOtpErrorMessage } from "@/utils/otpErrorHandler";
 import { Turnstile } from "@marsidev/react-turnstile";
 
 export function RegisterWithOtpForm() {
-  const navigate = useNavigate();
+  const navigate = useRouter();
   const { setUser } = useUserStore();
 
   const [phone, setPhone] = useState("");
@@ -67,7 +67,7 @@ export function RegisterWithOtpForm() {
       try {
         const user = await authService.getMe();
         setUser(user);
-        navigate("/dashboard");
+        navigate.push("/dashboard");
       } catch (err) {
         console.error("خطا در واکشی اطلاعات کاربر:", err);
       }
@@ -229,7 +229,7 @@ export function RegisterWithOtpForm() {
           {/* کپچا */}
           {(step === "phone" || step === "verify") && (
             <Turnstile
-              siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
+              siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
               ref={turnstileRef}
               onSuccess={(token) => {
                 if (step === "phone") setCaptchaTokenSend(token);

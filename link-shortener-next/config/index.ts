@@ -1,9 +1,8 @@
 const config = {
-  apiBaseUrl: import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api",
-  backendBaseUrl: import.meta.env.VITE_BACKEND_BASE_URL || "http://localhost:8000/api",
-  backendBaseUrlOrigin: import.meta.env.VITE_BACKEND_BASE_URL_ORIGIN || "http://localhost:8000",
-  debug: import.meta.env.VITE_DEBUG || false,
-
+  apiBaseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000/api",
+  backendBaseUrl: process.env.NEXT_PUBLIC_BACKEND_BASE_URL || "http://localhost:8000/api",
+  backendBaseUrlOrigin: process.env.NEXT_PUBLIC_BACKEND_BASE_URL_ORIGIN || "http://localhost:8000",
+  debug: process.env.NEXT_PUBLIC_DEBUG === "true" || false,
 };
 
 export default config;

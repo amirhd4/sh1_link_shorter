@@ -11,17 +11,18 @@ import {
   Alert,
 } from "@mui/material";
 import { Turnstile } from "@marsidev/react-turnstile";
-import { linkService } from "../../services/linkService";
-import { authService } from "../../services/authService";
-import apiClient from "../../lib/axios";
-import config from "../../config";
-import {useUserStore} from "../../store/userStore.ts";
+import { linkService } from "@/services/linkService";
+import { authService } from "@/services/authService";
+import apiClient from "@/lib/axios";
+import config from "@/config";
+import {useUserStore} from "@/store/userStore";
+import type { URLCreate } from '@/types/api';
 
-type URLCreate = {
-  long_url: string;
-  custom_alias?: string | null;
-  domain_id?: number | null;
-};
+// type URLCreate = {
+//   long_url: string;
+//   custom_alias?: string | null;
+//   domain_id?: number | null;
+// };
 
 export default function HomeLinkShortener(): JSX.Element {
   const [longUrl, setLongUrl] = useState("");
@@ -63,7 +64,7 @@ export default function HomeLinkShortener(): JSX.Element {
     return /^[A-Za-z0-9_-]{1,50}$/.test(alias);
   };
 
-  const buildFullShortUrl = (maybe) => {
+  const buildFullShortUrl = (maybe: any) => {
   if (!maybe) return "";
 
   // اگر با دو تا پروتکل شروع شده مثل https://http://...
@@ -147,7 +148,7 @@ export default function HomeLinkShortener(): JSX.Element {
       const payload: URLCreate = {
         long_url: longUrl,
         custom_alias: customAlias || null,
-        domain_id: 0,
+        domain_id: 0
       };
       const res = await linkService.createShortLink(payload);
       const candidate = (res as any).short_url || (res as any).short_code || "";
@@ -187,14 +188,14 @@ export default function HomeLinkShortener(): JSX.Element {
 
     setOtpLoading(true);
     try {
-      await authService.sendOtpRegister(phone, captchaTokenSend);
+      await authService.sendOtpRegister(phone, captchaTokenSend || "dummy");
       setOtpMode("register");
       setOtpStep("enter-code");
       setResendTimer(60);
     } catch (e: any) {
       const detail = e?.response?.data?.detail || "";
       if (typeof detail === "string" && detail.includes("قبلاً ثبت")) {
-      await authService.sendOtpLogin(phone, captchaTokenSend);
+      await authService.sendOtpLogin(phone, captchaTokenSend || "dummy");
       setOtpMode("login");
       setOtpStep("enter-code");
       setResendTimer(60);
@@ -220,13 +221,13 @@ export default function HomeLinkShortener(): JSX.Element {
   try {
     let res;
     if (otpMode === "login") {
-      res = await authService.verifyOtpLogin(phone, otp, captchaTokenVerify);
+      res = await authService.verifyOtpLogin(phone, otp, captchaTokenSend || "dummy");
     } else {
       // پیش‌فرض register (برای کاربران جدید)
-      res = await authService.registerWithOtp(phone, otp, "کاربر", "سیستم", captchaTokenVerify);
+      res = await authService.registerWithOtp(phone, otp, "کاربر", "سیستم", captchaTokenSend || "dummy");
     }
 
-    const access = res?.access_token || res?.token || null;
+    const access = res?.access_token || null;
     if (access) {
       localStorage.setItem("access_token", access);
       apiClient.defaults.headers.common["Authorization"] = `Bearer ${access}`;
@@ -267,14 +268,14 @@ export default function HomeLinkShortener(): JSX.Element {
     }
     setOtpLoading(true);
     try {
-  await authService.sendOtpRegister(phone, captchaTokenSend);
+  await authService.sendOtpRegister(phone, captchaTokenSend || "dummy");
   setOtpStep("enter-code");
   setResendTimer(60);
 } catch (e: any) {
   const detail = e?.response?.data?.detail || "";
   if (typeof detail === "string" && detail.includes("قبلاً ثبت")) {
     // یعنی کاربر قبلاً ثبت‌نام کرده → برو سراغ login
-    await authService.sendOtpLogin(phone, captchaTokenSend);
+    await authService.sendOtpLogin(phone, captchaTokenSend || "dummy");
     setOtpStep("enter-code");
     setResendTimer(60);
   } else {
@@ -405,7 +406,7 @@ export default function HomeLinkShortener(): JSX.Element {
 
               <Turnstile
   key={`send-${otpStep}`}
-  siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
+  siteKey={process.env.NEXT_PUBLICK_TURNSTILE_SITE_KEY!}
   onSuccess={(token) => setCaptchaTokenSend(token)}
   onError={() => setCaptchaTokenSend(null)}
   onExpire={() => setCaptchaTokenSend(null)}
@@ -433,7 +434,7 @@ export default function HomeLinkShortener(): JSX.Element {
 
               <Turnstile
                 key={`verify-${otpStep}`}
-                siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
+                siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
                 onSuccess={(token) => setCaptchaTokenVerify(token)}
                 onError={() => setCaptchaTokenVerify(null)}
                 onExpire={() => setCaptchaTokenVerify(null)}

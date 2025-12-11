@@ -23,9 +23,12 @@ import EmailIcon from "@mui/icons-material/AlternateEmail";
 import LockIcon from "@mui/icons-material/Lock";
 import { motion } from "framer-motion";
 import { useMutation } from "@tanstack/react-query";
-import { authService } from "../../services/authService";
-import { useUserStore } from "../../store/userStore";
-import { Link as RouterLink, useNavigate, useSearchParams } from "react-router-dom";
+import { authService } from "@/services/authService";
+import { useUserStore } from "@/store/userStore";
+
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+
 import { GoogleLoginButton } from "./GoogleLoginButton";
 import { Turnstile } from "@marsidev/react-turnstile";
 import config from "../../config";
@@ -45,8 +48,9 @@ const emailOrPhoneSchema = z.object({
 type LoginFormInputs = z.infer<typeof emailOrPhoneSchema>;
 
 export function LoginForm() {
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const navigate = useRouter();
+  const searchParams = useSearchParams();
+
   const { setUser } = useUserStore();
   const [verificationError, setVerificationError] = useState(false);
   const [resendSuccess, setResendSuccess] = useState(false);
@@ -68,7 +72,7 @@ export function LoginForm() {
       try {
         const user = await authService.getMe();
         setUser(user);
-        navigate("/dashboard");
+        navigate.push("/dashboard");
       } catch (error) {
         console.error("خطا در واکشی اطلاعات کاربر:", error);
       }
@@ -205,7 +209,8 @@ export function LoginForm() {
               <Controller
                 name="emailOrPhone"
                 control={control}
-                render={({ field }) => (
+                render={({ field }: { field: any }) => (
+
                   <TextField
                     {...field}
                     fullWidth
@@ -231,7 +236,7 @@ export function LoginForm() {
               <Controller
                 name="password"
                 control={control}
-                render={({ field }) => (
+                render={({ field } : {field: any}) => (
                   <TextField
                     {...field}
                     fullWidth
@@ -261,7 +266,7 @@ export function LoginForm() {
               />
 
               <Turnstile
-                siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
+                siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
                 onSuccess={(token) => setCaptchaToken(token)}
                 onError={() => setCaptchaToken(null)}
                 onExpire={() => setCaptchaToken(null)}
@@ -301,17 +306,17 @@ export function LoginForm() {
 
             <Grid container sx={{ mt: 4 }} justifyContent="space-between" alignItems="center">
               <Grid>
-                <MuiLink component={RouterLink} to="/forgot-password" variant="body2" sx={{ color: "#7e22ce" }}>
+                <MuiLink component={Link} href="/forgot-password" variant="body2" sx={{ color: "#7e22ce" }}>
                   رمز عبورت رو یادت رفته؟ 🤔
                 </MuiLink>
               </Grid>
               <Grid>
-                <MuiLink component={RouterLink} to="/register" variant="body2" sx={{ color: "#7e22ce" }}>
+                <MuiLink component={Link} href="/register" variant="body2" sx={{ color: "#7e22ce" }}>
                   حساب نداری؟ همین الان بساز 💫
                 </MuiLink>
               </Grid>
               <Grid>
-                <MuiLink component={RouterLink} to="/login-otp" variant="body2" sx={{ color: "#7e22ce" }}>
+                <MuiLink component={Link} href="/login-otp" variant="body2" sx={{ color: "#7e22ce" }}>
                   ورود با شماره موبایل 📱
                 </MuiLink>
               </Grid>

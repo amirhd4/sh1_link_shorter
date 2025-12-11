@@ -107,7 +107,7 @@ export function ForgotPasswordForm() {
             />
 
             <Turnstile
-              siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
+              siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
               onSuccess={(token) => setCaptchaToken(token)}
               onError={() => setCaptchaToken(null)}
               options={{ theme: 'light', size: 'normal' }}

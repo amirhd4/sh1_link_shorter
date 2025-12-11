@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { linkService } from '../../services/linkService';
+import { linkService } from '@/services/linkService';
 import { DataGrid, type GridColDef, GridActionsCellItem } from '@mui/x-data-grid';
 import { 
     Alert, Box, Typography, Button, Snackbar, Container, Paper, Stack, Tooltip,
@@ -11,8 +11,8 @@ import { useTranslation } from 'react-i18next';
 import { CreateLinkForm } from './CreateLinkForm';
 import { EditLinkForm } from './EditLinkForm';
 import { ConfirmationDialog } from '../molecules/ConfirmationDialog';
-import type { LinkDetails } from '../../types/api';
-import { useNavigate } from 'react-router-dom';
+import type { LinkDetails } from '@/types/api';
+import { useRouter } from 'next/navigation';
 
 // Icons
 import AddIcon from '@mui/icons-material/Add';
@@ -177,7 +177,7 @@ type DeleteTarget = { shortCode: string; domainId: string };
 
 
 export function LinksDashboard() {
-    const navigate = useNavigate();
+    const navigate = useRouter();
     const { t } = useTranslation('common');
     const queryClient = useQueryClient();
     const localeText = usePersianDataGridLocale();
@@ -227,7 +227,7 @@ export function LinksDashboard() {
         onSettled: () => setDeleteTarget(null),
     });
 
-    const handleDetailsClick = (shortCode: string, domainId: string) => () => navigate(`/links/${shortCode}/${domainId}`);
+    const handleDetailsClick = (shortCode: string, domainId: string) => () => navigate.push(`/links/${shortCode}/${domainId}`);
     const handleDeleteClick = (shortCode: string, domainId: string) => () => setDeleteTarget({ shortCode, domainId });
     const handleConfirmDelete = () => { if(deleteTarget) deleteMutation.mutate(deleteTarget); };
 
@@ -371,9 +371,19 @@ export function LinksDashboard() {
                 description="آیا از حذف این لینک اطمینان دارید؟ این عمل غیرقابل بازگشت است." 
             />
             {/* <Snackbar open={!!snackbarMessage} autoHideDuration={4000} onClose={() => setSnackbarMessage(null)} message={snackbarMessage} /> */}
-            <Snackbar open={!!snackbarMessage} autoHideDuration={4000} onClose={() => setSnackbarMessage(null)}>
-                {snackbarMessage && <Alert severity={snackbarMessage.severity}>{snackbarMessage.text}</Alert>}
-            </Snackbar>
+            <Snackbar
+  open={!!snackbarMessage} // ⬅️ باز و بسته شدن را کنترل می‌کند
+  autoHideDuration={4000}
+  onClose={() => setSnackbarMessage(null)}
+>
+  {/* 💡 اگر snackbarMessage وجود داشته باشد، خصوصیات را به Alert بدهید */}
+  <Alert
+    onClose={() => setSnackbarMessage(null)} // امکان بستن Alert توسط کاربر
+    severity={snackbarMessage?.severity || 'info'} // استفاده از Optional Chaining و مقدار پیش‌فرض
+  >
+    {snackbarMessage?.text}
+  </Alert>
+</Snackbar>
 
 
         </>
