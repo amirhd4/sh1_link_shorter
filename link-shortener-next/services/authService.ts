@@ -1,7 +1,7 @@
 import apiClient from '../lib/axios';
-import type { UserResponse, TokenResponse } from '../types/api';
-import type { LoginCredentials, RegisterCredentials, UpdateProfilePayload, ChangePasswordPayload } from '../types/auth';
-import type {UserWithToken, OtpLoginResponse} from "../types/api"
+import type { UserResponse, TokenResponse } from '@/types/api';
+import type { LoginCredentials, RegisterCredentials, UpdateProfilePayload, ChangePasswordPayload } from '@/types/auth';
+import type {UserWithToken, OtpLoginResponse} from "@/types/api"
 
 
 export const authService = {

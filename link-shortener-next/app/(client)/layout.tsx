@@ -1,23 +1,21 @@
 "use client";
 
-import { useState } from "react";
-import { Box, Toolbar } from "@mui/material";
-import { Header } from "@/components/organisms/Header";
-import { Sidebar } from "@/components/organisms/Sidebar";
+import { useUserStore } from "@/store/userStore";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
-export default function ClientLayout({ children }: { children: React.ReactNode }) {
-  const [isSidebarOpen, setSidebarOpen] = useState(false);
-  const toggleSidebar = () => setSidebarOpen(!isSidebarOpen);
+export default function ClientProtectedLayout({ children }: any) {
+  const { user, isLoading } = useUserStore();
+  const router = useRouter();
 
-  return (
-    <Box sx={{ display: "flex", bgcolor: "#f9fafb", minHeight: "100vh" }}>
-      <Header onMenuClick={toggleSidebar} />
-      <Sidebar isOpen={isSidebarOpen} onClose={toggleSidebar} />
+  useEffect(() => {
+    if (!isLoading) {
+      if (!user) router.replace("/login");
+      if (user && user.role === "admin") router.replace("/admin/dashboard");
+    }
+  }, [user, isLoading]);
 
-      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-        <Toolbar />
-        {children}
-      </Box>
-    </Box>
-  );
+  if (isLoading) return null;
+
+  return <>{children}</>;
 }

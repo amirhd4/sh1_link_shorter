@@ -4,29 +4,26 @@ import type { NextRequest } from "next/server";
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // کوکی‌ها
+  // فقط توکن از کوکی
   const token = req.cookies.get("access_token")?.value || null;
-  const role = req.cookies.get("role")?.value || null;
 
   // -----------------------
   // 1) مسیرهای Admin
   // -----------------------
   if (pathname.startsWith("/admin")) {
-    // اگر لاگین نیست
+    // اگر لاگین نیست → اجازه ورود ندارد
     if (!token) {
       return NextResponse.redirect(new URL("/home", req.url));
     }
 
-    // اگر ادمین نیست
-    if (role !== "admin") {
-      return NextResponse.redirect(new URL("/dashboard", req.url));
-    }
+    // نقش اینجا چک نمی‌شود!
+    // نقش داخل کلاینت (Zustand + AppInitializer) چک می‌شود
 
     return NextResponse.next();
   }
 
   // -----------------------
-  // 2) مسیرهای Protected (کلاینت)
+  // 2) مسیرهای محافظت‌شده‌ی کاربر
   // -----------------------
   const protectedPaths = [
     "/dashboard",
@@ -35,28 +32,25 @@ export function middleware(req: NextRequest) {
     "/billing",
     "/links",
     "/api",
-    "/domains"
+    "/domains",
   ];
 
   if (protectedPaths.some(path => pathname.startsWith(path))) {
     if (!token) {
       return NextResponse.redirect(new URL("/home", req.url));
     }
-
-    // اگر ادمین وارد protected شده باشد → طبق کد قبلی، مشکلی نیست
     return NextResponse.next();
   }
 
   // -----------------------
-  // 3) جلوگیری از ورود مدیر به صفحات login/register
+  // 3) جلوگیری از ورود کاربران لاگین‌کرده به صفحات لاگین/رجیستر
   // -----------------------
   const authPages = ["/login", "/register", "/login-otp", "/register-otp"];
 
   if (authPages.includes(pathname)) {
-    if (token && role === "admin") {
-      return NextResponse.redirect(new URL("/admin/dashboard", req.url));
-    }
-    if (token && role !== "admin") {
+    if (token) {
+      // چون نقش در کوکی نیست، نمی‌توانیم تشخیص دهیم ادمین است یا کاربر
+      // بنابراین به صفحه‌ی کلی کاربر هدایت می‌شود
       return NextResponse.redirect(new URL("/dashboard", req.url));
     }
   }

@@ -16,8 +16,8 @@ import {
   alpha,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { usePersianDataGridLocale } from '../../../hooks/usePersianDataGridLocale.ts';
-import { billingService } from '../../../services/billingService';
+import { usePersianDataGridLocale } from '@/hooks/usePersianDataGridLocale';
+import { billingService } from '@/services/billingService';
 
 // آیکون برای زیبایی بیشتر
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';

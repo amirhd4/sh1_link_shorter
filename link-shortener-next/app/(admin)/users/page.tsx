@@ -1,20 +1,22 @@
+"use client";
+
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { DataGrid, type GridColDef, GridActionsCellItem } from '@mui/x-data-grid';
 import { Alert, Box, CircularProgress, Typography, Chip, Tooltip, Snackbar, Paper } from '@mui/material';
-import { adminService } from '../../../services/adminService';
-import type { UserResponse } from '../../../types/api';
-import { usePersianDataGridLocale } from '../../../hooks/usePersianDataGridLocale';
-import { ConfirmationDialog } from '../../../components/molecules/ConfirmationDialog';
-import { AssignPlanModal } from '../components/AssignPlanModal';
+import { adminService } from '@/services/adminService';
+import type { UserResponse } from '@/types/api';
+import { usePersianDataGridLocale } from '@/hooks/usePersianDataGridLocale';
+import { ConfirmationDialog } from '@/components/molecules/ConfirmationDialog';
+import { AssignPlanModal } from '@/components/admin-dashboard/AssignPlanModal';
 
 // Import Icons
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ToggleOnIcon from '@mui/icons-material/ToggleOn';
 import ToggleOffIcon from '@mui/icons-material/ToggleOff';
-import theme from "../../../styles/theme.ts";
-import { CustomNoRowsOverlay } from '../../../components/molecules/CustomNoRowsOverlay.tsx';
+import theme from "@/styles/theme";
+import { CustomNoRowsOverlay } from '@/components/molecules/CustomNoRowsOverlay';
 
 
 export function UserManagementPage() {

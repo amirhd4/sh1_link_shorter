@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { PlanResponse } from '../types/api';
+import type { PlanResponse } from '@/types/api';
 
 
 interface User {

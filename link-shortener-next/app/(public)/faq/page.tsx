@@ -2,7 +2,7 @@ import React from "react";
 import { Helmet } from "react-helmet-async";
 import { Container, Typography, Box, List, ListItem, ListItemText } from "@mui/material";
 
-export const FaqPage: React.FC = () => {
+const FaqPage: React.FC = () => {
   const faqs = [
     {
       question: "کوتاه‌کننده لینک چیست؟",

@@ -1,4 +1,4 @@
-import { LoginWithOtpForm } from "../features/auth/components/LoginWithOtpForm.tsx";
+import { LoginWithOtpForm } from "@/components/auth/LoginWithOtpForm";
 
 export function LoginOtpPage() {
   return <LoginWithOtpForm />;

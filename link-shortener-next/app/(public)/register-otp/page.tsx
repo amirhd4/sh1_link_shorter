@@ -1,4 +1,4 @@
-import { RegisterWithOtpForm } from "../features/auth/components/RegisterWithOtpForm.tsx";
+import { RegisterWithOtpForm } from "@/components/auth/RegisterWithOtpForm";
 
 export function RegisterOtpPage() {
   return <RegisterWithOtpForm />;

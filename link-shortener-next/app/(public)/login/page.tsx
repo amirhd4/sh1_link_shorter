@@ -1,4 +1,4 @@
-import { LoginForm } from "../features/auth/components/LoginForm.tsx";
+import { LoginForm } from "@/components/auth/LoginForm";
 import { Helmet, HelmetProvider } from 'react-helmet-async';
 
 

@@ -6,7 +6,7 @@ const apiClient = axios.create({
 });
 
 // میتوانید Interceptor ها را برای مدیریت توکن JWT در اینجا اضافه کنید
-apiClient.interceptors.request.use((config) => {
+apiClient.interceptors.request.use((config: any) => {
     const token = localStorage.getItem('access_token');
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;

@@ -47,7 +47,7 @@ export default function HomeLinkShortener(): JSX.Element {
   const setUser = useUserStore.getState().setUser;
 
   // local token name matches axios interceptor in lib/axios
-  const storedToken = localStorage.getItem("access_token");
+  // const storedToken = localStorage.getItem("access_token");
 
   // ===== Helpers =====
   const isValidUrl = (u: string) => {
@@ -230,6 +230,7 @@ export default function HomeLinkShortener(): JSX.Element {
     const access = res?.access_token || null;
     if (access) {
       localStorage.setItem("access_token", access);
+      document.cookie = `access_token=${access}; path=/`;
       apiClient.defaults.headers.common["Authorization"] = `Bearer ${access}`;
 
       try {

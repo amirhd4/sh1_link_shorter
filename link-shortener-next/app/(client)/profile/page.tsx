@@ -1,6 +1,6 @@
 import { Box, Typography, Paper, Divider } from '@mui/material';
-import { UpdateProfileForm } from '../components/UpdateProfileForm';
-import { ChangePasswordForm } from '../components/ChangePasswordForm';
+import { UpdateProfileForm } from '@/components/profile/UpdateProfileForm';
+import { ChangePasswordForm } from '@/components/profile/ChangePasswordForm';
 
 export function ProfilePage() {
   return (

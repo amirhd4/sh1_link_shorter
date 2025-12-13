@@ -1,14 +1,16 @@
+"use client";
+
 import React, { useState } from 'react';
 import { Box, Button, Typography, Stack, Chip, IconButton, Alert, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Snackbar } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
 import ReplayIcon from '@mui/icons-material/Replay';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { domainService } from '../services/domainService';
-import type { DomainResponse } from '../types/api';
-import { AddDomainDialog } from "../features/client-dashboard/components/AddDomainDialog.tsx";
+import { domainService } from '@/services/domainService';
+import type { DomainResponse } from '@/types/api';
+import { AddDomainDialog } from "@/components/client-dashboard/AddDomainDialog";
 
-export const DomainsManager = () => {
+export default function DomainsManager () {
   const qc = useQueryClient();
   const [isAddDialogOpen, setAddDialogOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);

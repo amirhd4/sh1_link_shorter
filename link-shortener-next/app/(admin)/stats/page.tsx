@@ -1,7 +1,9 @@
+"use client";
+
 import { useEffect, useState } from 'react';
 import { Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tabs, Tab } from '@mui/material';
-import { getAdStatsPerLink, getAdStatsPerUser } from '../../../services/admin.ts';
-import type {AdStatsPerLink, AdStatsPerUser} from "../../../types";
+import { getAdStatsPerLink, getAdStatsPerUser } from '@/services/admin';
+import type {AdStatsPerLink, AdStatsPerUser} from "@/types";
 
 
 export function AdStatsPage() {
@@ -11,7 +13,7 @@ export function AdStatsPage() {
   const [tabIndex, setTabIndex] = useState(0);
 
   useEffect(() => {
-  if (typeof window === 'undefined') return null;
+  if (typeof window === 'undefined') return;
 
   const fetchStats = async () => {
     try {

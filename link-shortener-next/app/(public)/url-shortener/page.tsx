@@ -1,9 +1,9 @@
 import React from "react";
 import { Helmet } from "react-helmet-async";
 import { Container, Typography, Box, List, ListItem, Button, Stack } from "@mui/material";
-import { Link as RouterLink } from "react-router-dom";
+import Link from "next/link";
 
-export const ApiUrlShortenerPage: React.FC = () => {
+const ApiUrlShortenerPage: React.FC = () => {
   return (
     <Container sx={{ py: 8 }}>
       <Helmet>
@@ -69,16 +69,16 @@ export const ApiUrlShortenerPage: React.FC = () => {
         <Button
           variant="contained"
           color="primary"
-          component={RouterLink}
-          to="/register"
+          component={Link}
+          href="/register"
         >
           ثبت‌نام و دریافت Api-Key
         </Button>
         <Button
           variant="outlined"
           color="secondary"
-          component={RouterLink}
-          to="/short-url-generator"
+          component={Link}
+          href="/short-url-generator"
         >
           استفاده رایگان بدون ثبت‌نام
         </Button>

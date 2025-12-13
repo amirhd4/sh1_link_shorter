@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Grid, Box, Typography, CircularProgress, Alert, Paper } from '@mui/material';
-import { adminService } from '../../../services/adminService';
-import { StatCard } from '../components/StatCard';
+import { adminService } from '@/services/adminService';
+import { StatCard } from '@/components/admin-dashboard/StatCard';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 import PeopleIcon from '@mui/icons-material/People';

@@ -144,9 +144,13 @@ export function CreateLinkForm({ isOpen, onClose }: CreateLinkFormProps) {
       payload.password = data.password;
     }
 
-    Object.keys(payload).forEach(
-      (key) => payload[key] === undefined && delete payload[key]
-    );
+    Object.keys(payload).forEach((key) => {
+  const k = key as keyof URLCreate;
+  if (payload[k] === undefined) {
+    delete payload[k];
+  }
+});
+
 
     createLinkMutation.mutate(payload);
   };

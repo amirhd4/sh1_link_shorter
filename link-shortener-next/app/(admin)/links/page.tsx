@@ -1,13 +1,15 @@
+"use client";
+
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { DataGrid, type GridColDef, GridActionsCellItem } from '@mui/x-data-grid';
 import { Alert, Box, CircularProgress, Typography, Snackbar } from '@mui/material';
-import { adminService } from '../../../services/adminService';
-import type { LinkDetailsForAdmin } from '../../../types/api';
-import { ConfirmationDialog } from '../../../components/molecules/ConfirmationDialog';
+import { adminService } from '@/services/adminService';
+import type { LinkDetailsForAdmin } from '@/types/api';
+import { ConfirmationDialog } from '@/components/molecules/ConfirmationDialog';
 
 import DeleteIcon from '@mui/icons-material/Delete';
-import { usePersianDataGridLocale } from '../../../hooks/usePersianDataGridLocale';
+import { usePersianDataGridLocale } from '@/hooks/usePersianDataGridLocale';
 
 
 export function LinkManagementPage() {

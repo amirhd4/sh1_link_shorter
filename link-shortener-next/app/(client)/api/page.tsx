@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useState, useCallback } from "react";
 import {
   Box, Card, CardContent, Typography, Divider, TextField, IconButton, Tooltip,
@@ -8,8 +10,8 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CodeIcon from "@mui/icons-material/Code";
 import LanguageIcon from "@mui/icons-material/Language";
-import { apiService } from "../../../services/apiService";
-import { useUserStore } from "../../../store/userStore";
+import { apiService } from "@/services/apiService";
+import { useUserStore } from "@/store/userStore";
 
 // ========================================================================
 // نمایش کد با قابلیت کپی

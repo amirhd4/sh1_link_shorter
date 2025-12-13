@@ -1,2 +1,2 @@
-import { ForgotPasswordForm } from "../features/auth/components/ForgotPasswordForm.tsx";
+import { ForgotPasswordForm } from "@/components/auth/ForgotPasswordForm";
 export function ForgotPasswordPage() { return <ForgotPasswordForm />; }

@@ -1,5 +1,7 @@
+"use client";
+
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams } from "next/navigation";
 import { Box, Button, Typography, Paper, TextField, CircularProgress, Alert, Grid } from "@mui/material";
 import { motion } from "framer-motion";
 import { Helmet } from "react-helmet-async";
@@ -21,7 +23,7 @@ export default function PasswordProtectedPage() {
     return;
   }
 
-  const backendBase = import.meta.env.VITE_BACKEND_BASE_URL_ORIGIN;
+  const backendBase = process.env.NEXT_PUBLIC_BACKEND_BASE_URL_ORIGIN;
   const effectiveDomainId = domainId ?? "0";
   const redirectUrl = `${backendBase}/${shortCode}?password=${encodeURIComponent(password)}&domainId=${effectiveDomainId}`;
 

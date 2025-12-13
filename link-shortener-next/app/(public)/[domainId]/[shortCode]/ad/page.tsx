@@ -1,11 +1,13 @@
+"use client";
+
 import { useEffect, useState, useRef } from "react";
-import { useParams } from "react-router-dom";
+import { useParams } from "next/navigation";
 import { Box, Button, Typography, LinearProgress, Paper, CircularProgress, Grid, Alert } from "@mui/material";
 import { motion } from "framer-motion";
 import { Helmet } from "react-helmet-async";
 
-import { adService } from "../../../services/adService";
-import type { Ad } from "../../../types";
+import { adService } from "@/services/adService";
+import type { Ad } from "@/types";
 import { Megaphone } from "lucide-react";
 
 
@@ -89,7 +91,7 @@ export default function AdRedirectPage() {
       // Optional: Show a user-friendly error message
     } finally {
       const redirectDomain = normalizedDomainId ?? 0;
-      window.location.href = `${import.meta.env.VITE_BACKEND_BASE_URL_ORIGIN}/ad/skip/${redirectDomain}/${shortCode}`;
+      window.location.href = `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL_ORIGIN}/ad/skip/${redirectDomain}/${shortCode}`;
     }
   };
 

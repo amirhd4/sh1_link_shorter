@@ -17,7 +17,7 @@ import {
   AccordionDetails,
   Divider,
   Stack,
-  Link,
+  Link as MuLink,
 } from "@mui/material";
 import ContentCopyOutlinedIcon from "@mui/icons-material/ContentCopyOutlined";
 import CheckIcon from "@mui/icons-material/Check";
@@ -27,7 +27,7 @@ import DomainIcon from "@mui/icons-material/Domain";
 import SecurityIcon from "@mui/icons-material/Security";
 import ShareIcon from "@mui/icons-material/Share";
 import InsightsIcon from "@mui/icons-material/Insights";
-import { Link as RouterLink } from "react-router-dom";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { Helmet } from "react-helmet-async";
 import {
@@ -39,7 +39,7 @@ import {
   Tooltip as ReTooltip,
   CartesianGrid,
 } from "recharts";
-import HomeLinkShortener from "../features/home/components/HomeLinkShortener.tsx";
+import HomeLinkShortener from "@/components/home/HomeLinkShortener";
 
 /* ---------------- Data ---------------- */
 const chartData = [
@@ -138,7 +138,7 @@ const copyToClipboard = async (txt: string, setCopied: React.Dispatch<React.SetS
 };
 
 /* ---------------- Component ---------------- */
-export const HomePage: React.FC = () => {
+const HomePage: React.FC = () => {
   const [tab, setTab] = React.useState(0);
   const [copied, setCopied] = React.useState(false);
 
@@ -230,8 +230,8 @@ export const HomePage: React.FC = () => {
 
           <Stack direction="row" spacing={2} justifyContent="center" flexWrap="wrap">
             <Button
-              component={RouterLink}
-              to="/register"
+              component={Link}
+              href="/register"
               variant="contained"
               size="large"
               sx={{ borderRadius: "50px", px: 5, background: "linear-gradient(45deg,#a855f7,#d946ef)" }}
@@ -239,8 +239,8 @@ export const HomePage: React.FC = () => {
               شروع رایگان
             </Button>
             <Button
-              component={RouterLink}
-              to="/pages/docs"
+              component={Link}
+              href="/pages/docs"
               variant="outlined"
               size="large"
               sx={{ borderRadius: "50px", px: 5, color: "#cbd5e1", borderColor: "#475569" }}
@@ -248,8 +248,8 @@ export const HomePage: React.FC = () => {
               مستندات API
             </Button>
             <Button
-              component={RouterLink}
-              to="/pricing"
+              component={Link}
+              href="/pricing"
               variant="text"
               size="large"
               sx={{ color: "#cbd5e1" }}
@@ -529,7 +529,7 @@ export const HomePage: React.FC = () => {
       با هر بازدید تبلیغ، امتیاز و درآمد کسب می‌کند 💰
       اگر این گزینه خاموش باشد، لینک بدون تبلیغ مستقیماً به مقصد می‌رود.
     </Typography>
-    <Button component={RouterLink} to="/pages/monetize" variant="outlined" size="small">
+    <Button component={Link} href="/pages/monetize" variant="outlined" size="small">
       نحوه فعال‌سازی درآمدزایی
     </Button>
   </Paper>
@@ -544,7 +544,7 @@ export const HomePage: React.FC = () => {
               <Typography sx={{ color: "#94a3b8", mb: 2 }}>
                 می‌توانید لینک‌هایی بسازید که بدون ریدایرکت تبلیغاتی کاربر را به مقصد هدایت کنند — مناسب زمانی که می‌خواهید مخاطب حس اعتماد بیشتری داشته باشد.
               </Typography>
-              <Button component={RouterLink} to="/pages/no-ads" variant="outlined" size="small">
+              <Button component={Link} href="/pages/no-ads" variant="outlined" size="small">
                 اطلاعات بیشتر
               </Button>
             </Paper>
@@ -561,7 +561,7 @@ export const HomePage: React.FC = () => {
       هنگام ساخت لینک، می‌توانید گزینه <strong>password</strong> را تنظیم کنید تا فقط افرادی که رمز را دارند بتوانند به مقصد دسترسی داشته باشند.
       این قابلیت برای لینک‌های خصوصی یا محرمانه بسیار کاربردی است.
     </Typography>
-    <Button component={RouterLink} to="/pages/security" variant="outlined" size="small">
+    <Button component={Link} href="/pages/security" variant="outlined" size="small">
       درباره امنیت بیشتر بخوانید
     </Button>
   </Paper>
@@ -906,8 +906,8 @@ export const HomePage: React.FC = () => {
         </Typography>
         <Typography sx={{ color: "#94a3b8", mb: 3 }}>ثبت‌نام کنید و اولین لینک کوتاه خود را بسازید — حتی به‌صورت رایگان.</Typography>
         <Button
-          component={RouterLink}
-          to="/register"
+          component={Link}
+          href="/register"
           variant="contained"
           size="large"
           sx={{ borderRadius: 3, px: 5, background: "linear-gradient(90deg,#a855f7,#d946ef)" }}

@@ -2,7 +2,7 @@ import React from "react";
 import { Helmet } from "react-helmet-async";
 import { Container, Typography, Box, List, ListItem } from "@mui/material";
 
-export const ShortUrlGeneratorPage: React.FC = () => {
+const ShortUrlGeneratorPage: React.FC = () => {
   return (
     <Container sx={{ py: 8 }}>
       <Helmet>

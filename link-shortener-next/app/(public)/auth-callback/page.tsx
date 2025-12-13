@@ -1,32 +1,52 @@
+"use client";
+
 import { useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams } from "next/navigation";
+import {useRouter} from "next/router";
+
 import { Box, CircularProgress, Typography } from '@mui/material';
-import { useUserStore } from '../store/userStore';
-import { authService } from '../services/authService';
+import { useUserStore } from '@/store/userStore';
+import { authService } from '@/services/authService';
 
 export function AuthCallbackPage() {
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
+  const searchParams = useSearchParams();
+  const navigate = useRouter();
   const { setUser } = useUserStore();
 
   useEffect(() => {
     const token = searchParams.get('token');
 
     if (!token) {
-      navigate('/login', { replace: true });
+        navigate.push({
+            pathname: '/login',
+            query: {
+                replace: true
+            },
+        }).then(r => null);
       return;
     }
 
     const loginWithToken = async () => {
       try {
         localStorage.setItem('access_token', token);
+        document.cookie = `access_token=${token}; path=/`;
         const user = await authService.getMe();
         setUser(user);
-        navigate('/dashboard', { replace: true });
+        await navigate.push({
+            pathname: '/dashboard',
+            query: {
+                replace: true
+            }
+        });
       } catch (error) {
         console.error('خطا در واکشی اطلاعات کاربر:', error);
         localStorage.removeItem('access_token');
-        navigate('/login', { replace: true });
+        await navigate.push({
+            pathname: '/login',
+            query: {
+                replace: true
+            }
+        });
       }
     };
 
