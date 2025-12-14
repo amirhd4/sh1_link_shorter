@@ -15,7 +15,8 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
   const { user, setUser } = useUserStore();
 
   const handleLogout = () => {
-    localStorage.removeItem("access_token");
+    document.cookie = "access_token=; Max-Age=0; path=/";
+    document.cookie = "role=; Max-Age=0; path=/";
     setUser(null);
   };
 

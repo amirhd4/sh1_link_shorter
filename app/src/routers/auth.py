@@ -32,6 +32,7 @@ from ..services.turnstile import verify_turnstile
 from ..rate_limiter import limiter
 from ..services import email_service
 from ..schemas import ResetPasswordRequest, ChangePasswordRequest, EmailSchema
+from fastapi.responses import JSONResponse
 
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -64,6 +65,29 @@ def generate_secure_random_password(length: int = 16) -> str:
     random.SystemRandom().shuffle(password_list)
 
     return "".join(password_list)
+
+
+def set_client_cookie(access_token: str, role: str):
+    response = JSONResponse(content={"success": True})
+
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        samesite="lax",
+        secure=not settings.DEBUG,
+        path="/"
+    )
+
+    response.set_cookie(
+        key="role",
+        value=role,  # "admin" یا "client"
+        samesite="lax",
+        secure=not settings.DEBUG,
+        path="/"
+    )
+
+    return response
 
 
 class RegisterRequest(schemas.UserCreate):
@@ -199,7 +223,9 @@ async def login_for_access_token(request: Request, form_data: OAuth2PasswordRequ
     identifier = user.email or user.phone_number
     access_token = security.create_access_token(data={"sub": identifier})
 
-    return {"access_token": access_token, "token_type": "bearer"}
+    return set_client_cookie(access_token, user.role)
+
+    # return {"access_token": access_token, "token_type": "bearer"}
 
 
 @router.get("/users/me", response_model=schemas.UserResponse)
@@ -426,7 +452,9 @@ async def google_callback(code: str, db: AsyncSession = Depends(get_db)):
         await db.refresh(user)
 
     app_token = security.create_access_token(data={"sub": user.email})
-    return RedirectResponse(url=f"{settings.frontend_url}/pages/auth/callback?token={app_token}")
+
+    return set_client_cookie(app_token, user.role)
+    # return RedirectResponse(url=f"{settings.frontend_url}/pages/auth/callback?token={app_token}")
 
 
 async def store_otp(phone: str, code: str, request: Request, expire_seconds: int = 120):
@@ -534,7 +562,10 @@ async def verify_otp_login(request: Request, payload: VerifyOtpRequestCaptcha, d
     await request.app.state.redis.delete(f"otp:{phone}")
 
     access_token = security.create_access_token(data={"sub": user.email or user.phone_number})
-    return {"access_token": access_token, "token_type": "bearer"}
+
+    return set_client_cookie(access_token, user.role)
+
+    # return {"access_token": access_token, "token_type": "bearer"}
 
 
 class RegisterOtpRequestCaptcha(RegisterOtpRequest):
@@ -584,11 +615,13 @@ async def register_with_otp(request: Request, payload: RegisterOtpRequestCaptcha
 
     access_token = security.create_access_token(data={"sub": new_user.phone_number})
 
-    return {
-        **schemas.UserResponse.model_validate(new_user).dict(),
-        "access_token": access_token,
-        "token_type": "bearer"
-    }
+    return set_client_cookie(access_token, user.role)
+
+    # return {
+    #     **schemas.UserResponse.model_validate(new_user).dict(),
+    #     "access_token": access_token,
+    #     "token_type": "bearer"
+    # }
 
 
 @router.post("/generate-api-key")

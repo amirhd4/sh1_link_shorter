@@ -4,55 +4,50 @@ import type { NextRequest } from "next/server";
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // فقط توکن از کوکی
-  const token = req.cookies.get("access_token")?.value || null;
+  const token = req.cookies.get("access_token")?.value;
+  const role = req.cookies.get("role")?.value;
 
   // -----------------------
-  // 1) مسیرهای Admin
+  // 1) اگر لاگین نیست → فقط public
   // -----------------------
-  if (pathname.startsWith("/admin")) {
-    // اگر لاگین نیست → اجازه ورود ندارد
-    if (!token) {
+  if (!token) {
+    const protectedPaths = [
+      "/admin",
+      "/dashboard",
+      "/profile",
+      "/plans",
+      "/billing",
+      "/links",
+      "/domains",
+    ];
+
+    if (protectedPaths.some(p => pathname.startsWith(p))) {
       return NextResponse.redirect(new URL("/home", req.url));
     }
-
-    // نقش اینجا چک نمی‌شود!
-    // نقش داخل کلاینت (Zustand + AppInitializer) چک می‌شود
 
     return NextResponse.next();
   }
 
   // -----------------------
-  // 2) مسیرهای محافظت‌شده‌ی کاربر
+  // 2) کاربر لاگین شده
   // -----------------------
-  const protectedPaths = [
-    "/dashboard",
-    "/profile",
-    "/plans",
-    "/billing",
-    "/links",
-    "/api",
-    "/domains",
-  ];
 
-  if (protectedPaths.some(path => pathname.startsWith(path))) {
-    if (!token) {
-      return NextResponse.redirect(new URL("/home", req.url));
-    }
-    return NextResponse.next();
+  // admin وارد مسیرهای user نشود
+  if (role === "admin" && pathname.startsWith("/dashboard")) {
+    return NextResponse.redirect(new URL("/admin/dashboard", req.url));
   }
 
-  // -----------------------
-  // 3) جلوگیری از ورود کاربران لاگین‌کرده به صفحات لاگین/رجیستر
-  // -----------------------
+  // user وارد مسیرهای admin نشود
+  if (pathname.startsWith("/admin") && role !== "admin") {
+    return NextResponse.redirect(new URL("/dashboard", req.url));
+  }
+
+  // لاگین‌شده وارد login/register نشود
   const authPages = ["/login", "/register", "/login-otp", "/register-otp"];
-
   if (authPages.includes(pathname)) {
-    if (token) {
-      // چون نقش در کوکی نیست، نمی‌توانیم تشخیص دهیم ادمین است یا کاربر
-      // بنابراین به صفحه‌ی کلی کاربر هدایت می‌شود
-      return NextResponse.redirect(new URL("/dashboard", req.url));
-    }
+    return role === "admin"
+      ? NextResponse.redirect(new URL("/admin/dashboard", req.url))
+      : NextResponse.redirect(new URL("/dashboard", req.url));
   }
 
   return NextResponse.next();
@@ -66,7 +61,6 @@ export const config = {
     "/plans/:path*",
     "/billing/:path*",
     "/links/:path*",
-    "/api/:path*",
     "/domains/:path*",
     "/login",
     "/register",

@@ -9,14 +9,13 @@ import { Box, CircularProgress } from "@mui/material";
 export default function AppInitializer({ children }: { children: React.ReactNode }) {
   const { setUser, setIsLoading, isLoading } = useUserStore();
 
-  const token = typeof window !== "undefined"
-    ? localStorage.getItem("access_token")
-    : null;
+  const token = document.cookie.includes("access_token");
+
 
   const { isSuccess, isError, data } = useQuery({
     queryKey: ["me"],
     queryFn: authService.getMe,   // سرور جواب role را هم دهد
-    enabled: !!token,
+    enabled: token,
     retry: 1,
   });
 
@@ -35,7 +34,8 @@ export default function AppInitializer({ children }: { children: React.ReactNode
 
     if (isError) {
       localStorage.removeItem("access_token");
-      // document.cookie = `role=; Max-Age=0; path=/;`;
+      document.cookie = "access_token=; Max-Age=0; path=/";
+      document.cookie = "role=; Max-Age=0; path=/";
       setUser(null);
       setIsLoading(false);
     }
