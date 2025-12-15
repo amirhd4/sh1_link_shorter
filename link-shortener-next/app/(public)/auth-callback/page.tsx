@@ -28,8 +28,8 @@ export function AuthCallbackPage() {
 
     const loginWithToken = async () => {
       try {
-        localStorage.setItem('access_token', token);
-        document.cookie = `access_token=${token}; path=/`;
+        // localStorage.setItem('access_token', token);
+        // document.cookie = `access_token=${token}; path=/`;
         const user = await authService.getMe();
         setUser(user);
         await navigate.push({

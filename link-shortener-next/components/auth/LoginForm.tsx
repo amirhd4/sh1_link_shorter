@@ -68,8 +68,8 @@ export function LoginForm() {
     mutationFn: (credentials: any) => authService.login(credentials),
     onSuccess: async (data) => {
       if (!isClient) return;
-      localStorage.setItem("access_token", data.access_token);
-      document.cookie = `access_token=${data.access_token}; path=/`;
+      // localStorage.setItem("access_token", data.access_token);
+      // document.cookie = `access_token=${data.access_token}; path=/`;
       try {
         const user = await authService.getMe();
         setUser(user);

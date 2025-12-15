@@ -56,8 +56,8 @@ export function RegisterWithOtpForm() {
       { phone: string; code: string; firstName: string; lastName: string; captchaToken: string }) =>
       authService.registerWithOtp(phone, code, firstName, lastName, captchaToken),
     onSuccess: async (data) => {
-      localStorage.setItem("access_token", data.access_token);
-      document.cookie = `access_token=${data.access_token}; path=/`;
+      // localStorage.setItem("access_token", data.access_token);
+      // document.cookie = `access_token=${data.access_token}; path=/`;
       localStorage.setItem(
         "welcome_msg",
         JSON.stringify({

@@ -107,14 +107,14 @@ export default function HomeLinkShortener(): JSX.Element {
   }, [resendTimer]);
 
   // اگر هنگام mount توکن داریم، header رو ست کن (تا instance همیشه هماهنگ باشه)
-  useEffect(() => {
-    const t = localStorage.getItem("access_token");
-    if (t) {
-      apiClient.defaults.headers.common["Authorization"] = `Bearer ${t}`;
-    } else {
-      delete apiClient.defaults.headers.common["Authorization"];
-    }
-  }, []);
+  // useEffect(() => {
+    // const t = localStorage.getItem("access_token");
+    // if (t) {
+      // apiClient.defaults.headers.common["Authorization"] = `Bearer ${t}`;
+    // } else {
+    //   delete apiClient.defaults.headers.common["Authorization"];
+    // }
+  // }, []);
 
   // ===== Core: shorten =====
   const handleShorten = async () => {
@@ -136,8 +136,10 @@ export default function HomeLinkShortener(): JSX.Element {
     }
 
     // اگر لاگین نیستیم، مودال OTP را باز کن و ساخت لینک را متوقف کن
-    const tokenNow = localStorage.getItem("access_token");
-    if (!tokenNow) {
+    // const tokenNow = localStorage.getItem("access_token");
+    const user = useUserStore((s) => s.user);
+
+    if (!user) {
       setOtpModalOpen(true);
       setOtpStep("enter-phone");
       return;
@@ -229,9 +231,9 @@ export default function HomeLinkShortener(): JSX.Element {
 
     const access = res?.access_token || null;
     if (access) {
-      localStorage.setItem("access_token", access);
-      document.cookie = `access_token=${access}; path=/`;
-      apiClient.defaults.headers.common["Authorization"] = `Bearer ${access}`;
+      // localStorage.setItem("access_token", access);
+      // document.cookie = `access_token=${access}; path=/`;
+      // apiClient.defaults.headers.common["Authorization"] = `Bearer ${access}`;
 
       try {
     const me = await authService.getMe();
