@@ -208,11 +208,11 @@ async def redirect_to_long_url(
         )
 
         if not user_password:
-            password_page_url = f"{settings.frontend_url}/pages/password/{e_domain_id}/{short_code}?error=1"
+            password_page_url = f"{settings.frontend_url}/password/{e_domain_id}/{short_code}?error=1"
             return RedirectResponse(url=password_page_url, status_code=307)
 
         if not security.verify_password(user_password, hashed_password):
-            password_page_url = f"{settings.frontend_url}/pages/password/{e_domain_id}/{short_code}?error=wrong_password"
+            password_page_url = f"{settings.frontend_url}/password/{e_domain_id}/{short_code}?error=wrong_password"
             return RedirectResponse(url=password_page_url, status_code=307)
 
     # --- ۴. اضافه کردن UTMها ---
@@ -228,7 +228,7 @@ async def redirect_to_long_url(
     # --- ۵. اگر لینک تبلیغ‌دار بود ---
     if show_ads:
         effective_domain_id = domain_id_for_ads if domain_id_for_ads is not None else "0"
-        ad_page_url = f"{settings.frontend_url}/pages/{effective_domain_id}/{short_code}/ad"
+        ad_page_url = f"{settings.frontend_url}/{effective_domain_id}/{short_code}/ad"
         response = RedirectResponse(url=ad_page_url, status_code=307)
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["X-Robots-Tag"] = "noindex, nofollow"

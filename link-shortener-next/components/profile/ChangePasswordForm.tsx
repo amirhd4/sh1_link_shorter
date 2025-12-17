@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { TextField, Button, Box, Alert } from '@mui/material';
 import { useMutation } from '@tanstack/react-query';
-import { authService } from '../../services/authService';
+import { authService } from '@/services/authService';
 
 // Schema با اعتبارسنجی تطابق رمز جدید
 const passwordSchema = z.object({

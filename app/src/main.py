@@ -22,17 +22,17 @@ async def lifespan(app: FastAPI):
     scheduler.start()
 
     # SMTP
-    app.state.smtp = SMTP(
-        hostname=settings.smtp_host,
-        port=settings.smtp_port,
-        tls_context=ssl.create_default_context()
-    )
+    # app.state.smtp = SMTP(
+    #     hostname=settings.smtp_host,
+    #     port=settings.smtp_port,
+    #     tls_context=ssl.create_default_context()
+    # )
 
 
-    await app.state.smtp.connect()
+    # await app.state.smtp.connect()
 
-    if settings.smtp_user:
-        await app.state.smtp.login(settings.smtp_user, settings.smtp_pass)
+    # if settings.smtp_user:
+    #     await app.state.smtp.login(settings.smtp_user, settings.smtp_pass)
         
     async with engine.begin() as conn:
         # await conn.run_sync(Base.metadata.create_all)

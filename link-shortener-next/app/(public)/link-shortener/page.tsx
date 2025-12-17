@@ -15,7 +15,7 @@ const LinkShortenerPage: React.FC = () => {
           name="keywords"
           content="کوتاه کننده لینک, کوتاه کردن لینک, ردیابی لینک, لینک کوتاه حرفه ای, لینک محافظت شده, لِس"
         />
-        <link rel="canonical" href="https://l1s.ir/link-shortener" />
+        <link rel="canonical" href="https://a.l1s.ir/link-shortener" />
 
         <script type="application/ld+json">
           {JSON.stringify({

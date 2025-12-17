@@ -17,7 +17,7 @@ i18n
     escapeValue: false, // React به طور پیش‌فرض از XSS جلوگیری می‌کند [cite: 477]
     },
     backend: {
-        loadPath: '/pages/locales/fa/common.json',
+        loadPath: '/locales/fa/common.json',
     },
 
   });

@@ -58,7 +58,7 @@ const FaqPage: React.FC = () => {
           name="keywords"
           content="FAQ, سوالات متداول, کوتاه کننده لینک, لینک کوتاه, سرویس لس, لِس , API لینک کوتاه, دامنه اختصاصی"
         />
-        <link rel="canonical" href="https://l1s.ir/faq" />
+        <link rel="canonical" href="https://a.l1s.ir/faq" />
 
         <script type="application/ld+json">
           {JSON.stringify({

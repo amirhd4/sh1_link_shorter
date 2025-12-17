@@ -1,3 +1,5 @@
+"use client";
+
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -18,7 +20,7 @@ import {
   Snackbar
 } from '@mui/material';
 import Link from "next/link";
-import {useRouter} from "next/router";
+import {useRouter} from "next/navigation";
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { useState } from 'react';
 import {Turnstile} from "@marsidev/react-turnstile";
@@ -46,12 +48,14 @@ export function RegisterForm() {
   const registerMutation = useMutation({
     mutationFn: (credentials: any) => authService.register(credentials),
     onSuccess: (data) =>
-  navigate.push({
-    pathname: '/email-sent',
-    query: {
-      email: data.email, // ⬅️ اینجا از 'query' استفاده می‌کنیم
-    },
-  }),
+  // navigate.push({
+  //   pathname: '/email-sent',
+  //   query: {
+  //     email: data.email, // ⬅️ اینجا از 'query' استفاده می‌کنیم
+  //   },
+  // }),
+      navigate.push(`/email-sent?email=${encodeURIComponent(data.email)}`)
+
   });
 
   const onSubmit = (data: RegisterFormInputs) => {

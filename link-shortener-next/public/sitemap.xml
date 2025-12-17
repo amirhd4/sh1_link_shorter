@@ -3,55 +3,55 @@
 
   <!-- Public Pages -->
   <url>
-    <loc>https://l1s.ir/pages/home</loc>
+    <loc>https://a.l1s.ir/home</loc>
     <lastmod>2025-11-20</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://l1s.ir/pages/login</loc>
+    <loc>https://a.l1s.ir/login</loc>
     <lastmod>2025-11-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://l1s.ir/pages/register</loc>
+    <loc>https://a.l1s.ir/register</loc>
     <lastmod>2025-11-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://l1s.ir/pages/forgot-password</loc>
+    <loc>https://a.l1s.ir/forgot-password</loc>
     <lastmod>2025-11-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://l1s.ir/pages/reset-password</loc>
+    <loc>https://a.l1s.ir/reset-password</loc>
     <lastmod>2025-11-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://l1s.ir/pages/email-sent</loc>
+    <loc>https://a.l1s.ir/email-sent</loc>
     <lastmod>2025-11-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://l1s.ir/pages/verify-email</loc>
+    <loc>https://a.l1s.ir/verify-email</loc>
     <lastmod>2025-11-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://l1s.ir/pages/login-otp</loc>
+    <loc>https://a.l1s.ir/login-otp</loc>
     <lastmod>2025-11-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://l1s.ir/pages/register-otp</loc>
+    <loc>https://a.l1s.ir/register-otp</loc>
     <lastmod>2025-11-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -59,37 +59,37 @@
 
   <!-- Feature Pages / SEO Pages -->
   <url>
-    <loc>https://l1s.ir/pages/link-shortener</loc>
+    <loc>https://a.l1s.ir/link-shortener</loc>
     <lastmod>2025-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://l1s.ir/pages/free-url-shortener</loc>
+    <loc>https://a.l1s.ir/free-url-shortener</loc>
     <lastmod>2025-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://l1s.ir/pages/best-url-shortener</loc>
+    <loc>https://a.l1s.ir/best-url-shortener</loc>
     <lastmod>2025-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://l1s.ir/pages/url-shortener</loc>
+    <loc>https://a.l1s.ir/url-shortener</loc>
     <lastmod>2025-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://l1s.ir/pages/short-url-generator</loc>
+    <loc>https://a.l1s.ir/short-url-generator</loc>
     <lastmod>2025-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://l1s.ir/pages/faq</loc>
+    <loc>https://a.l1s.ir/faq</loc>
     <lastmod>2025-11-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -97,31 +97,31 @@
 
   <!-- Client Dashboard Pages -->
   <url>
-    <loc>https://l1s.ir/pages/dashboard</loc>
+    <loc>https://a.l1s.ir/dashboard</loc>
     <lastmod>2025-11-20</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://l1s.ir/pages/profile</loc>
+    <loc>https://a.l1s.ir/profile</loc>
     <lastmod>2025-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://l1s.ir/pages/plans</loc>
+    <loc>https://a.l1s.ir/plans</loc>
     <lastmod>2025-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://l1s.ir/pages/billing</loc>
+    <loc>https://a.l1s.ir/billing</loc>
     <lastmod>2025-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://l1s.ir/pages/links/2</loc>
+    <loc>https://a.l1s.ir/links/2</loc>
     <lastmod>2025-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
@@ -129,19 +129,19 @@
 
   <!-- Admin Pages -->
   <url>
-    <loc>https://l1s.ir/pages/admin/dashboard</loc>
+    <loc>https://a.l1s.ir/admin/dashboard</loc>
     <lastmod>2025-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://l1s.ir/pages/admin/users</loc>
+    <loc>https://a.l1s.ir/admin/users</loc>
     <lastmod>2025-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://l1s.ir/pages/admin/links</loc>
+    <loc>https://a.l1s.ir/admin/links</loc>
     <lastmod>2025-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>

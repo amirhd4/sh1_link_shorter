@@ -28,7 +28,7 @@ import CheckIcon from '@mui/icons-material/Check';
 import SubdirectoryArrowRightIcon from '@mui/icons-material/SubdirectoryArrowRight';
 
 import config from '../../../config';
-import { usePersianDataGridLocale } from '../../../hooks/usePersianDataGridLocale';
+import { usePersianDataGridLocale } from '@/hooks/usePersianDataGridLocale';
 
 // =================================================================
 // ✨ Copy Button Component

@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { linkService } from '@/services/linkService';
@@ -26,7 +28,7 @@ import CheckIcon from '@mui/icons-material/Check';
 import SubdirectoryArrowRightIcon from '@mui/icons-material/SubdirectoryArrowRight';
 
 import config from '../../config';
-import { usePersianDataGridLocale } from '../../hooks/usePersianDataGridLocale';
+import { usePersianDataGridLocale } from '@/hooks/usePersianDataGridLocale';
 
 // =================================================================
 // ✨ Copy Button Component

@@ -1,3 +1,5 @@
+"use client";
+
 import React, {type JSX, useEffect, useState} from "react";
 import {
   Box,

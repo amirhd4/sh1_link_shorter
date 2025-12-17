@@ -9,7 +9,9 @@ import { Box, CircularProgress } from "@mui/material";
 export default function AppInitializer({ children }: { children: React.ReactNode }) {
   const { setUser, setIsLoading, isLoading } = useUserStore();
 
-  const token = document.cookie.includes("access_token");
+  const token = typeof document !== "undefined"
+  ? document.cookie.includes("access_token")
+  : false;
 
 
   const { isSuccess, isError, data } = useQuery({

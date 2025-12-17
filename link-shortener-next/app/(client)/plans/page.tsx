@@ -1,11 +1,11 @@
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { plansService } from '../../../services/plansService';
-import { paymentService } from '../../../services/paymentService';
+import { plansService } from '@/services/plansService';
+import { paymentService } from '@/services/paymentService';
 import {
   Box, Typography, Card, CardContent, CardActions,
   Button, CircularProgress, Grid, Alert
 } from '@mui/material';
-import { useUserStore } from '../../../store/userStore';
+import { useUserStore } from '@/store/userStore';
 
 export function PlansPage() {
   const { user, quota } = useUserStore();

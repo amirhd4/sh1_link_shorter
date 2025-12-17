@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import {
   Box,
@@ -178,7 +180,7 @@ const HomePage: React.FC = () => {
               "@type": "Offer",
               price: 0,
               priceCurrency: "IRR",
-              url: "https://l1s.ir/register",
+              url: "https://a.l1s.ir/register",
             },
             potentialAction: [
               {
@@ -240,7 +242,7 @@ const HomePage: React.FC = () => {
             </Button>
             <Button
               component={Link}
-              href="/pages/docs"
+              href="/docs"
               variant="outlined"
               size="large"
               sx={{ borderRadius: "50px", px: 5, color: "#cbd5e1", borderColor: "#475569" }}
@@ -289,19 +291,19 @@ const HomePage: React.FC = () => {
     <li>لینک‌های کوتاه و مرتب ظاهر حرفه‌ای به کسب‌وکار شما می‌دهند.</li>
     <li>اشتراک‌گذاری آسان در شبکه‌های اجتماعی و پیام‌رسان‌ها.</li>
     <li>امکان ردیابی دقیق کلیک‌ها و تحلیل عملکرد لینک‌ها —
-      <a href="/pages/url-shortener" style={{ color: "#a855f7" }}>جزئیات آمار</a>
+      <a href="/url-shortener" style={{ color: "#a855f7" }}>جزئیات آمار</a>
     </li>
     <li>کسب درآمد اختیاری از هر لینک کوتاه —
-      <a href="/pages/best-url-shortener" style={{ color: "#a855f7" }}>آموزش درآمدزایی</a>
+      <a href="/best-url-shortener" style={{ color: "#a855f7" }}>آموزش درآمدزایی</a>
     </li>
     <li>ساخت لینک با دامنه اختصاصی —
-      <a href="/pages/short-url-generator" style={{ color: "#a855f7" }}>اطلاعات بیشتر</a>
+      <a href="/short-url-generator" style={{ color: "#a855f7" }}>اطلاعات بیشتر</a>
     </li>
     <li>بدون تبلیغات اجباری و تجربه کاربری عالی —
-      <a href="/pages/free-url-shortener" style={{ color: "#a855f7" }}>بیشتر بخوانید</a>
+      <a href="/free-url-shortener" style={{ color: "#a855f7" }}>بیشتر بخوانید</a>
     </li>
     <li>امنیت و حفاظت لینک با رمز عبور —
-      <a href="/pages/link-shortener" style={{ color: "#a855f7" }}>اطلاعات امنیتی</a>
+      <a href="/link-shortener" style={{ color: "#a855f7" }}>اطلاعات امنیتی</a>
     </li>
   </ul>
 
@@ -321,18 +323,18 @@ const HomePage: React.FC = () => {
     برای دسترسی به امکانات بیشتر و یادگیری نکات حرفه‌ای، صفحات زیر را مشاهده کنید:
   </p>
   <ul style={{ marginBottom: "1.5rem", paddingInlineStart: "1.25rem", fontSize: "1.125rem" }}>
-    <li><a href="/pages/link-shortener" style={{ color: "#a855f7" }}>کوتاه‌کننده لینک حرفه‌ای</a></li>
-    <li><a href="/pages/free-url-shortener" style={{ color: "#a855f7" }}>کوتاه‌کننده لینک رایگان</a></li>
-    <li><a href="/pages/best-url-shortener" style={{ color: "#a855f7" }}>بهترین روش‌های کوتاه کردن لینک</a></li>
-    <li><a href="/pages/url-shortener" style={{ color: "#a855f7" }}>API کوتاه‌کننده لینک برای توسعه‌دهندگان</a></li>
-    <li><a href="/pages/short-url-generator" style={{ color: "#a855f7" }}>تولید لینک کوتاه با دامنه اختصاصی</a></li>
+    <li><a href="/link-shortener" style={{ color: "#a855f7" }}>کوتاه‌کننده لینک حرفه‌ای</a></li>
+    <li><a href="/free-url-shortener" style={{ color: "#a855f7" }}>کوتاه‌کننده لینک رایگان</a></li>
+    <li><a href="/best-url-shortener" style={{ color: "#a855f7" }}>بهترین روش‌های کوتاه کردن لینک</a></li>
+    <li><a href="/url-shortener" style={{ color: "#a855f7" }}>API کوتاه‌کننده لینک برای توسعه‌دهندگان</a></li>
+    <li><a href="/short-url-generator" style={{ color: "#a855f7" }}>تولید لینک کوتاه با دامنه اختصاصی</a></li>
   </ul>
 
   <h2 style={{ fontSize: "1.875rem", fontWeight: "bold", marginBottom: "1rem", color: "#fff" }}>
     پرسش‌های متداول
   </h2>
   <p style={{ marginBottom: "1rem", fontSize: "1.125rem" }}>
-    پاسخ به سوالات بیشتر و جزئیات کامل در <a href="/pages/faq" style={{ color: "#a855f7" }}>صفحه سوالات متداول</a> موجود است.
+    پاسخ به سوالات بیشتر و جزئیات کامل در <a href="/faq" style={{ color: "#a855f7" }}>صفحه سوالات متداول</a> موجود است.
   </p>
 </section>
 
@@ -391,7 +393,7 @@ const HomePage: React.FC = () => {
                   label="کسب درآمد"
                   clickable
                   component={Link}
-                  href="/pages/monetize"
+                  href="/monetize"
                   sx={{
                     color: "#fff",
                     background: "linear-gradient(90deg, #a855f7, #d946ef)",
@@ -408,7 +410,7 @@ const HomePage: React.FC = () => {
                   label="دامنه اختصاصی"
                   clickable
                   component={Link}
-                  href="/pages/domains"
+                  href="/domains"
                   sx={{
                     color: "#fff",
                     background: "linear-gradient(90deg, #06b6d4, #3b82f6)",
@@ -425,7 +427,7 @@ const HomePage: React.FC = () => {
                   label="بدون ریدایرکت (No-Ads Flow)"
                   clickable
                   component={Link}
-                  href="/pages/no-ads"
+                  href="/no-ads"
                   sx={{
                     color: "#fff",
                     background: "linear-gradient(90deg, #f97316, #f59e0b)",
@@ -442,7 +444,7 @@ const HomePage: React.FC = () => {
                   label="آمار پیشرفته (شهر/کشور/Referrer)"
                   clickable
                   component={Link}
-                  href="/pages/analytics"
+                  href="/analytics"
                   sx={{
                     color: "#fff",
                     background: "linear-gradient(90deg, #10b981, #14b8a6)",
@@ -459,7 +461,7 @@ const HomePage: React.FC = () => {
                   label="امنیت و حریم خصوصی"
                   clickable
                   component={Link}
-                  href="/pages/security"
+                  href="/security"
                   sx={{
                     color: "#fff",
                     background: "linear-gradient(90deg, #64748b, #475569)",
@@ -529,7 +531,7 @@ const HomePage: React.FC = () => {
       با هر بازدید تبلیغ، امتیاز و درآمد کسب می‌کند 💰
       اگر این گزینه خاموش باشد، لینک بدون تبلیغ مستقیماً به مقصد می‌رود.
     </Typography>
-    <Button component={Link} href="/pages/monetize" variant="outlined" size="small">
+    <Button component={Link} href="/monetize" variant="outlined" size="small">
       نحوه فعال‌سازی درآمدزایی
     </Button>
   </Paper>
@@ -544,7 +546,7 @@ const HomePage: React.FC = () => {
               <Typography sx={{ color: "#94a3b8", mb: 2 }}>
                 می‌توانید لینک‌هایی بسازید که بدون ریدایرکت تبلیغاتی کاربر را به مقصد هدایت کنند — مناسب زمانی که می‌خواهید مخاطب حس اعتماد بیشتری داشته باشد.
               </Typography>
-              <Button component={Link} href="/pages/no-ads" variant="outlined" size="small">
+              <Button component={Link} href="/no-ads" variant="outlined" size="small">
                 اطلاعات بیشتر
               </Button>
             </Paper>
@@ -561,7 +563,7 @@ const HomePage: React.FC = () => {
       هنگام ساخت لینک، می‌توانید گزینه <strong>password</strong> را تنظیم کنید تا فقط افرادی که رمز را دارند بتوانند به مقصد دسترسی داشته باشند.
       این قابلیت برای لینک‌های خصوصی یا محرمانه بسیار کاربردی است.
     </Typography>
-    <Button component={Link} href="/pages/security" variant="outlined" size="small">
+    <Button component={Link} href="/security" variant="outlined" size="small">
       درباره امنیت بیشتر بخوانید
     </Button>
   </Paper>

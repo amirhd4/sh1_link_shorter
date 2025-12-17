@@ -13,7 +13,7 @@ import {
   Snackbar,
 } from '@mui/material';
 import { useMutation } from '@tanstack/react-query';
-import { authService } from '../../services/authService';
+import { authService } from '@/services/authService';
 import { Turnstile } from '@marsidev/react-turnstile';
 import {useState} from "react";
 

@@ -22,8 +22,8 @@ import {
   Switch,
 } from '@mui/material';
 import { Edit, Delete } from '@mui/icons-material';
-import { getAds, createAd, updateAd, deleteAd } from '../../../services/admin';
-import type { Ad, AdCreate, AdUpdate } from '../../../types';
+import { getAds, createAd, updateAd, deleteAd } from '../../../../services/admin';
+import type { Ad, AdCreate, AdUpdate } from '../../../../types';
 
 export function AdManagementPage() {
   const [ads, setAds] = useState<Ad[]>([]);

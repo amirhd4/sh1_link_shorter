@@ -1,8 +1,10 @@
+"use client";
+
 import { RegisterForm } from "@/components/auth/RegisterForm";
 import { Helmet, HelmetProvider } from 'react-helmet-async';
 
 
-export function RegisterPage() {
+export default function RegisterPage() {
   return (
   <>
       <Helmet>
@@ -11,7 +13,7 @@ export function RegisterPage() {
           name="description"
           content="اکانت رایگان خود را بسازید و لینک‌هایتان را کوتاه و مدیریت کنید."
         />
-        <link rel="canonical" href="https://l1s.ir/pages/register" />
+        <link rel="canonical" href="https://a.l1s.ir/register" />
       </Helmet>
   <RegisterForm />
     </>

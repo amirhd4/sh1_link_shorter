@@ -19,9 +19,9 @@ import {
   InputAdornment,
 } from '@mui/material';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { linkService } from '../../services/linkService';
-import { domainService } from '../../services/domainService';
-import type { DomainResponse, URLCreate, URLResponse } from '../../types/api';
+import { linkService } from '@/services/linkService';
+import { domainService } from '@/services/domainService';
+import type { DomainResponse, URLCreate, URLResponse } from '@/types/api';
 import CloseIcon from '@mui/icons-material/Close';
 import LinkIcon from '@mui/icons-material/Link';
 import {useState} from "react";

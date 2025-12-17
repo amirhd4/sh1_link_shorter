@@ -15,7 +15,7 @@ const BestUrlShortenerPage: React.FC = () => {
           name="keywords"
           content="بهترین کوتاه‌کننده لینک, کوتاه‌کننده لینک ایران, لینک کوتاه سریع, لینک کوتاه امن, سرویس لینک حرفه‌ای"
         />
-        <link rel="canonical" href="https://l1s.ir/best-url-shortener" />
+        <link rel="canonical" href="https://a.l1s.ir/best-url-shortener" />
 
         <script type="application/ld+json">
           {JSON.stringify({

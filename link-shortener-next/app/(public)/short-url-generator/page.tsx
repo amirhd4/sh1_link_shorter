@@ -15,7 +15,7 @@ const ShortUrlGeneratorPage: React.FC = () => {
           name="keywords"
           content="تولید لینک کوتاه, کوتاه کننده لینک آنلاین, لینک کوتاه سریع, لینک کوتاه امن, ابزار لینک کوتاه"
         />
-        <link rel="canonical" href="https://l1s.ir/short-url-generator" />
+        <link rel="canonical" href="https://a.l1s.ir/short-url-generator" />
 
         <script type="application/ld+json">
           {JSON.stringify({

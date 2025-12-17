@@ -57,7 +57,7 @@ async def send_email(
 async def send_password_reset_email(request: Request, to_email: str, reset_token: str):
     subject = "بازیابی رمز عبور برای کوتاه کننده لینک"
     # reset_url = f"{settings.frontend_url}/api/auth/reset-password?token={reset_token}"
-    reset_url = f"{settings.frontend_url}/pages/reset-password?token={reset_token}"
+    reset_url = f"{settings.frontend_url}/reset-password?token={reset_token}"
 
     content = f"""
     <!DOCTYPE html>
@@ -150,7 +150,7 @@ async def send_password_reset_email(request: Request, to_email: str, reset_token
 
 async def send_account_verification_email(request: Request, to_email: str, verification_token: str):
     subject = "فعال‌سازی حساب کاربری در کوتاه کننده لینک"
-    verification_url = f"{settings.frontend_url}/pages/verify-email?token={verification_token}"
+    verification_url = f"{settings.frontend_url}/verify-email?token={verification_token}"
 
     content = f"""
     <!DOCTYPE html>

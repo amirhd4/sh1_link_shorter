@@ -11,7 +11,7 @@ import {
   CircularProgress,
 } from '@mui/material';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { domainService } from '../../services/domainService';
+import { domainService } from '@/services/domainService';
 
 export const AddDomainDialog = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
   const [name, setName] = useState('');

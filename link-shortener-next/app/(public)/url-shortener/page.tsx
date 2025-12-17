@@ -16,7 +16,7 @@ const ApiUrlShortenerPage: React.FC = () => {
           name="keywords"
           content="API کوتاه‌کننده لینک, کوتاه کردن لینک با API, لینک کوتاه برنامه نویسی, URL shortener API, لینک کوتاه امن"
         />
-        <link rel="canonical" href="https://l1s.ir/api/url-shortener" />
+        <link rel="canonical" href="https://a.l1s.ir/api/url-shortener" />
 
         <script type="application/ld+json">
           {JSON.stringify({

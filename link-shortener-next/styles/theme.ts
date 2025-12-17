@@ -16,14 +16,14 @@ const theme = createTheme({
           font-style: normal;
           font-display: swap;
           font-weight: 400;
-          src: url('/pages/fonts/Vazirmatn-Regular.woff2') format('woff2');
+          src: url('/fonts/Vazirmatn-Regular.woff2') format('woff2');
         }
         @font-face {
           font-family: 'Vazirmatn';
           font-style: normal;
           font-display: swap;
           font-weight: 700;
-          src: url('/pages/fonts/Vazirmatn-Bold.woff2') format('woff2');
+          src: url('/fonts/Vazirmatn-Bold.woff2') format('woff2');
         }
       `,
     },

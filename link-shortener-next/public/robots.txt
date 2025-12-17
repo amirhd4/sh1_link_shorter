@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://a.l1s.ir/sitemap.xml

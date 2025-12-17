@@ -3,9 +3,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { TextField, Button, Box, Alert, CircularProgress } from '@mui/material';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { authService } from '../../services/authService';
-import { useUserStore } from '../../store/userStore';
-import type { UpdateProfilePayload } from '../../types/auth';
+import { authService } from '@/services/authService';
+import { useUserStore } from '@/store/userStore';
+import type { UpdateProfilePayload } from '@/types/auth';
 
 // Schema برای اعتبارسنجی فرم
 const profileSchema = z.object({

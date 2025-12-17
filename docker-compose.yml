@@ -130,6 +130,24 @@ services:
   # The Nginx service has been removed. You should run your frontend
   # development server (e.g., npm run dev) separately on your host machine.
 
+  frontend:
+    image: node:20-alpine
+    working_dir: /app
+    volumes:
+      - ./link-shortener-next:/app
+    command: sh -c "npm install --legacy-peer-deps && npm run dev"
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - HOST=0.0.0.0
+      - PORT=3000
+      - NEXT_PUBLIC_API_BASE=http://localhost:8000
+    depends_on:
+      - app
+    stdin_open: true
+    tty: true
+
 volumes:
   postgres_data:
   pgadmin_data:

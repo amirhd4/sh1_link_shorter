@@ -15,7 +15,7 @@ const FreeUrlShortenerPage: React.FC = () => {
           name="keywords"
           content="کوتاه‌کننده لینک رایگان, لینک کوتاه, سرویس رایگان لینک, لینک کوتاه سریع, ردیابی لینک, لینک محافظت شده"
         />
-        <link rel="canonical" href="https://l1s.ir/free-url-shortener" />
+        <link rel="canonical" href="https://a.l1s.ir/free-url-shortener" />
 
         <script type="application/ld+json">
           {JSON.stringify({

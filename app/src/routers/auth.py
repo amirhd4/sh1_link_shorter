@@ -454,7 +454,7 @@ async def google_callback(code: str, db: AsyncSession = Depends(get_db)):
     app_token = security.create_access_token(data={"sub": user.email})
 
     return set_client_cookie(app_token, user.role)
-    # return RedirectResponse(url=f"{settings.frontend_url}/pages/auth/callback?token={app_token}")
+    # return RedirectResponse(url=f"{settings.frontend_url}/auth/callback?token={app_token}")
 
 
 async def store_otp(phone: str, code: str, request: Request, expire_seconds: int = 120):

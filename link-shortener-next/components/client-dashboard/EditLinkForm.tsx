@@ -1,11 +1,13 @@
+"use client";
+
 import { useEffect } from 'react';
 import {useForm, Controller, useWatch} from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import {TextField, Button, Box, Typography, Alert, Modal, CircularProgress, Grid, Stack, IconButton} from '@mui/material';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { linkService } from '../../services/linkService';
-import type {LinkDetails, UpdateLinkPayload} from '../../types/api';
+import { linkService } from '@/services/linkService';
+import type {LinkDetails, UpdateLinkPayload} from '@/types/api';
 import CloseIcon from "@mui/icons-material/Close";
 
 
