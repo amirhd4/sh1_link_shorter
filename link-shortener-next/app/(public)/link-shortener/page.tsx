@@ -1,51 +1,52 @@
 import React from "react";
-import { Helmet } from "react-helmet-async";
 import { Container, Typography, Box, List, ListItem } from "@mui/material";
+import {Metadata} from "next";
+
+export const metadata: Metadata = {
+  title: "کوتاه‌کننده لینک حرفه‌ای و امن | لِس",
+  description:
+    "کوتاه‌کننده لینک لِس سریع، امن و بدون تبلیغات است. لینک‌های بلند خود را کوتاه کنید و با امکانات پیشرفته ردیابی، کسب درآمد و مدیریت آسان استفاده کنید.",
+  keywords: "کوتاه کننده لینک, کوتاه کردن لینک, ردیابی لینک, لینک کوتاه حرفه ای, لینک محافظت شده, لِس",
+  alternates: { canonical: "https://a.l1s.ir/link-shortener" },
+};
+
+const faqItems = [
+  {
+    q: "کوتاه‌کننده لینک چیست؟",
+    a: "سرویس آنلاین تبدیل لینک بلند به کوتاه و قابل اشتراک‌گذاری با امکانات ردیابی و محافظت.",
+  },
+  {
+    q: "مزایای کوتاه کردن لینک چیست؟",
+    a: "ظاهر حرفه‌ای لینک، آسان‌تر شدن اشتراک‌گذاری، افزایش نرخ کلیک و امکان کسب درآمد از لینک‌ها.",
+  },
+  {
+    q: "آیا می‌توان لینک‌ها را با رمز محافظت کرد؟",
+    a: "بله، لِس امکان ایجاد لینک محافظت‌شده با رمز عبور را فراهم می‌کند.",
+  },
+  {
+    q: "آیا دامنه اختصاصی قابل استفاده است؟",
+    a: "کاربران می‌توانند دامنه اختصاصی خود را به لینک‌ها متصل کنند و تجربه برندینگ حرفه‌ای داشته باشند.",
+  },
+];
 
 const LinkShortenerPage: React.FC = () => {
   return (
     <Container sx={{ py: 8 }}>
-      <Helmet>
-        <title>کوتاه‌کننده لینک حرفه‌ای و امن | لِس</title>
-        <meta
-          name="description"
-          content="کوتاه‌کننده لینک لِس سریع، امن و بدون تبلیغات است. لینک‌های بلند خود را کوتاه کنید و با امکانات پیشرفته ردیابی، کسب درآمد و مدیریت آسان استفاده کنید."
-        />
-        <meta
-          name="keywords"
-          content="کوتاه کننده لینک, کوتاه کردن لینک, ردیابی لینک, لینک کوتاه حرفه ای, لینک محافظت شده, لِس"
-        />
-        <link rel="canonical" href="https://a.l1s.ir/link-shortener" />
-
-        <script type="application/ld+json">
-          {JSON.stringify({
+      {/* JSON-LD FAQ */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "FAQPage",
-            mainEntity: [
-              {
-                "@type": "Question",
-                name: "کوتاه‌کننده لینک چیست؟",
-                acceptedAnswer: { "@type": "Answer", text: "سرویس آنلاین تبدیل لینک بلند به کوتاه و قابل اشتراک‌گذاری با امکانات ردیابی و محافظت." }
-              },
-              {
-                "@type": "Question",
-                name: "مزایای کوتاه کردن لینک چیست؟",
-                acceptedAnswer: { "@type": "Answer", text: "ظاهر حرفه‌ای لینک، آسان‌تر شدن اشتراک‌گذاری، افزایش نرخ کلیک و امکان کسب درآمد از لینک‌ها." }
-              },
-              {
-                "@type": "Question",
-                name: "آیا می‌توان لینک‌ها را با رمز محافظت کرد؟",
-                acceptedAnswer: { "@type": "Answer", text: "بله، لِس امکان ایجاد لینک محافظت‌شده با رمز عبور را فراهم می‌کند." }
-              },
-              {
-                "@type": "Question",
-                name: "آیا دامنه اختصاصی قابل استفاده است؟",
-                acceptedAnswer: { "@type": "Answer", text: "کاربران می‌توانند دامنه اختصاصی خود را به لینک‌ها متصل کنند و تجربه برندینگ حرفه‌ای داشته باشند." }
-              }
-            ]
-          })}
-        </script>
-      </Helmet>
+            mainEntity: faqItems.map((f) => ({
+              "@type": "Question",
+              name: f.q,
+              acceptedAnswer: { "@type": "Answer", text: f.a },
+            })),
+          }),
+        }}
+      />
 
       <Typography variant="h3" mb={3}>کوتاه‌کننده لینک حرفه‌ای لِس</Typography>
       <Typography mb={2}>

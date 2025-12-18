@@ -1,51 +1,39 @@
 import React from "react";
-import { Helmet } from "react-helmet-async";
 import { Container, Typography, Box, List, ListItem } from "@mui/material";
+import {Metadata} from "next";
+
+export const metadata: Metadata = {
+  title: "کوتاه‌کننده لینک رایگان و امن | لِس",
+  description: "لینک‌های بلند خود را بدون ثبت‌نام و کاملاً رایگان کوتاه کنید. سرویس سریع، امن و بدون تبلیغات لِس با امکانات ردیابی، رمزگذاری و آمار دقیق.",
+  keywords: "کوتاه‌کننده لینک رایگان, لینک کوتاه, سرویس رایگان لینک, لینک کوتاه سریع, ردیابی لینک, لینک محافظت شده",
+  alternates: { canonical: "https://a.l1s.ir/free-url-shortener" },
+};
+
+const faqs = [
+  { question: "چرا از کوتاه‌کننده لینک رایگان لِس استفاده کنیم؟", answer: "لِس به شما امکان کوتاه کردن لینک‌ها بدون ثبت‌نام و بدون پرداخت، با امنیت و سرعت بالا و قابلیت ردیابی کلیک‌ها را می‌دهد." },
+  { question: "آیا محدودیتی برای لینک‌های رایگان وجود دارد؟", answer: "کاربران رایگان می‌توانند هزاران لینک کوتاه ایجاد کنند، هرچند محدودیت‌هایی در امکانات پیشرفته مانند دامنه اختصاصی وجود دارد." },
+  { question: "آیا لینک‌ها امن هستند؟", answer: "تمامی لینک‌های کوتاه‌شده با پروتکل HTTPS رمزگذاری می‌شوند و می‌توانید لینک‌ها را با رمز محافظت کنید." },
+  { question: "چطور لینک رایگان کوتاه کنیم؟", answer: "فقط لینک بلند را وارد کرده، دکمه کوتاه‌کن را بزنید و لینک کوتاه شده را کپی کنید." }
+];
 
 const FreeUrlShortenerPage: React.FC = () => {
   return (
     <Container sx={{ py: 8 }}>
-      <Helmet>
-        <title>کوتاه‌کننده لینک رایگان و امن | لِس</title>
-        <meta
-          name="description"
-          content="لینک‌های بلند خود را بدون ثبت‌نام و کاملاً رایگان کوتاه کنید. سرویس سریع، امن و بدون تبلیغات لِس با امکانات ردیابی، رمزگذاری و آمار دقیق."
-        />
-        <meta
-          name="keywords"
-          content="کوتاه‌کننده لینک رایگان, لینک کوتاه, سرویس رایگان لینک, لینک کوتاه سریع, ردیابی لینک, لینک محافظت شده"
-        />
-        <link rel="canonical" href="https://a.l1s.ir/free-url-shortener" />
-
-        <script type="application/ld+json">
-          {JSON.stringify({
+      {/* JSON-LD برای SEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "FAQPage",
-            mainEntity: [
-              {
-                "@type": "Question",
-                name: "چرا از کوتاه‌کننده لینک رایگان لِس استفاده کنیم؟",
-                acceptedAnswer: { "@type": "Answer", text: "لِس به شما امکان کوتاه کردن لینک‌ها بدون ثبت‌نام و بدون پرداخت، با امنیت و سرعت بالا و قابلیت ردیابی کلیک‌ها را می‌دهد." }
-              },
-              {
-                "@type": "Question",
-                name: "آیا محدودیتی برای لینک‌های رایگان وجود دارد؟",
-                acceptedAnswer: { "@type": "Answer", text: "کاربران رایگان می‌توانند هزاران لینک کوتاه ایجاد کنند، هرچند محدودیت‌هایی در امکانات پیشرفته مانند دامنه اختصاصی وجود دارد." }
-              },
-              {
-                "@type": "Question",
-                name: "آیا لینک‌ها امن هستند؟",
-                acceptedAnswer: { "@type": "Answer", text: "تمامی لینک‌های کوتاه‌شده با پروتکل HTTPS رمزگذاری می‌شوند و می‌توانید لینک‌ها را با رمز محافظت کنید." }
-              },
-              {
-                "@type": "Question",
-                name: "چطور لینک رایگان کوتاه کنیم؟",
-                acceptedAnswer: { "@type": "Answer", text: "فقط لینک بلند را وارد کرده، دکمه کوتاه‌کن را بزنید و لینک کوتاه شده را کپی کنید." }
-              }
-            ]
-          })}
-        </script>
-      </Helmet>
+            mainEntity: faqs.map(faq => ({
+              "@type": "Question",
+              name: faq.question,
+              acceptedAnswer: { "@type": "Answer", text: faq.answer }
+            }))
+          })
+        }}
+      />
 
       <Typography variant="h3" mb={3}>کوتاه‌کننده لینک رایگان لِس</Typography>
 

@@ -9,7 +9,6 @@ import CssBaseline from '@mui/material/CssBaseline'
 import theme from '@/styles/theme'
 import { QueryClientProvider } from '@tanstack/react-query'
 import queryClient from '@/lib/queryClient'
-import { HelmetProvider } from 'react-helmet-async'
 
 const cacheRtl = createCache({
   key: 'muirtl',
@@ -35,11 +34,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       <ThemeProvider theme={theme}>
         <QueryClientProvider client={queryClient}>
           <CssBaseline />
-          <HelmetProvider>
             <Suspense fallback={<div>بارگیری...</div>}>
               {children}
             </Suspense>
-          </HelmetProvider>
         </QueryClientProvider>
       </ThemeProvider>
     </CacheProvider>

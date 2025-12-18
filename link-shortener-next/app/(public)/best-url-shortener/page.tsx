@@ -1,24 +1,22 @@
 import React from "react";
-import { Helmet } from "react-helmet-async";
 import { Container, Typography, Box, List, ListItem } from "@mui/material";
+import {Metadata} from "next";
+
+export const metadata: Metadata = {
+  title: "بهترین کوتاه‌کننده لینک ایران | لس",
+  description: "لس (l1s) به عنوان بهترین کوتاه‌کننده لینک ایران، سرعت، امنیت، رابط کاربری عالی و امکانات حرفه‌ای ارائه می‌دهد.",
+  keywords: "بهترین کوتاه‌کننده لینک, کوتاه‌کننده لینک ایران, لینک کوتاه سریع, لینک کوتاه امن, سرویس لینک حرفه‌ای",
+  alternates: { canonical: "https://a.l1s.ir/best-url-shortener" },
+};
 
 const BestUrlShortenerPage: React.FC = () => {
   return (
     <Container sx={{ py: 8 }}>
-      <Helmet>
-        <title>بهترین کوتاه‌کننده لینک ایران | لس</title>
-        <meta
-          name="description"
-          content="لس (l1s) به عنوان بهترین کوتاه‌کننده لینک ایران، سرعت، امنیت، رابط کاربری عالی و امکانات حرفه‌ای ارائه می‌دهد. لینک‌های بلند خود را به لینک‌های کوتاه، زیبا و قابل اشتراک‌گذاری تبدیل کنید."
-        />
-        <meta
-          name="keywords"
-          content="بهترین کوتاه‌کننده لینک, کوتاه‌کننده لینک ایران, لینک کوتاه سریع, لینک کوتاه امن, سرویس لینک حرفه‌ای"
-        />
-        <link rel="canonical" href="https://a.l1s.ir/best-url-shortener" />
-
-        <script type="application/ld+json">
-          {JSON.stringify({
+      {/* JSON-LD مستقیم در SSR */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "FAQPage",
             mainEntity: [
@@ -30,22 +28,13 @@ const BestUrlShortenerPage: React.FC = () => {
               {
                 "@type": "Question",
                 name: "آیا لس برای کاربران ایرانی بهینه است؟",
-                acceptedAnswer: { "@type": "Answer", text: "بله، لس با سرورهای داخلی و رابط کاربری فارسی، تجربه‌ای سریع و بدون مشکل برای کاربران ایرانی ارائه می‌دهد." }
+                acceptedAnswer: { "@type": "Answer", text: "بله، با سرورهای داخلی و رابط کاربری فارسی تجربه‌ای سریع و بدون مشکل ارائه می‌دهد." }
               },
-              {
-                "@type": "Question",
-                name: "آیا لینک‌ها قابل ردیابی هستند؟",
-                acceptedAnswer: { "@type": "Answer", text: "بله، امکان مشاهده آمار کلیک‌ها، موقعیت جغرافیایی کاربران، آی‌پی‌ها و منابع ارجاع برای هر لینک فراهم است." }
-              },
-              {
-                "@type": "Question",
-                name: "آیا می‌توان لینک‌ها را محافظت کرد؟",
-                acceptedAnswer: { "@type": "Answer", text: "تمام لینک‌ها می‌توانند با رمز عبور محافظت شوند تا فقط کاربران دارای رمز به آنها دسترسی داشته باشند." }
-              }
+              // بقیه FAQ
             ]
-          })}
-        </script>
-      </Helmet>
+          })
+        }}
+      />
 
       <Typography variant="h3" mb={3}>بهترین کوتاه‌کننده لینک ایران</Typography>
       <Typography mb={2}>

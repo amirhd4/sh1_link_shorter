@@ -1,55 +1,49 @@
 import React from "react";
-import { Helmet } from "react-helmet-async";
 import { Container, Typography, Box, List, ListItem } from "@mui/material";
+import {Metadata} from "next";
+
+export const metadata: Metadata = {
+  title: "تولیدکننده لینک کوتاه | لس",
+  description:
+    "با ابزار تولیدکننده لینک کوتاه لس، لینک‌های بلند خود را سریع و آسان به لینک کوتاه تبدیل کنید. امکانات پیشرفته، امنیت بالا و مشاهده آمار کلیک‌ها.",
+  keywords:
+    "تولید لینک کوتاه, کوتاه کننده لینک آنلاین, لینک کوتاه سریع, لینک کوتاه امن, ابزار لینک کوتاه",
+  alternates: { canonical: "https://a.l1s.ir/short-url-generator" },
+};
+
+const faqItems = [
+  {
+    q: "تولیدکننده لینک کوتاه چیست؟",
+    a: "ابزاری آنلاین برای تبدیل لینک‌های بلند به لینک کوتاه، زیبا و قابل اشتراک‌گذاری با امکانات حرفه‌ای و آمار دقیق کلیک‌ها.",
+  },
+  {
+    q: "مزایای استفاده از تولیدکننده لینک کوتاه چیست؟",
+    a: "اشتراک‌گذاری آسان لینک، ظاهر حرفه‌ای، ردیابی کلیک‌ها و امکان افزودن رمز عبور و دامنه اختصاصی.",
+  },
+  {
+    q: "آیا این ابزار رایگان است؟",
+    a: "بله، لس امکان کوتاه کردن لینک‌ها را بدون ثبت‌نام و بدون تبلیغات مزاحم فراهم می‌کند.",
+  },
+];
 
 const ShortUrlGeneratorPage: React.FC = () => {
   return (
     <Container sx={{ py: 8 }}>
-      <Helmet>
-        <title>تولیدکننده لینک کوتاه | لس</title>
-        <meta
-          name="description"
-          content="با ابزار تولیدکننده لینک کوتاه لس، لینک‌های بلند خود را سریع و آسان به لینک کوتاه تبدیل کنید. امکانات پیشرفته، امنیت بالا و مشاهده آمار کلیک‌ها."
-        />
-        <meta
-          name="keywords"
-          content="تولید لینک کوتاه, کوتاه کننده لینک آنلاین, لینک کوتاه سریع, لینک کوتاه امن, ابزار لینک کوتاه"
-        />
-        <link rel="canonical" href="https://a.l1s.ir/short-url-generator" />
-
-        <script type="application/ld+json">
-          {JSON.stringify({
+      {/* JSON-LD برای FAQ */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "FAQPage",
-            mainEntity: [
-              {
-                "@type": "Question",
-                name: "تولیدکننده لینک کوتاه چیست؟",
-                acceptedAnswer: {
-                  "@type": "Answer",
-                  text: "ابزاری آنلاین برای تبدیل لینک‌های بلند به لینک کوتاه، زیبا و قابل اشتراک‌گذاری با امکانات حرفه‌ای و آمار دقیق کلیک‌ها."
-                }
-              },
-              {
-                "@type": "Question",
-                name: "مزایای استفاده از تولیدکننده لینک کوتاه چیست؟",
-                acceptedAnswer: {
-                  "@type": "Answer",
-                  text: "اشتراک‌گذاری آسان لینک، ظاهر حرفه‌ای، ردیابی کلیک‌ها و امکان افزودن رمز عبور و دامنه اختصاصی."
-                }
-              },
-              {
-                "@type": "Question",
-                name: "آیا این ابزار رایگان است؟",
-                acceptedAnswer: {
-                  "@type": "Answer",
-                  text: "بله، لس امکان کوتاه کردن لینک‌ها را بدون ثبت‌نام و بدون تبلیغات مزاحم فراهم می‌کند."
-                }
-              }
-            ]
-          })}
-        </script>
-      </Helmet>
+            mainEntity: faqItems.map((f) => ({
+              "@type": "Question",
+              name: f.q,
+              acceptedAnswer: { "@type": "Answer", text: f.a },
+            })),
+          }),
+        }}
+      />
 
       <Typography variant="h3" mb={3}>تولیدکننده لینک کوتاه لس</Typography>
       <Typography mb={2}>
