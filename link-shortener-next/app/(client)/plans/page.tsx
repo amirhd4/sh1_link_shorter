@@ -1,3 +1,5 @@
+"use client";
+
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { plansService } from '@/services/plansService';
 import { paymentService } from '@/services/paymentService';
@@ -7,7 +9,7 @@ import {
 } from '@mui/material';
 import { useUserStore } from '@/store/userStore';
 
-export function PlansPage() {
+export default function PlansPage() {
   const { user, quota } = useUserStore();
 
   // دریافت پلن‌ها

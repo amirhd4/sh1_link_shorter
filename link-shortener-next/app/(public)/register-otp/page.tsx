@@ -1,5 +1,5 @@
 import { RegisterWithOtpForm } from "@/components/auth/RegisterWithOtpForm";
 
-export function RegisterOtpPage() {
+export default function RegisterOtpPage() {
   return <RegisterWithOtpForm />;
 }

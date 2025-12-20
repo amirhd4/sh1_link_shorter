@@ -1,21 +1,26 @@
 "use client";
 
-import { useUserStore } from "@/store/userStore";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import ClientProtectedLayout from "./ClientProtectedLayout";
+import { useState } from "react";
+import { Box, Toolbar } from "@mui/material";
+import { Header } from "@/components/organisms/Header";
+import { Sidebar } from "@/components/organisms/Sidebar";
 
-export default function ClientProtectedLayout({ children }: any) {
-  const { user, isLoading } = useUserStore();
-  const router = useRouter();
+export default function ClientLayout({ children }: { children: React.ReactNode }) {
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
+  const handleSidebarToggle = () => setSidebarOpen(!isSidebarOpen);
 
-  useEffect(() => {
-    if (!isLoading) {
-      if (!user) router.replace("/login");
-      if (user && user.role === "admin") router.replace("/admin/dashboard");
-    }
-  }, [user, isLoading]);
+  return (
+    <ClientProtectedLayout>
+      <Box sx={{ display: "flex", bgcolor: "#f9fafb", minHeight: "100vh" }}>
+        <Header onMenuClick={handleSidebarToggle} />
+        <Sidebar isOpen={isSidebarOpen} onClose={handleSidebarToggle} />
 
-  if (isLoading) return null;
-
-  return <>{children}</>;
+        <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+          <Toolbar />
+          {children}
+        </Box>
+      </Box>
+    </ClientProtectedLayout>
+  );
 }

@@ -2,7 +2,7 @@ import { Box, Typography, Paper, Divider } from '@mui/material';
 import { UpdateProfileForm } from '@/components/profile/UpdateProfileForm';
 import { ChangePasswordForm } from '@/components/profile/ChangePasswordForm';
 
-export function ProfilePage() {
+export default function ProfilePage() {
   return (
     <Box>
       <Typography variant="h4" gutterBottom>

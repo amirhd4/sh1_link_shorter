@@ -1,21 +1,44 @@
 "use client";
 
-import { useUserStore } from "@/store/userStore";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { Box, Toolbar } from "@mui/material";
+import { Header } from "@/components/organisms/Header";
+import { AdminSidebar } from "@/components/organisms/AdminSidebar";
+import { useUserStore } from "@/store/userStore";
 
-export default function ClientProtectedLayout({ children }: any ) {
+interface AdminProtectedLayoutProps {
+  children: React.ReactNode;
+}
+
+export default function AdminProtectedLayout({ children }: AdminProtectedLayoutProps) {
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
   const { user, isLoading } = useUserStore();
   const router = useRouter();
 
+  const handleSidebarToggle = () => {
+    setSidebarOpen(!isSidebarOpen);
+  };
+
+  // بررسی دسترسی کاربر
   useEffect(() => {
     if (!isLoading) {
       if (!user) router.replace("/login");
-      if (user && user.role !== "admin") router.replace("/dashboard");
+      else if (user.role !== "admin") router.replace("/dashboard");
     }
-  }, [user, isLoading]);
+  }, [user, isLoading, router]);
 
   if (isLoading) return null;
 
-  return <>{children}</>;
+  return (
+    <Box sx={{ display: "flex" }}>
+      <Header onMenuClick={handleSidebarToggle} />
+      <AdminSidebar isOpen={isSidebarOpen} onClose={handleSidebarToggle} />
+
+      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+        <Toolbar />
+        {children}
+      </Box>
+    </Box>
+  );
 }

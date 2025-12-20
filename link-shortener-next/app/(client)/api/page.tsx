@@ -45,7 +45,7 @@ function CodeBlock({ title, code, language }: { title: string, code: string, lan
 // ========================================================================
 // صفحه اصلی مستندات API
 // ========================================================================
-export function ApiPage() {
+export default function ApiPage() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const { user } = useUserStore();

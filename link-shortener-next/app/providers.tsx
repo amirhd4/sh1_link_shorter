@@ -1,42 +1,36 @@
-'use client';
+// app/ClientProviders.tsx
+'use client'
 
-import React, { Suspense, useEffect } from 'react'
+import { ReactNode, useState, useEffect } from 'react'
 import { CacheProvider } from '@emotion/react'
 import createCache from '@emotion/cache'
 import rtlPlugin from 'stylis-plugin-rtl'
-import { ThemeProvider } from '@mui/material/styles'
-import CssBaseline from '@mui/material/CssBaseline'
+import { ThemeProvider, CssBaseline } from '@mui/material'
 import theme from '@/styles/theme'
-import { QueryClientProvider } from '@tanstack/react-query'
-import queryClient from '@/lib/queryClient'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import dynamic from 'next/dynamic'
 
 const cacheRtl = createCache({
   key: 'muirtl',
   stylisPlugins: [rtlPlugin],
 })
 
-export default function Providers({ children }: { children: React.ReactNode }) {
+const AppInitializer = dynamic(() => import('./AppInitializer'), { ssr: false })
 
-  // Service Worker registration
-  useEffect(() => {
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker
-          .register('/pages/sw.js')
-          .then(reg => console.log('SW registered', reg))
-          .catch(err => console.log('SW reg failed', err))
-      })
-    }
-  }, [])
+export default function ClientProviders({ children }: { children: ReactNode }) {
+  const [mounted, setMounted] = useState(false)
+  const [queryClient] = useState(() => new QueryClient())
+
+  useEffect(() => setMounted(true), [])
+
+  if (!mounted) return null // فقط بعد از mount render شود
 
   return (
     <CacheProvider value={cacheRtl}>
       <ThemeProvider theme={theme}>
+        <CssBaseline />
         <QueryClientProvider client={queryClient}>
-          <CssBaseline />
-            <Suspense fallback={<div>بارگیری...</div>}>
-              {children}
-            </Suspense>
+          <AppInitializer>{children}</AppInitializer>
         </QueryClientProvider>
       </ThemeProvider>
     </CacheProvider>

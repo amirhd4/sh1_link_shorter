@@ -65,7 +65,7 @@ function ClicksChart({ stats }: { stats: AdvancedLinkStats }) {
 /**
  * جزئیات لینک + آمار پیشرفته
  */
-export function LinkDetailsPage() {
+export default function LinkDetailsPage() {
   const { shortCode, domainId } = useParams<{ shortCode: string, domainId: string }>();
   const [isSnackbarOpen, setSnackbarOpen] = useState(false);
 

@@ -178,7 +178,7 @@ const MobileLinkCard = ({ link, index, onDetailsClick, onEditClick, onDeleteClic
 type DeleteTarget = { shortCode: string; domainId: string };
 
 
-export function LinksDashboard() {
+export default function LinksDashboard() {
     const navigate = useRouter();
     const { t } = useTranslation('common');
     const queryClient = useQueryClient();

@@ -1,3 +1,5 @@
+"use client";
+
 import { useQuery } from '@tanstack/react-query';
 import {
   DataGrid,
@@ -171,7 +173,7 @@ const MobileSkeleton = () => (
 // =================================================================
 // کامپوننت اصلی صفحه
 // =================================================================
-export function BillingHistoryPage() {
+export default function BillingHistoryPage() {
   const localeText = usePersianDataGridLocale();
   const { data, isLoading, isError } = useQuery<TransactionRow[]>({
     queryKey: ['billing-history'],

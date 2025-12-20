@@ -1,4 +1,4 @@
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Cookie
 
 from datetime import datetime, timedelta, timezone
 from typing import Optional
@@ -41,12 +41,17 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     return encoded_jwt
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
+# oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
 
 class TokenData(BaseModel):
     identifier: Optional[str] = None
 
-async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)) -> models.User:
+async def get_current_user(access_token: str = Cookie(None), db: AsyncSession = Depends(get_db)) -> models.User:
+    if not access_token:
+        raise HTTPException(status_code=401)
+    else:
+        token = access_token
+
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
