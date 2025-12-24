@@ -12,7 +12,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { usePersianDataGridLocale } from '@/hooks/usePersianDataGridLocale';
 
 
-export function LinkManagementPage() {
+export default function LinkManagementPage() {
   const queryClient = useQueryClient();
   const [deleteTarget, setDeleteTarget] = useState<LinkDetailsForAdmin | null>(null);
   const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);

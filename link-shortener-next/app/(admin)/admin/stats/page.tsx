@@ -6,7 +6,7 @@ import { getAdStatsPerLink, getAdStatsPerUser } from '@/services/admin';
 import type {AdStatsPerLink, AdStatsPerUser} from "@/types";
 
 
-export function AdStatsPage() {
+export default function AdStatsPage() {
   const [statsLink, setStatsLink] = useState<AdStatsPerLink[]>([]);
   const [statsUser, setStatsUser] = useState<AdStatsPerUser[]>([]);
   const [error, setError] = useState<string | null>(null);

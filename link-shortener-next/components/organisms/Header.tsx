@@ -18,6 +18,8 @@ import { useRouter } from "next/navigation";
 import { useUserStore } from "@/store/userStore";
 import { getDaysRemaining } from "@/utils/dateUtils";
 import { useLinkQuota } from "@/hooks/useLinkQuota";
+import apiClient from "@/lib/axios";
+import {router} from "next/client";
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -47,10 +49,15 @@ export function Header({ onMenuClick }: HeaderProps) {
     handleClose();
   };
 
-  const handleLogout = () => {
-    document.cookie = "access_token=; Max-Age=0; path=/";
-    document.cookie = "role=; Max-Age=0; path=/";
+  const handleLogout = async () => {
+    await apiClient.post("/auth/logout");
+
+    const { setUser, setQuota, setIsLoading } = useUserStore.getState();
+
     setUser(null);
+    setQuota(null);
+    setIsLoading(false);
+
     router.push("/login");
     handleClose();
   };

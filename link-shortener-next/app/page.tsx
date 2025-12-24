@@ -7,12 +7,11 @@ export default async function Page() {
   const role = cookieStore.get("role")?.value;
 
   if (!token) {
-    redirect("/home");
-  }
-
-  if (role === "admin") {
-    redirect("/admin/dashboard");
-  }
-
+  redirect("/home");
+} else if (role === "admin") {
+  redirect("/admin/dashboard");
+} else {
   redirect("/dashboard");
+}
+
 }

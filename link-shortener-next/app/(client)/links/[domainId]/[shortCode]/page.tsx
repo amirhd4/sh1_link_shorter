@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import {useEffect, useState} from 'react';
 import { useParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { linkService } from '@/services/linkService';
@@ -38,6 +38,7 @@ import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import config from '@/config';
 import type { AdvancedLinkStats } from '@/types/api';
 import {adService} from "@/services/adService";
+import Head from "next/head";
 
 /**
  * نمودار کلیک ۷ روزه
@@ -77,7 +78,6 @@ export default function LinkDetailsPage() {
 
   const { data: analytics, isLoading: isAnalyticsLoading } = useQuery({
     queryKey: ['link-analytics', shortCode],
-    // queryFn: () => linkService.getLinkStats(shortCode!, domainId),
     queryFn: async () => {
       const stats = await linkService.getLinkStats(shortCode!, domainId);
       const adStats = await adService.getLinkAdStats(shortCode!, parseInt(domainId));
@@ -85,6 +85,16 @@ export default function LinkDetailsPage() {
     },
     enabled: !!shortCode
   });
+
+  const pageTitle = linkDetails ? `${linkDetails.short_code} - جزئیات لینک` : "جزئیات لینک";
+
+  // Update the title dynamically
+  useEffect(() => {
+    if (pageTitle) {
+      document.title = pageTitle;
+    }
+  }, [pageTitle]);
+
 
   const { data: adReward } = useQuery({
     queryKey: ['ad-reward', shortCode],
@@ -113,6 +123,10 @@ export default function LinkDetailsPage() {
   }
 
   return (
+    <>
+      <Head>
+        <title>{pageTitle}</title>
+      </Head>
     <Box>
       <Typography variant="h4" gutterBottom>آمار و جزئیات لینک</Typography>
 
@@ -317,5 +331,6 @@ export default function LinkDetailsPage() {
         message="لینک کوتاه در کلیپ‌بورد کپی شد!"
       />
     </Box>
+        </>
   );
 }

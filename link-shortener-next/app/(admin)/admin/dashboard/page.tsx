@@ -1,3 +1,5 @@
+"use client";
+
 import { useQuery } from '@tanstack/react-query';
 import { Grid, Box, Typography, CircularProgress, Alert, Paper } from '@mui/material';
 import { adminService } from '@/services/adminService';
@@ -12,7 +14,7 @@ import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 
 
-export function AdminDashboardPage() {
+export default function AdminDashboardPage() {
   const { data: stats, isLoading, isError } = useQuery({
     queryKey: ['system-stats'],
     queryFn: adminService.getSystemStats,

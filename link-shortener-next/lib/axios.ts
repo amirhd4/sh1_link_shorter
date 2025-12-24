@@ -3,7 +3,7 @@ import config from '../config';
 
 const apiClient = axios.create({
   baseURL: config.apiBaseUrl,
-  withCredentials: true, // ✅ مهم
+  withCredentials: true,
 });
 
 // میتوانید Interceptor ها را برای مدیریت توکن JWT در اینجا اضافه کنید

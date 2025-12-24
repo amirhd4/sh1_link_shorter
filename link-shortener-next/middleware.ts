@@ -33,9 +33,9 @@ export function middleware(req: NextRequest) {
   // -----------------------
 
   // admin وارد مسیرهای user نشود
-  if (role === "admin" && pathname.startsWith("/dashboard")) {
-    return NextResponse.redirect(new URL("/admin/dashboard", req.url));
-  }
+  // if (role === "admin" && pathname.startsWith("/dashboard")) {
+  //   return NextResponse.redirect(new URL("/admin/dashboard", req.url));
+  // }
 
   // user وارد مسیرهای admin نشود
   if (pathname.startsWith("/admin") && role !== "admin") {

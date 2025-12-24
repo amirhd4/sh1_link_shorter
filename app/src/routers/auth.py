@@ -76,15 +76,17 @@ def set_client_cookie(access_token: str, role: str):
         httponly=True,
         samesite="lax",
         secure=not settings.DEBUG,
-        path="/"
+        path="/",
+        max_age=60 * 60 * 24 * 7  # 7 روز
     )
 
     response.set_cookie(
         key="role",
-        value=role,  # "admin" یا "client"
+        value=role,
         samesite="lax",
         secure=not settings.DEBUG,
-        path="/"
+        path="/",
+        max_age=60 * 60 * 24 * 7
     )
 
     return response
@@ -222,10 +224,18 @@ async def login_for_access_token(request: Request, form_data: OAuth2PasswordRequ
 
     identifier = user.email or user.phone_number
     access_token = security.create_access_token(data={"sub": identifier})
-
+    logger.info(str(user.role))
     return set_client_cookie(access_token, user.role)
 
     # return {"access_token": access_token, "token_type": "bearer"}
+
+
+@router.post("/logout")
+async def logout():
+    response = JSONResponse({"success": True})
+    response.delete_cookie("access_token", path="/")
+    response.delete_cookie("role", path="/")
+    return response
 
 
 @router.get("/users/me", response_model=schemas.UserResponse)

@@ -15,6 +15,8 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { useUserStore } from "@/store/userStore";
 import NextLink from "next/link";
 import Head from "next/head";
+import apiClient from "@/lib/axios";
+import {router} from "next/client";
 
 interface PublicLayoutProps {
   children: ReactNode;
@@ -32,10 +34,16 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
 
   const { user, setUser } = useUserStore();
 
-  const handleLogout = () => {
-    document.cookie = "access_token=; Max-Age=0; path=/";
-    document.cookie = "role=; Max-Age=0; path=/";
+  const handleLogout = async () => {
+    await apiClient.post("/api/auth/logout");
+
+    const { setUser, setQuota, setIsLoading } = useUserStore.getState();
+
     setUser(null);
+    setQuota(null);
+    setIsLoading(false);
+
+    await router.push("/login");
   };
 
   return (

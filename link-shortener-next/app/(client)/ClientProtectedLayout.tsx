@@ -9,11 +9,17 @@ export default function ClientProtectedLayout({ children }: any) {
   const router = useRouter();
 
   useEffect(() => {
-    if (!isLoading) {
-      if (!user) router.replace("/login");
-      if (user && user.role === "admin") router.replace("/admin/dashboard");
+  if (!isLoading) {
+    if (!user) {
+      router.replace("/login");
+    } else if (user.role === "admin") {
+      // router.replace("/admin/dashboard");
+    } else {
+      router.replace("/dashboard");
     }
-  }, [user, isLoading]);
+  }
+}, [user, isLoading]);
+
 
   if (isLoading) return null;
 

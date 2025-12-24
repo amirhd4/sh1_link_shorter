@@ -229,7 +229,7 @@ export default function LinksDashboard() {
         onSettled: () => setDeleteTarget(null),
     });
 
-    const handleDetailsClick = (shortCode: string, domainId: string) => () => navigate.push(`/links/${shortCode}/${domainId}`);
+    const handleDetailsClick = (shortCode: string, domainId: string) => () => navigate.push(`/links/${domainId}/${shortCode}/`);
     const handleDeleteClick = (shortCode: string, domainId: string) => () => setDeleteTarget({ shortCode, domainId });
     const handleConfirmDelete = () => { if(deleteTarget) deleteMutation.mutate(deleteTarget); };
 
@@ -324,6 +324,9 @@ export default function LinksDashboard() {
                 localeText={localeText}
                 pageSizeOptions={[5, 10, 20]}
                 autoHeight
+                // disableSelectionOnClick
+                // disableColumnMenu
+                // disableStrictModeCompat  // ⚡ رفع خطای ":first-child" در SSR
                 sx={{
                     border: 'none',
                     '& .MuiDataGrid-columnHeaders': {

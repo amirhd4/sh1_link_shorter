@@ -19,7 +19,7 @@ import theme from "@/styles/theme";
 import { CustomNoRowsOverlay } from '@/components/molecules/CustomNoRowsOverlay';
 
 
-export function UserManagementPage() {
+export default function UserManagementPage() {
   const queryClient = useQueryClient();
   const localeText = usePersianDataGridLocale();
 
