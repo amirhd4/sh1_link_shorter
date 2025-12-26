@@ -50,7 +50,7 @@ export function AssignPlanModal({ open, onClose, user }: AssignPlanModalProps) {
   return (
     <Modal open={open} onClose={onClose}>
       <Box sx={modalStyle}>
-        <Typography variant="h6">تغییر پلن برای {user?.email}</Typography>
+        <Typography variant="h6">تغییر پلن برای {user?.phone_number}</Typography>
         {isLoadingPlans ? <CircularProgress sx={{mt: 2}} /> : (
           <FormControl fullWidth sx={{ mt: 3 }}>
             <InputLabel id="plan-select-label">انتخاب پلن</InputLabel>

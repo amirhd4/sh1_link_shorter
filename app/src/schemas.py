@@ -1,6 +1,6 @@
 import re
 
-from pydantic import BaseModel, HttpUrl, EmailStr, validator, field_validator
+from pydantic import BaseModel, HttpUrl, validator, field_validator
 from typing import Optional, List
 from datetime import date, datetime
 
@@ -10,7 +10,7 @@ from . import schemas
 
 class UserSummary(BaseModel):
     id: int
-    email: Optional[EmailStr] = None
+    # email: Optional[EmailStr] = None
     phone_number: Optional[str] = None
     class Config:
         from_attributes = True
@@ -49,7 +49,7 @@ class AdStatsPerUser(BaseModel):
         phone_pattern = re.compile(r"^\+?\d{9,15}$")
         if re.match(phone_pattern, v) or "@" in v:
             return v
-        raise ValueError("user must be a valid email or phone number")
+        raise ValueError("user must be a valid phone number")
 
 
 # Schemas for Ads
@@ -90,8 +90,8 @@ class LinkStatsResponse(BaseModel):
     clicks_last_7_days: List[LinkStatDay]
 
 
-class EmailSchema(BaseModel):
-    email: EmailStr
+# class EmailSchema(BaseModel):
+#     email: EmailStr
 
 
 class ResetPasswordRequest(BaseModel):
@@ -124,7 +124,7 @@ class UserUpdate(BaseModel):
 
 class UserResponse(BaseModel):
     id: int
-    email: Optional[EmailStr] = None
+    # email: Optional[EmailStr] = None
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     phone_number: Optional[str] = None
@@ -163,7 +163,7 @@ class URLResponse(BaseModel):
 
 
 class UserCreate(BaseModel):
-    email: EmailStr
+    phone_number: str
     password: str
 
 

@@ -64,7 +64,7 @@ export default function UserManagementPage() {
   // Column definitions for the DataGrid
   const columns: GridColDef[] = [
     { field: 'id', headerName: 'ID', width: 90 },
-    { field: 'email', headerName: 'ایمیل', flex: 1, minWidth: 200, valueGetter: (value, row) => row.phone_number || row.email},
+    { field: 'phone_number', headerName: 'شماره', flex: 1, minWidth: 200, valueGetter: (value, row) => row.phone_number},
     {
       field: 'plan',
       headerName: 'پلن فعلی',
@@ -154,14 +154,14 @@ export default function UserManagementPage() {
         open={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
         onConfirm={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
-        title={`حذف کاربر ${deleteTarget?.email}`}
+        title={`حذف کاربر ${deleteTarget?.phone_number}`}
         description="آیا از حذف کامل این کاربر اطمینان دارید؟ این عمل غیرقابل بازگشت است و تمام لینک‌های او نیز حذف خواهد شد."
       />
       <ConfirmationDialog
         open={!!toggleActiveTarget}
         onClose={() => setToggleActiveTarget(null)}
         onConfirm={() => toggleActiveTarget && toggleActiveMutation.mutate(toggleActiveTarget.id)}
-        title={`تغییر وضعیت کاربر ${toggleActiveTarget?.email}`}
+        title={`تغییر وضعیت کاربر ${toggleActiveTarget?.phone_number}`}
         description={`آیا از ${toggleActiveTarget?.is_active ? 'غیرفعال' : 'فعال'} کردن این کاربر اطمینان دارید؟`}
       />
       <AssignPlanModal

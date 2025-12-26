@@ -32,7 +32,7 @@ async def get_ad_stats_per_user(db: AsyncSession) -> List[dict]:
     stmt = (
         select(
             models.User.id.label("user_id"),
-            models.User.email,
+            # models.User.email,
             models.User.phone_number,
             func.coalesce(func.sum(models.UserAdReward.ad_view_count), 0).label("total_views"),
             func.coalesce(func.sum(models.UserAdReward.unique_view_count), 0).label("unique_views"),

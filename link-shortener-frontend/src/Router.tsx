@@ -22,11 +22,11 @@ import { PaymentStatusPage } from './features/billing/pages/PaymentStatusPage';
 import { AdminDashboardPage } from './features/admin-dashboard/pages/AdminDashboardPage';
 import { UserManagementPage } from './features/admin-dashboard/pages/UserManagementPage';
 import { LinkManagementPage } from './features/admin-dashboard/pages/LinkManagementPage';
-import { ForgotPasswordPage } from './pages/forgot-password.page.tsx';
-import { ResetPasswordPage } from './pages/reset-password.page.tsx';
-import { VerifyEmailPage } from './pages/verify-email.page.tsx';
-import { EmailSentPage } from './pages/email-sent.page.tsx';
-import { AuthCallbackPage } from "./pages/auth-callback-auth.page.tsx";
+import { ForgotPasswordPage } from './pages/forgot-password-to-remove.page.tsx';
+import { ResetPasswordPage } from './pages/reset-password-to-remove.page.tsx';
+import { VerifyEmailPage } from './pages/verify-email-to-remove.page.tsx';
+import { EmailSentPage } from './pages/email-sent-to-remove.page.tsx';
+import { AuthCallbackPage } from "./pages/auth-callback-to-remove-auth.page.tsx";
 import { LoginOtpPage } from './pages/login-otp.page.tsx';
 import { RegisterOtpPage } from "./pages/register-otp.page.tsx";
 import {ApiPage} from "./features/api/pages/ApiPage.tsx";
@@ -56,10 +56,10 @@ const router = createBrowserRouter([
       { path: '/home', element: <HomePage /> },
       { path: '/login', element: <LoginPage /> },
       { path: '/register', element: <RegisterPage /> },
-      { path: '/forgot-password', element: <ForgotPasswordPage /> },
-      { path: '/reset-password', element: <ResetPasswordPage /> },
-      { path: '/email-sent', element: <EmailSentPage /> },
-      { path: '/verify-email', element: <VerifyEmailPage /> },
+      { path: '/forgot-password-to-remove', element: <ForgotPasswordPage /> },
+      { path: '/reset-password-to-remove', element: <ResetPasswordPage /> },
+      { path: '/email-sent-to-remove', element: <EmailSentPage /> },
+      { path: '/verify-email-to-remove', element: <VerifyEmailPage /> },
       { path: '/auth/callback', element: <AuthCallbackPage /> },
       { path: '/login-otp', element: <LoginOtpPage /> },
       { path: '/register-otp', element: <RegisterOtpPage /> },

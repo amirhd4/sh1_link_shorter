@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { 
-  Button, TextField, Typography, Stack, CircularProgress, 
-  InputAdornment, IconButton, Snackbar, Paper
+import {
+    Button, TextField, Typography, Stack, CircularProgress,
+    InputAdornment, IconButton, Snackbar, Paper, Link as MuiLink
 } from "@mui/material";
 import { useMutation } from "@tanstack/react-query";
 import { authService } from "@/services/authService";
@@ -13,6 +13,7 @@ import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { getOtpErrorMessage } from "@/utils/otpErrorHandler";
 import { Turnstile } from "@marsidev/react-turnstile";
+import Link from "next/link";
 
 export function RegisterWithOtpForm() {
   const navigate = useRouter();
@@ -114,9 +115,29 @@ export function RegisterWithOtpForm() {
           transition: "all 0.3s ease-in-out",
         }}
       >
-        <Typography variant="h4" sx={{ mb: 3, textAlign: "center", fontWeight: "bold" }}>
-          ثبت‌نام با شماره موبایل
-        </Typography>
+        <Typography
+  variant="h4"
+  component="h1"
+  sx={{ mb: 3, textAlign: "center", fontWeight: "bold" }}
+>
+  ثبت‌نام با شماره موبایل
+</Typography>
+
+          <Typography
+  component="p"
+  sx={{
+    position: "absolute",
+    left: "-10000px",
+    top: "auto",
+    width: "1px",
+    height: "1px",
+    overflow: "hidden",
+  }}
+>
+  ثبت‌نام کاربران با شماره موبایل و دریافت کد تایید برای ورود امن به سامانه
+</Typography>
+
+
 
         <Stack spacing={3}>
           {/* --- مرحله شماره موبایل --- */}
@@ -126,6 +147,7 @@ export function RegisterWithOtpForm() {
                 fullWidth
                 label="شماره موبایل"
                 placeholder="مثال: 09123456789"
+                autoComplete="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 helperText="شماره موبایل خود را بدون فاصله وارد کنید"
@@ -153,24 +175,34 @@ export function RegisterWithOtpForm() {
             </>
           )}
 
+            <Typography variant="body2" sx={{ textAlign: 'center', color: '#4b5563' }}>
+            حساب کاربری دارید؟{' '}
+            <MuiLink component={Link} href="/login" sx={{ color: '#9333ea', fontWeight: 600 }}>
+              وارد شوید
+            </MuiLink>
+          </Typography>
+
           {/* --- مرحله تایید کد --- */}
           {step === "verify" && (
             <>
               <TextField
                 fullWidth
                 label="نام"
+                autoComplete="given-name"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
               />
               <TextField
                 fullWidth
                 label="نام خانوادگی"
+                autoComplete="family-name"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
               />
               <TextField
                 fullWidth
                 label="کد تایید"
+                autoComplete="one-time-code"
                 placeholder="کد ارسال شده به موبایل"
                 type={showCode ? "text" : "password"}
                 value={code}

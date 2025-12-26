@@ -93,7 +93,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                 <Avatar sx={{ bgcolor: "#9333ea" }}>
                   {user.first_name
                     ? user.first_name.charAt(0)
-                    : (user.email || user.phone_number || "")
+                    : (user.phone_number || "")
                         .charAt(0)
                         .toUpperCase()}
                 </Avatar>
@@ -113,7 +113,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                   {user.first_name || "کاربر"}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" noWrap>
-                  {user.email || user.phone_number}
+                  {user.phone_number}
                 </Typography>
               </Box>
 

@@ -7,7 +7,7 @@ from abc import ABC, abstractmethod
 
 class PaymentProvider(ABC):
     @abstractmethod
-    async def create_payment_link(self, amount: int, description: str, user_email: str) -> (str, str):
+    async def create_payment_link(self, amount: int, description: str, user_phone: str) -> (str, str):
         pass
 
     @abstractmethod
@@ -31,13 +31,13 @@ class ZarinpalGateway(PaymentProvider):
             self.api_verify_url = "https://api.zarinpal.com/pg/v4/payment/verify.json"
             self.api_startpay_url = "https://www.zarinpal.com/pg/StartPay/"
 
-    async def create_payment_link(self, amount: int, description: str, user_email: str) -> (str, str):
+    async def create_payment_link(self, amount: int, description: str, user_phone: str) -> (str, str):
         payload = {
             "merchant_id": self.merchant_id,
             "amount": amount,
             "description": description,
             "callback_url": self.callback_url,
-            "metadata": {"email": user_email}
+            "metadata": {"phone_number": user_phone}
         }
 
         try:

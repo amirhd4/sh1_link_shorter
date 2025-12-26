@@ -17,12 +17,12 @@ export interface PlanResponse {
 
 export interface UserResponse {
   id: number;
-  email: string;
+  // email: string;
   role: 'user' | 'admin';
   is_active: boolean;
   first_name?: string | null;
   last_name?: string | null;
-  phone_number?: string | null;
+  phone_number: string;
   plan?: PlanResponse | null;
   subscription_end_date?: string | null;
 }
@@ -76,8 +76,8 @@ export interface LinkDetailsForAdmin {
   domain_id: number | null;
   owner: {
     id: number;
-    email?: string | null;
-    phone_number?: string | null;
+    // email?: string | null;
+    phone_number: string;
   };
 }
 

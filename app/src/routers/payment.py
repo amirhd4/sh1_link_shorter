@@ -63,8 +63,8 @@ async def create_payment(
     gateway = ZarinpalGateway()
     payment_url, authority = await gateway.create_payment_link(
         amount=plan.price,
-        description=f"Purchase Pro Plan for {current_user.email}",
-        user_email=current_user.email
+        description=f"Purchase Pro Plan for {current_user.phone_number}",
+        user_phone=current_user.phone_number
     )
 
     if not payment_url:

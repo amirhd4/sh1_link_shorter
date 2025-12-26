@@ -67,15 +67,15 @@ async def get_current_user(access_token: str = Cookie(None), db: AsyncSession = 
     except JWTError:
         raise credentials_exception
 
-    # پیدا کردن کاربر با ایمیل یا شماره
+    # پیدا کردن کاربر با شماره
     result = await db.execute(
         select(models.User)
         .options(selectinload(models.User.plan))
         .where(
-            or_(
-                models.User.email == token_data.identifier,
+            # or_(
+            #     models.User.email == token_data.identifier,
                 models.User.phone_number == token_data.identifier
-            )
+            # )
         )
     )
     user = result.scalar_one_or_none()

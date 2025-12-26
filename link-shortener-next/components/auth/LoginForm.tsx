@@ -1,53 +1,50 @@
 "use client";
 
-import { useState } from "react";
-import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import {useState} from "react";
+import {Controller, useForm} from "react-hook-form";
+import {zodResolver} from "@hookform/resolvers/zod";
+import {z} from "zod";
 import {
-  TextField,
-  Button,
-  Box,
-  Typography,
-  Alert,
-  Link as MuiLink,
-  Grid,
-  Divider,
-  Paper,
-  IconButton,
-  InputAdornment,
-  Stack,
-  Snackbar
+    Alert,
+    Box,
+    Button,
+    Divider,
+    Grid,
+    IconButton,
+    InputAdornment,
+    Link as MuiLink,
+    Paper,
+    Snackbar,
+    Stack,
+    TextField,
+    Typography
 } from "@mui/material";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import EmailIcon from "@mui/icons-material/AlternateEmail";
 import LockIcon from "@mui/icons-material/Lock";
-import { motion } from "framer-motion";
-import { useMutation } from "@tanstack/react-query";
-import { authService } from "@/services/authService";
-import { useUserStore } from "@/store/userStore";
+import {motion} from "framer-motion";
+import {useMutation} from "@tanstack/react-query";
+import {authService} from "@/services/authService";
+import {useUserStore} from "@/store/userStore";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-
-import { GoogleLoginButton } from "./GoogleLoginButton";
-import { Turnstile } from "@marsidev/react-turnstile";
+import {useRouter, useSearchParams} from "next/navigation";
+import {Turnstile} from "@marsidev/react-turnstile";
 import config from "../../config";
 
-const emailOrPhoneSchema = z.object({
-  emailOrPhone: z.string().refine(
+const phoneSchema = z.object({
+  phone: z.string().refine(
     (val) => {
-      const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
-      const isPhone = /^[0-9]{10,15}$/.test(val);
-      return isEmail || isPhone;
+      // const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+        return /^[0-9]{10,15}$/.test(val);
     },
-    "ایمیل یا شماره موبایل معتبر وارد کنید ✨"
+    "شماره موبایل معتبر وارد کنید ✨"
   ),
   password: z.string().min(1, "رمز عبور نمی‌تواند خالی باشد ⚡"),
 });
 
-type LoginFormInputs = z.infer<typeof emailOrPhoneSchema>;
+type LoginFormInputs = z.infer<typeof phoneSchema>;
 
 export function LoginForm() {
   const navigate = useRouter();
@@ -55,15 +52,15 @@ export function LoginForm() {
 
   const { setUser } = useUserStore();
   const [verificationError, setVerificationError] = useState(false);
-  const [resendSuccess, setResendSuccess] = useState(false);
+  // const [resendSuccess, setResendSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
   const isClient = typeof window !== "undefined";
 
   const { control, handleSubmit, getValues, formState: { errors } } = useForm<LoginFormInputs>({
-    resolver: zodResolver(emailOrPhoneSchema),
-    defaultValues: { emailOrPhone: "", password: "" },
+    resolver: zodResolver(phoneSchema),
+    defaultValues: { phone: "", password: "" },
   });
 
   const loginMutation = useMutation({
@@ -94,23 +91,23 @@ export function LoginForm() {
     },
   });
 
-  const resendMutation = useMutation({
-    mutationFn: authService.resendVerificationEmail,
-    onSuccess: () => {
-      setResendSuccess(true);
-      setVerificationError(false);
-      setSnackbarMessage("لینک فعال‌سازی دوباره برای شما ارسال شد 🚀");
-    },
-  });
+  // const resendMutation = useMutation({
+  //   mutationFn: authService.resendVerificationEmail,
+  //   onSuccess: () => {
+  //     setResendSuccess(true);
+  //     setVerificationError(false);
+  //     setSnackbarMessage("لینک فعال‌سازی دوباره برای شما ارسال شد 🚀");
+  //   },
+  // });
 
-  const handleResend = () => {
-    const emailOrPhone = getValues("emailOrPhone");
-    if (emailOrPhone) {
-      resendMutation.mutate(emailOrPhone);
-    } else {
-      setVerificationError(true);
-    }
-  };
+  // const handleResend = () => {
+  //   const emailOrPhone = getValues("emailOrPhone");
+  //   if (emailOrPhone) {
+  //     resendMutation.mutate(emailOrPhone);
+  //   } else {
+  //     setVerificationError(true);
+  //   }
+  // };
 
   const onSubmit = (data: LoginFormInputs) => {
     if (!captchaToken && !config.debug) {
@@ -118,9 +115,9 @@ export function LoginForm() {
       return;
     }
     setVerificationError(false);
-    setResendSuccess(false);
+    // setResendSuccess(false);
     loginMutation.mutate({
-      email: data.emailOrPhone,
+      email: data.phone,
       password: data.password,
       captcha_token: captchaToken,
     });
@@ -162,17 +159,17 @@ export function LoginForm() {
             </Typography>
 
             <Stack spacing={2}>
-              {searchParams.get("registered") && (
-                <Alert severity="success" sx={{ borderRadius: 2 }}>
-                  ثبت‌نام شما موفق بود ✅ لطفاً ایمیل خود را بررسی کنید.
-                </Alert>
-              )}
+              {/*{searchParams.get("registered") && (*/}
+              {/*  <Alert severity="success" sx={{ borderRadius: 2 }}>*/}
+              {/*    ثبت‌نام شما موفق بود ✅ لطفاً ایمیل خود را بررسی کنید.*/}
+              {/*  </Alert>*/}
+              {/*)}*/}
 
-              {resendSuccess && (
-                <Alert severity="success" sx={{ borderRadius: 2 }}>
-                  لینک فعال‌سازی دوباره برای شما ارسال شد 🚀
-                </Alert>
-              )}
+              {/*{resendSuccess && (*/}
+              {/*  <Alert severity="success" sx={{ borderRadius: 2 }}>*/}
+              {/*    لینک فعال‌سازی دوباره برای شما ارسال شد 🚀*/}
+              {/*  </Alert>*/}
+              {/*)}*/}
 
               {loginMutation.isError && !verificationError && (
                 <Alert severity="error" sx={{ borderRadius: 2 }}>
@@ -190,38 +187,24 @@ export function LoginForm() {
                     justifyContent: "space-between",
                   }}
                 >
-                  <Box>ایمیل شما هنوز تأیید نشده 😕</Box>
-                  <Button
-                    onClick={handleResend}
-                    disabled={resendMutation.isPending}
-                    size="small"
-                    variant="outlined"
-                    sx={{
-                      textTransform: "none",
-                      borderRadius: 2,
-                      borderColor: "#9333ea",
-                      color: "#7e22ce",
-                    }}
-                  >
-                    {resendMutation.isPending ? "در حال ارسال..." : "ارسال مجدد"}
-                  </Button>
+                  <Box>شماره شما هنوز تایید نشده است 😕. لطفا با پشتیبانی تماس بگیرید</Box>
                 </Alert>
               )}
 
               {/* Email / Phone */}
               <Controller
-                name="emailOrPhone"
+                name="phone"
                 control={control}
                 render={({ field }: { field: any }) => (
 
                   <TextField
                     {...field}
                     fullWidth
-                    label="ایمیل یا شماره موبایل"
+                    label="شماره موبایل"
                     autoComplete="email"
                     autoFocus
-                    error={!!errors.emailOrPhone}
-                    helperText={errors.emailOrPhone?.message}
+                    error={!!errors.phone}
+                    helperText={errors.phone?.message}
                     variant="outlined"
                     InputProps={{
                       startAdornment: (
@@ -308,11 +291,11 @@ export function LoginForm() {
             </Stack>
 
             <Grid container sx={{ mt: 4 }} justifyContent="space-between" alignItems="center">
-              <Grid>
-                <MuiLink component={Link} href="/forgot-password" variant="body2" sx={{ color: "#7e22ce" }}>
-                  رمز عبورت رو یادت رفته؟ 🤔
-                </MuiLink>
-              </Grid>
+              {/*<Grid>*/}
+              {/*  <MuiLink component={Link} href="/forgot-password" variant="body2" sx={{ color: "#7e22ce" }}>*/}
+              {/*    رمز عبورت رو یادت رفته؟ 🤔*/}
+              {/*  </MuiLink>*/}
+              {/*</Grid>*/}
               <Grid>
                 <MuiLink component={Link} href="/register" variant="body2" sx={{ color: "#7e22ce" }}>
                   حساب نداری؟ همین الان بساز 💫
@@ -320,7 +303,7 @@ export function LoginForm() {
               </Grid>
               <Grid>
                 <MuiLink component={Link} href="/login-otp" variant="body2" sx={{ color: "#7e22ce" }}>
-                  ورود با شماره موبایل 📱
+                  ورود با رمز یکبار مصرف 📱
                 </MuiLink>
               </Grid>
             </Grid>

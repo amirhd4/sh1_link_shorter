@@ -36,7 +36,7 @@ class User(Base):
     api_key = Column(String, unique=True, index=True, nullable=True)
 
     id = Column(Integer, primary_key=True, index=True)
-    email = Column(String, unique=True, index=True, nullable=True)
+    # email = Column(String, unique=True, index=True, nullable=True)
     is_verified = Column(Boolean, default=False, nullable=False)
     is_active = Column(Boolean, default=True, nullable=False)
 

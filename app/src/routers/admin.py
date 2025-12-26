@@ -71,7 +71,7 @@ async def create_user_by_admin(user_create: schemas.UserCreate, db: AsyncSession
     یک کاربر جدید توسط ادمین ایجاد می‌کند.
     """
     hashed_password = security.get_password_hash(user_create.password)
-    new_user = models.User(email=user_create.email, hashed_password=hashed_password)
+    new_user = models.User(phone_number=user_create.phone_number, hashed_password=hashed_password)
 
     free_plan_result = await db.execute(select(models.Plan).where(models.Plan.name == "Free"))
     free_plan = free_plan_result.scalar_one()

@@ -4,11 +4,11 @@ import type { PlanResponse } from '@/types/api';
 
 interface User {
   id: number;
-  email: string;
+  // email: string;
   role: 'user' | 'admin';
   first_name?: string | null;
   last_name?: string | null;
-  phone_number?: string | null;
+  phone_number: string;
   plan?: PlanResponse | null; // <<<< پراپرتی plan اضافه شد
   subscription_start_date?: string | null;
   subscription_end_date?: string | null; // <<<< این پراپرتی هم اضافه شد

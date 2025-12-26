@@ -30,9 +30,6 @@ class Settings(BaseSettings):
     sms_ir_template_id: int
     sms_ir_verify_template_id: int
 
-    # Optional: provider toggle (parspack or sendgrid)
-    email_provider: str = "parspack"
-
     smtp_host: str
     smtp_port: str
     smtp_user: str

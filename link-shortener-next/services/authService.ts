@@ -8,7 +8,7 @@ export const authService = {
   login: async (credentials: LoginCredentials & { captcha_token: string }): Promise<TokenResponse> => {
     // fastapi.security.OAuth2PasswordRequestForm به صورت x-www-form-urlencoded داده ارسال می‌کند
     const formData = new URLSearchParams();
-    formData.append('username', credentials.email);
+    formData.append('username', credentials.phone_number);
     formData.append('password', credentials.password);
     formData.append("captcha_token", credentials.captcha_token);
 
@@ -23,15 +23,15 @@ export const authService = {
   //   return response.data;
   // },
 
-   register: async (credentials: RegisterCredentials & { captcha_token: string }): Promise<UserResponse> => {
-  const payload = {
-    email: credentials.email,
-    password: credentials.password,
-    captcha_token: credentials.captcha_token || "dummy-token",
-  };
-  const response = await apiClient.post('/auth/register', payload);
-  return response.data;
-},
+//    register: async (credentials: RegisterCredentials & { captcha_token: string }): Promise<UserResponse> => {
+//   const payload = {
+//     email: credentials.email,
+//     password: credentials.password,
+//     captcha_token: credentials.captcha_token || "dummy-token",
+//   };
+//   const response = await apiClient.post('/auth/register', payload);
+//   return response.data;
+// },
 
 
 

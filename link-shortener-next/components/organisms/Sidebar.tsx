@@ -107,9 +107,9 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           <Typography variant="body2" sx={{ color: '#6b21a8', fontWeight: 600 }}>
             پشتیبانی
           </Typography>
-          <Typography sx={{ display: 'block', fontSize: 13, color: '#6b21a8' }}>
-            support@l1s.ir
-          </Typography>
+          {/*<Typography sx={{ display: 'block', fontSize: 13, color: '#6b21a8' }}>*/}
+          {/*  support@l1s.ir*/}
+          {/*</Typography>*/}
           <Typography sx={{ display: 'block', fontSize: 13, color: '#6b21a8' }}>
             09960074607
           </Typography>
