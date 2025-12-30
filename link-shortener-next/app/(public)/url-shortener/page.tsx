@@ -60,22 +60,18 @@ const ApiUrlShortenerPage: React.FC = () => {
       </Typography>
 
       <Stack direction={{ xs: "column", sm: "row" }} spacing={2} mb={4}>
-        <Button
-          variant="contained"
-          color="primary"
-          component={Link}
-          href="/register"
-        >
-          ثبت‌نام و دریافت Api-Key
-        </Button>
-        <Button
-          variant="outlined"
-          color="secondary"
-          component={Link}
-          href="/short-url-generator"
-        >
-          استفاده رایگان بدون ثبت‌نام
-        </Button>
+        <Link href="/register" passHref legacyBehavior>
+  <Button variant="contained" color="primary">
+    ثبت‌نام و دریافت Api-Key
+  </Button>
+</Link>
+
+<Link href="/short-url-generator" passHref legacyBehavior>
+  <Button variant="outlined" color="secondary">
+    استفاده رایگان بدون ثبت‌نام
+  </Button>
+</Link>
+
       </Stack>
 
       <Typography variant="h5" mb={2}>ویژگی‌های کلیدی API لس</Typography>
