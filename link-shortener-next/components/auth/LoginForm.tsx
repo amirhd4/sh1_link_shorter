@@ -34,7 +34,7 @@ import {Turnstile} from "@marsidev/react-turnstile";
 import config from "../../config";
 
 const phoneSchema = z.object({
-  phone: z.string().refine(
+  phone_number: z.string().refine(
     (val) => {
       // const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
         return /^[0-9]{10,15}$/.test(val);
@@ -60,7 +60,7 @@ export function LoginForm() {
 
   const { control, handleSubmit, getValues, formState: { errors } } = useForm<LoginFormInputs>({
     resolver: zodResolver(phoneSchema),
-    defaultValues: { phone: "", password: "" },
+    defaultValues: { phone_number: "", password: "" },
   });
 
   const loginMutation = useMutation({
@@ -117,7 +117,7 @@ export function LoginForm() {
     setVerificationError(false);
     // setResendSuccess(false);
     loginMutation.mutate({
-      email: data.phone,
+      username: data.phone_number,
       password: data.password,
       captcha_token: captchaToken,
     });
@@ -193,7 +193,7 @@ export function LoginForm() {
 
               {/* Email / Phone */}
               <Controller
-                name="phone"
+                name="phone_number"
                 control={control}
                 render={({ field }: { field: any }) => (
 
@@ -203,8 +203,8 @@ export function LoginForm() {
                     label="شماره موبایل"
                     autoComplete="email"
                     autoFocus
-                    error={!!errors.phone}
-                    helperText={errors.phone?.message}
+                    error={!!errors.phone_number}
+                    helperText={errors.phone_number?.message}
                     variant="outlined"
                     InputProps={{
                       startAdornment: (

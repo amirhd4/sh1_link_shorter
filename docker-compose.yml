@@ -27,8 +27,8 @@ services:
         condition: service_healthy
       cache:
         condition: service_healthy
-      xray:
-        condition: service_started
+#      xray:
+#        condition: service_started
 
   click_processor:
     build:
@@ -66,13 +66,13 @@ services:
   # -----------------------------------------------------------------
   # 2. Proxy Service (Kept as a core dependency)
   # -----------------------------------------------------------------
-  xray:
-    build: ./xray
-    container_name: xray
-    # Expose internal ports only if needed for testing, otherwise leave them for app access
-    ports:
-      - "10808:10808"
-    restart: unless-stopped
+#  xray:
+#    build: ./xray
+#    container_name: xray
+#    # Expose internal ports only if needed for testing, otherwise leave them for app access
+#    ports:
+#      - "10808:10808"
+#    restart: unless-stopped
 
   # -----------------------------------------------------------------
   # 3. Database Service (Postgres) - Exposed Port
@@ -130,20 +130,20 @@ services:
   # The Nginx service has been removed. You should run your frontend
   # development server (e.g., npm run dev) separately on your host machine.
 
-#  frontend:
-#    image: node:20-alpine
-#    working_dir: /app
-#    volumes:
-#      - ./link-shortener-next:/app
-#      - /app/node_modules
-#    command: sh -c "npm install && npm run dev"
-#    ports:
-#      - "3000:3000"
-#    environment:
-#      - NODE_ENV=development
-#      - NEXT_PUBLIC_API_BASE=http://localhost:8000
-#    depends_on:
-#      - app
+  frontend:
+    image: node:20-alpine
+    working_dir: /app
+    volumes:
+      - ./link-shortener-next:/app
+      - /app/node_modules
+    command: sh -c "npm install && npm run dev"
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_BASE=http://localhost:8000
+    depends_on:
+      - app
 
 volumes:
   postgres_data:

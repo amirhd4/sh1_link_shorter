@@ -1,6 +1,6 @@
 import apiClient from '../lib/axios';
 import type { UserResponse, TokenResponse } from '@/types/api';
-import type { LoginCredentials, RegisterCredentials, UpdateProfilePayload, ChangePasswordPayload } from '@/types/auth';
+import type { LoginCredentials, UpdateProfilePayload, ChangePasswordPayload } from '@/types/auth';
 import type {UserWithToken, OtpLoginResponse} from "@/types/api"
 
 
@@ -8,7 +8,7 @@ export const authService = {
   login: async (credentials: LoginCredentials & { captcha_token: string }): Promise<TokenResponse> => {
     // fastapi.security.OAuth2PasswordRequestForm به صورت x-www-form-urlencoded داده ارسال می‌کند
     const formData = new URLSearchParams();
-    formData.append('username', credentials.phone_number);
+    formData.append('username', credentials.username);
     formData.append('password', credentials.password);
     formData.append("captcha_token", credentials.captcha_token);
 

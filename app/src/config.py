@@ -30,13 +30,13 @@ class Settings(BaseSettings):
     sms_ir_template_id: int
     sms_ir_verify_template_id: int
 
-    smtp_host: str
-    smtp_port: str
-    smtp_user: str
-    smtp_pass:  str
-    smtp_starttls: str
-    smtp_from_name: str
-    smtp_from: str
+    # smtp_host: str
+    # smtp_port: str
+    # smtp_user: str
+    # smtp_pass:  str
+    # smtp_starttls: str
+    # smtp_from_name: str
+    # smtp_from: str
 
     # Cloudflare Trunstile
     ct_site_key: str

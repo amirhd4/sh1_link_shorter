@@ -124,7 +124,6 @@ services:
 
     networks:
       - 1sl_default
-      - mailcowdockerized_mailcow-network
     depends_on:
       - app
       - frontend
@@ -167,5 +166,5 @@ networks:
   1sl_default:
     external: true
 
-  mailcowdockerized_mailcow-network:
-    external: true
+#  mailcowdockerized_mailcow-network:
+#    external: true
