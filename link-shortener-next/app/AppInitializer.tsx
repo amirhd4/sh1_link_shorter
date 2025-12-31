@@ -14,6 +14,8 @@ export default function AppInitializer({ children }: { children: React.ReactNode
     queryKey: ["me"],
     queryFn: authService.getMe,
     retry: false,
+    refetchOnWindowFocus: false,
+
   });
 
   useEffect(() => {
