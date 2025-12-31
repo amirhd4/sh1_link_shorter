@@ -31,7 +31,7 @@ import {useUserStore} from "@/store/userStore";
 import Link from "next/link";
 import {useRouter, useSearchParams} from "next/navigation";
 import {Turnstile} from "@marsidev/react-turnstile";
-import config from "../../config";
+import config from "@/config";
 
 const phoneSchema = z.object({
   phone_number: z.string().refine(
