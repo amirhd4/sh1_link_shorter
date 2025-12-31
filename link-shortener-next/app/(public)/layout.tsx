@@ -35,7 +35,7 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
   const { user, setUser } = useUserStore();
 
   const handleLogout = async () => {
-    await apiClient.post("/api/auth/logout");
+    await apiClient.post("/auth/logout");
 
     const { setUser, setQuota, setIsLoading } = useUserStore.getState();
 
