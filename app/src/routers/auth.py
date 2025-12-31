@@ -77,7 +77,8 @@ def set_client_cookie(access_token: str, role: str):
         samesite="lax",
         secure=not settings.DEBUG,
         path="/",
-        max_age=60 * 60 * 24 * 7  # 7 روز
+        max_age=60 * 60 * 24 * 7,
+        domain=".l1s.ir"
     )
 
     response.set_cookie(
@@ -86,7 +87,8 @@ def set_client_cookie(access_token: str, role: str):
         samesite="lax",
         secure=not settings.DEBUG,
         path="/",
-        max_age=60 * 60 * 24 * 7
+        max_age=60 * 60 * 24 * 7,
+        domain=".l1s.ir"
     )
 
     return response
@@ -230,10 +232,20 @@ async def login_for_access_token(request: Request, form_data: OAuth2PasswordRequ
 @router.post("/logout")
 async def logout():
     response = JSONResponse({"success": True})
-    response.delete_cookie("access_token", path="/")
-    response.delete_cookie("role", path="/")
-    return response
 
+    response.delete_cookie(
+        key="access_token",
+        path="/",
+        domain=".l1s.ir"
+    )
+
+    response.delete_cookie(
+        key="role",
+        path="/",
+        domain=".l1s.ir"
+    )
+
+    return response
 
 @router.get("/users/me", response_model=schemas.UserResponse)
 async def read_users_me(current_user: models.User = Depends(security.get_current_user)):
