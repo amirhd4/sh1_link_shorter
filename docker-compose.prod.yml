@@ -119,7 +119,7 @@ services:
     # - ./nginx/conf.d:/etc/nginx/conf.d
     # - ./nginx/conf:/etc/nginx/conf.d
     - /etc/letsencrypt:/etc/letsencrypt:ro
-    - /var/www/letsencrypt:/var/www/letsencrypt:ro
+    - /var/www/letsencrypt:/var/www/letsencrypt
 
     networks:
       - 1sl_default
