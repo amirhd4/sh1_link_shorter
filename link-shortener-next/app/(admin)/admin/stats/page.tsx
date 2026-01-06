@@ -43,8 +43,11 @@ export default function AdStatsPage() {
       setStatsUser([]);
     }
   };
+useEffect(() => {
+    document.title = "مدیریت تبلیغات";
+  }, []);
 
-  fetchStats();
+  fetchStats().then(r => null);
 }, [tabIndex]);
 
 

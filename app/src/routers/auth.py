@@ -33,17 +33,21 @@ from ..rate_limiter import limiter
 # from ..services import email_service
 from ..schemas import ResetPasswordRequest, ChangePasswordRequest
 from fastapi.responses import JSONResponse
+from urllib.parse import urlparse
 
+
+url = settings.frontend_url
+parsed = urlparse(url)
+
+front_url_without_prot = "" if settings.DEBUG else "." + parsed.netloc
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
-
 
 router = APIRouter(
     prefix="/auth",
     tags=["Authentication"]
 )
-
 
 ALL_CHARS = string.ascii_letters + string.digits + string.punctuation
 
@@ -78,7 +82,7 @@ def set_client_cookie(access_token: str, role: str):
         secure=not settings.DEBUG,
         path="/",
         max_age=60 * 60 * 24 * 7,
-        domain=".l1s.ir"
+        domain=front_url_without_prot
     )
 
     response.set_cookie(
@@ -88,7 +92,7 @@ def set_client_cookie(access_token: str, role: str):
         secure=not settings.DEBUG,
         path="/",
         max_age=60 * 60 * 24 * 7,
-        domain=".l1s.ir"
+        domain=front_url_without_prot
     )
 
     return response
@@ -236,13 +240,13 @@ async def logout():
     response.delete_cookie(
         key="access_token",
         path="/",
-        domain=".l1s.ir"
+        domain=front_url_without_prot
     )
 
     response.delete_cookie(
         key="role",
         path="/",
-        domain=".l1s.ir"
+        domain=front_url_without_prot
     )
 
     return response

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import {useEffect, useState} from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { DataGrid, type GridColDef, GridActionsCellItem } from '@mui/x-data-grid';
 import { Alert, Box, CircularProgress, Typography, Snackbar } from '@mui/material';
@@ -52,7 +52,9 @@ export default function LinkManagementPage() {
       }
 
   };
-
+    useEffect(() => {
+    document.title = "مدیریت لینک ها";
+  }, []);
   const columns: GridColDef[] = [
     { field: 'short_code', headerName: 'کد کوتاه', width: 150 },
     {

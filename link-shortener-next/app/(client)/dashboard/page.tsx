@@ -180,6 +180,9 @@ type DeleteTarget = { shortCode: string; domainId: string };
 
 export default function LinksDashboard() {
     const navigate = useRouter();
+    useEffect(() => {
+    document.title = "میزکار کاربر";
+  }, []);
     const { t } = useTranslation('common');
     const queryClient = useQueryClient();
     const localeText = usePersianDataGridLocale();

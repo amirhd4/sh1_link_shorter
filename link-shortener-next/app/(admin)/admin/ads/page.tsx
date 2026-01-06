@@ -106,7 +106,9 @@ export default function AdManagementPage() {
     });
     setOpen(true);
   };
-
+useEffect(() => {
+    document.title = "مدیریت تبلیغات";
+  }, []);
   // === Submit (Create or Update) ===
   const handleSubmit = async () => {
     try {

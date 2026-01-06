@@ -130,7 +130,11 @@ fetch("${baseUrl}", {
   // =========================================================================
   // رندر صفحه
   // =========================================================================
+    useEffect(() => {
+    document.title = "مدیریت API";
+  }, []);
   return (
+
     <Box sx={{ maxWidth: 1000, mx: "auto", p: isMobile ? 1 : 3 }}>
       <Typography variant="h4" sx={{ mb: 4, fontWeight: 700, color: theme.palette.primary.main }}>
         مستندات و کلید API

@@ -1,8 +1,14 @@
+"use client";
+
 import { Box, Typography, Paper, Divider } from '@mui/material';
 import { UpdateProfileForm } from '@/components/profile/UpdateProfileForm';
 import { ChangePasswordForm } from '@/components/profile/ChangePasswordForm';
+import {useEffect} from "react";
 
 export default function ProfilePage() {
+    useEffect(() => {
+    document.title = "نمایه کاربر";
+  }, []);
   return (
     <Box>
       <Typography variant="h4" gutterBottom>

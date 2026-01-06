@@ -53,9 +53,29 @@ async def create_payment(
     if not plan:
         raise HTTPException(status_code=404, detail="Plan not found")
 
+    today = date.today()
+    is_active = (
+            current_user.subscription_end_date
+            and current_user.subscription_end_date >= today
+    )
 
-    if current_user.plan_id == plan.id and plan.name == "Free":
-        raise HTTPException(status_code=400, detail="You already have the Free plan.")
+    # ❌ Free اصلاً قابل خرید نیست
+    if plan.name == "Free":
+        raise HTTPException(
+            status_code=400,
+            detail="Free plan cannot be purchased."
+        )
+
+    # ❌ اگر اشتراک فعاله و همون پلنه
+    if is_active and current_user.plan_id == plan.id:
+        raise HTTPException(
+            status_code=400,
+            detail="Your subscription is already active."
+        )
+
+    # ✅ فقط Pro قابل خرید است (چه منقضی شده، چه Free)
+    if plan.name != "Pro":
+        raise HTTPException(status_code=400, detail="Invalid plan")
 
     # if current_user.plan_id == plan.id:
     #     raise HTTPException(status_code=400, detail="You already have this plan.")
@@ -134,16 +154,15 @@ async def verify_zarinpal_payment(
 
         today = date.today()
 
-        if (
-                user.subscription_end_date
-                and user.subscription_end_date >= today
-                and user.plan_id == plan.id
-        ):
-            user.subscription_end_date = user.subscription_end_date + timedelta(days=plan.duration_days)
+        if user.subscription_end_date and user.subscription_end_date >= today:
+            # تمدید
+            user.subscription_end_date += timedelta(days=plan.duration_days)
         else:
+            # اشتراک جدید
             user.subscription_start_date = today
             user.subscription_end_date = today + timedelta(days=plan.duration_days)
 
+        user.plan_id = plan.id
 
         # user.subscription_start_date = date.today()
         # user.subscription_end_date = date.today() + timedelta(days=plan.duration_days)

@@ -12,6 +12,7 @@ import MouseIcon from '@mui/icons-material/Mouse';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
+import {useEffect} from "react";
 
 
 export default function AdminDashboardPage() {
@@ -19,6 +20,10 @@ export default function AdminDashboardPage() {
     queryKey: ['system-stats'],
     queryFn: adminService.getSystemStats,
   });
+
+    useEffect(() => {
+    document.title = "میز کار ادمین";
+  }, []);
 
   const { data: adStats, isLoading: isAdStatsLoading, isError: isAdStatsError } = useQuery({
     queryKey: ['ad-system-stats'],

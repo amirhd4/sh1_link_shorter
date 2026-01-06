@@ -6,12 +6,20 @@ from typing import List
 from .. import models, schemas
 from ..database import get_db
 from ..rate_limiter import limiter
+from datetime import date
 
 
 router = APIRouter(
     prefix="/plans",
     tags=["Plans"]
 )
+
+
+def is_subscription_active(user):
+    return (
+        user.subscription_end_date
+        and user.subscription_end_date >= date.today()
+    )
 
 
 @router.get("/", response_model=List[schemas.PlanResponse])

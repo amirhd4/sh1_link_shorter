@@ -8,10 +8,14 @@ import {
   Button, CircularProgress, Grid, Alert
 } from '@mui/material';
 import { useUserStore } from '@/store/userStore';
+import {useEffect} from "react";
+
 
 export default function PlansPage() {
   const { user, quota } = useUserStore();
-
+useEffect(() => {
+    document.title = "پلن‌های اشتراک";
+  }, []);
   // دریافت پلن‌ها
   const { data: plans, isLoading: isLoadingPlans } = useQuery({
     queryKey: ['plans'],
@@ -44,7 +48,16 @@ export default function PlansPage() {
 
       <Grid container spacing={3}>
         {plans?.map((plan) => {
-          const isCurrentPlan = user?.plan?.name === plan.name;
+          const today = new Date();
+        const isSubscriptionActive = Boolean(
+  user?.subscription_end_date &&
+  new Date(user.subscription_end_date) >= today
+);
+
+
+        const isCurrentPlan =
+          isSubscriptionActive && user?.plan?.name === plan.name;
+
 
           return (
             <Grid key={plan.id} size={{xs: 12, md: 4}}>
@@ -88,7 +101,11 @@ export default function PlansPage() {
                     size="small"
                     variant={isCurrentPlan ? "outlined" : "contained"}
                     onClick={() => !isCurrentPlan && paymentMutation.mutate(plan.name)}
-                    disabled={isCurrentPlan || paymentMutation.isPending}
+                    disabled={
+    plan.name === "Free" || // Free قابل خرید نیست
+    (isSubscriptionActive && user?.plan?.name === plan.name) ||
+    paymentMutation.isPending
+  }
                   >
                     {isCurrentPlan
                       ? 'پلن فعلی شما'

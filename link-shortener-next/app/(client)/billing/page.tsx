@@ -23,6 +23,7 @@ import { billingService } from '@/services/billingService';
 
 // آیکون برای زیبایی بیشتر
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
+import {useEffect} from "react";
 
 // تعریف یک نوع (Type) برای داده‌های هر سطر تا کد خواناتر شود
 type TransactionRow = {
@@ -174,6 +175,9 @@ const MobileSkeleton = () => (
 // کامپوننت اصلی صفحه
 // =================================================================
 export default function BillingHistoryPage() {
+    useEffect(() => {
+    document.title = "تاریخچه صورت حساب";
+  }, []);
   const localeText = usePersianDataGridLocale();
   const { data, isLoading, isError } = useQuery<TransactionRow[]>({
     queryKey: ['billing-history'],

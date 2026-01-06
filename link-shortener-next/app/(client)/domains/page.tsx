@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import { Box, Button, Typography, Stack, Chip, IconButton, Alert, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Snackbar } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
 import ReplayIcon from '@mui/icons-material/Replay';
@@ -81,7 +81,9 @@ export default function DomainsManager () {
       setSnackbar({open: true, message: 'کپی شد!'});
     });
   };
-
+useEffect(() => {
+    document.title = "مدیریت دامنه ها";
+  }, []);
   return (
     <Box>
       <Stack spacing={2}>

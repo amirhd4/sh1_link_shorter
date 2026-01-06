@@ -46,6 +46,7 @@ export default function HomeLinkShortener(): JSX.Element {
   const [resendTimer, setResendTimer] = useState(0);
   const [otpMode, setOtpMode] = useState<"register" | "login" | null>(null);
 
+  const user = useUserStore((s) => s.user);
   const setUser = useUserStore.getState().setUser;
 
   // local token name matches axios interceptor in lib/axios
@@ -120,61 +121,56 @@ export default function HomeLinkShortener(): JSX.Element {
 
   // ===== Core: shorten =====
   const handleShorten = async () => {
-    setError(null);
-    setSuccessMessage("");
-    setShortUrl("");
+  setError(null);
+  setSuccessMessage("");
+  setShortUrl("");
 
-    if (!longUrl) {
-      setError("لطفاً آدرس را وارد کنید.");
-      return;
-    }
-    if (!isValidUrl(longUrl)) {
-      setError("آدرس باید معتبر باشد و با http:// یا https:// شروع شود.");
-      return;
-    }
-    if (!isValidCustomAlias(customAlias)) {
-      setError("کد دلخواه فقط می‌تواند شامل حروف، اعداد، - و _ باشد (حداکثر 50 حرف).");
-      return;
-    }
+  if (!longUrl) {
+    setError("لطفاً آدرس را وارد کنید.");
+    return;
+  }
+  if (!isValidUrl(longUrl)) {
+    setError("آدرس باید معتبر باشد و با http:// یا https:// شروع شود.");
+    return;
+  }
+  if (!isValidCustomAlias(customAlias)) {
+    setError("کد دلخواه فقط می‌تواند شامل حروف، اعداد، - و _ باشد (حداکثر 50 حرف).");
+    return;
+  }
 
-    // اگر لاگین نیستیم، مودال OTP را باز کن و ساخت لینک را متوقف کن
-    // const tokenNow = localStorage.getItem("access_token");
-    const user = useUserStore((s) => s.user);
+  // user is already available from hook
+  if (!user) {
+    setOtpModalOpen(true);
+    setOtpStep("enter-phone");
+    return;
+  }
 
-    if (!user) {
-      setOtpModalOpen(true);
-      setOtpStep("enter-phone");
-      return;
+  setLoading(true);
+  try {
+    const payload: URLCreate = {
+      long_url: longUrl,
+      custom_alias: customAlias || null,
+      domain_id: 0
+    };
+    const res = await linkService.createShortLink(payload);
+    const candidate = (res as any).short_url || (res as any).short_code || "";
+    const full = buildFullShortUrl(candidate);
+    setShortUrl(full);
+    setSuccessMessage("لینک با موفقیت ساخته شد ✅");
+  } catch (err: any) {
+    const detail = err?.response?.data?.detail || err?.message || "خطایی در ساخت لینک رخ داد.";
+    if (typeof detail === "string" && detail.includes("قبلاً استفاده")) {
+      setError("کد انتخابی شما قبلاً استفاده شده است، لطفاً مورد دیگری انتخاب کنید.");
+    } else if (typeof detail === "object" && detail?.message) {
+      setError(detail.message);
+    } else {
+      setError(detail);
     }
+  } finally {
+    setLoading(false);
+  }
+};
 
-    setLoading(true);
-    try {
-      const payload: URLCreate = {
-        long_url: longUrl,
-        custom_alias: customAlias || null,
-        domain_id: 0
-      };
-      const res = await linkService.createShortLink(payload);
-      const candidate = (res as any).short_url || (res as any).short_code || "";
-      const full = buildFullShortUrl(candidate);
-      setShortUrl(full);
-      setSuccessMessage("لینک با موفقیت ساخته شد ✅");
-      // optional: پاک کردن فیلدها
-      // setLongUrl("");
-      // setCustomAlias("");
-    } catch (err: any) {
-      const detail = err?.response?.data?.detail || err?.message || "خطایی در ساخت لینک رخ داد.";
-      if (typeof detail === "string" && detail.includes("قبلاً استفاده")) {
-        setError("کد انتخابی شما قبلاً استفاده شده است، لطفاً مورد دیگری انتخاب کنید.");
-      } else if (typeof detail === "object" && detail?.message) {
-        setError(detail.message);
-      } else {
-        setError(detail);
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // ===== OTP: send =====
   const handleSendOtp = async () => {

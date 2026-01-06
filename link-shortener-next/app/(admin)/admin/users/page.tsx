@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import {useEffect, useState} from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { DataGrid, type GridColDef, GridActionsCellItem } from '@mui/x-data-grid';
 import { Alert, Box, CircularProgress, Typography, Chip, Tooltip, Snackbar, Paper } from '@mui/material';
@@ -60,7 +60,9 @@ export default function UserManagementPage() {
     },
     onSettled: () => setToggleActiveTarget(null),
   });
-
+useEffect(() => {
+    document.title = "مدیریت کاربران";
+  }, []);
   // Column definitions for the DataGrid
   const columns: GridColDef[] = [
     { field: 'id', headerName: 'ID', width: 90 },
