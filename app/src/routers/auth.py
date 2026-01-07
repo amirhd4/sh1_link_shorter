@@ -36,11 +36,15 @@ from fastapi.responses import JSONResponse
 from urllib.parse import urlparse
 
 
-url = settings.frontend_url
-parsed = urlparse(url)
-
-front_url_without_prot = "" if settings.DEBUG else "." + parsed.netloc
-
+if settings.DEBUG:
+    url = settings.frontend_url
+    parsed = urlparse(url)
+    url_set_cookie = parsed.netloc
+else:
+    url = settings.origin_backend_url
+    parsed = urlparse(url)
+    url_set_cookie = "." + parsed.netloc
+    
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
@@ -82,7 +86,7 @@ def set_client_cookie(access_token: str, role: str):
         secure=not settings.DEBUG,
         path="/",
         max_age=60 * 60 * 24 * 7,
-        domain=front_url_without_prot
+        domain=url_set_cookie
     )
 
     response.set_cookie(
@@ -92,7 +96,7 @@ def set_client_cookie(access_token: str, role: str):
         secure=not settings.DEBUG,
         path="/",
         max_age=60 * 60 * 24 * 7,
-        domain=front_url_without_prot
+        domain=url_set_cookie
     )
 
     return response
@@ -237,18 +241,18 @@ async def login_for_access_token(request: Request, form_data: OAuth2PasswordRequ
 async def logout():
     response = JSONResponse({"success": True})
 
-    logger.info(front_url_without_prot)
+    logger.info(url_set_cookie)
 
     response.delete_cookie(
         key="access_token",
         path="/",
-        domain=front_url_without_prot
+        domain=url_set_cookie
     )
 
     response.delete_cookie(
         key="role",
         path="/",
-        domain=front_url_without_prot
+        domain=url_set_cookie
     )
 
     return response
