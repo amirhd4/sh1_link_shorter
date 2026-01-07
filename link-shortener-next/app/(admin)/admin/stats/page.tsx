@@ -14,6 +14,9 @@ export default function AdStatsPage() {
 
   useEffect(() => {
   if (typeof window === 'undefined') return;
+useEffect(() => {
+    document.title = "آمار تبلیغات";
+  }, []);
 
   const fetchStats = async () => {
     try {
@@ -43,9 +46,6 @@ export default function AdStatsPage() {
       setStatsUser([]);
     }
   };
-useEffect(() => {
-    document.title = "مدیریت تبلیغات";
-  }, []);
 
   fetchStats().then(r => null);
 }, [tabIndex]);
