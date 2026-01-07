@@ -237,6 +237,8 @@ async def login_for_access_token(request: Request, form_data: OAuth2PasswordRequ
 async def logout():
     response = JSONResponse({"success": True})
 
+    logger.info(front_url_without_prot)
+
     response.delete_cookie(
         key="access_token",
         path="/",

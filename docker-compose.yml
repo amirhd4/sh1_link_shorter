@@ -14,10 +14,10 @@ services:
     # Expose the application port directly
     ports:
       - "8000:8000" # Assuming your app runs on port 8000 in the container
-    environment:
+#    environment:
       # SOCKS5_PROXY is kept as it's a core dependency
 #      - SOCKS5_PROXY=xray:10808
-      - DEBUG=True
+#      - DEBUG=True
 
     restart: on-failure # Changed from unless-stopped for dev environment
 
