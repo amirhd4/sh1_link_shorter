@@ -71,6 +71,8 @@ async def create_short_url(
         redis_client: redis.Redis = Depends(get_redis_client),
         current_user: models.User = Depends(security.get_current_user)
 ):
+    if not current_user.is_active or not current_user.is_verified:
+        raise HTTPException(status_code=403, detail="User is inactive or unverified")
     if not current_user.plan:
         raise HTTPException(status_code=403, detail="No active plan found for user.")
 

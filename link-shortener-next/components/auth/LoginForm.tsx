@@ -32,6 +32,8 @@ import Link from "next/link";
 import {useRouter, useSearchParams} from "next/navigation";
 import {Turnstile} from "@marsidev/react-turnstile";
 import config from "@/config";
+import { AlertColor } from "@mui/material";
+import {getErrorMessage} from "@/utils/errorHandler";
 
 const phoneSchema = z.object({
   phone_number: z.string().refine(
@@ -78,17 +80,20 @@ export function LoginForm() {
       }
     },
     onError: (error: any) => {
-      if (!isClient) return;
-      if (
-        error.response?.status === 403 &&
-        error.response?.data?.detail?.includes("Email not verified")
-      ) {
-        setVerificationError(true);
-      } else {
-        setVerificationError(false);
-        setSnackbarMessage("نام کاربری یا رمز عبور اشتباهه 😅");
-      }
-    },
+  if (!isClient) return;
+  const message = getErrorMessage(error);
+  setSnackbarMessage(message);
+
+  // بررسی خطای خاص شماره تایید نشده
+  if (
+    error.response?.status === 403 &&
+    error.response?.data?.detail?.includes("phone number not verified")
+  ) {
+    setVerificationError(true);
+  } else {
+    setVerificationError(false);
+  }
+},
   });
 
   // const resendMutation = useMutation({
@@ -172,10 +177,11 @@ export function LoginForm() {
               {/*)}*/}
 
               {loginMutation.isError && !verificationError && (
-                <Alert severity="error" sx={{ borderRadius: 2 }}>
-                  نام کاربری یا رمز عبور اشتباهه 😅
-                </Alert>
-              )}
+  <Alert severity="error" sx={{ borderRadius: 2 }}>
+    {snackbarMessage || "خطایی رخ داده 😅"}
+  </Alert>
+)}
+
 
               {verificationError && (
                 <Alert

@@ -19,7 +19,7 @@ export function ConfirmationDialog({ open, onClose, onConfirm, title, descriptio
             <DialogActions>
                 <Button onClick={onClose}>انصراف</Button>
                 <Button onClick={onConfirm} color="error" autoFocus>
-                    تایید و حذف
+                    تایید
                 </Button>
             </DialogActions>
         </Dialog>

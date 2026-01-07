@@ -22,6 +22,8 @@ router = APIRouter(
     dependencies=[Depends(security.get_current_admin_user)]
 )
 
+class UpdateUserActiveRequest(BaseModel):
+    is_active: bool
 
 async def get_redis_client(request: Request) -> redis.Redis:
     return request.app.state.redis
@@ -273,17 +275,27 @@ async def get_ad_system_stats(db: AsyncSession = Depends(get_db)):
     )
 
 
-@router.patch("/users/{user_id}/toggle-active", response_model=schemas.UserResponse)
-async def toggle_user_active_status(user_id: int, db: AsyncSession = Depends(get_db)):
+@router.patch("/users/{user_id}/active", response_model=schemas.UserResponse)
+async def update_user_active_status(
+    user_id: int,
+    request: UpdateUserActiveRequest,
+    db: AsyncSession = Depends(get_db)
+):
     """وضعیت فعال/غیرفعال یک کاربر را تغییر می‌دهد."""
     user = await db.get(models.User, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    user.is_active = not user.is_active
+    user.is_active = request.is_active
     await db.commit()
-    await db.refresh(user)
-    return user
+    result = await db.execute(
+        select(models.User)
+        .options(selectinload(models.User.plan))
+        .where(models.User.id == user_id)
+    )
+    user_with_plan = result.scalar_one()
+
+    return user_with_plan
 
 
 @router.post("/ads/assign-to-link", response_model=schemas.LinkAdResponse, status_code=status.HTTP_201_CREATED)

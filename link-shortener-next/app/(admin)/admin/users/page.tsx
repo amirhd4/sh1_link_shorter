@@ -42,24 +42,43 @@ export default function UserManagementPage() {
       setSnackbarMessage('کاربر با موفقیت حذف شد.');
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
     },
-    onError: () => {
-      setSnackbarMessage('خطا در حذف کاربر.');
-    },
+    onError: (error: any) => {
+  const message =
+    error?.response?.data?.detail ||
+    error?.response?.data?.message ||
+    'خطای غیرمنتظره‌ای رخ داد';
+
+  setSnackbarMessage(message);
+},
+
     onSettled: () => setDeleteTarget(null),
   });
 
   // Mutation for toggling user's active status
   const toggleActiveMutation = useMutation({
-    mutationFn: adminService.toggleUserActive,
-    onSuccess: (updatedUser) => {
-      setSnackbarMessage(`وضعیت کاربر به '${updatedUser.is_active ? 'فعال' : 'غیرفعال'}' تغییر کرد.`);
-      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
-    },
-    onError: () => {
-      setSnackbarMessage('خطا در تغییر وضعیت کاربر.');
-    },
-    onSettled: () => setToggleActiveTarget(null),
-  });
+  mutationFn: ({ userId, isActive }: { userId: number; isActive: boolean }) =>
+    adminService.updateUserActive(userId, isActive),
+
+  onSuccess: (updatedUser) => {
+    setSnackbarMessage(
+      `وضعیت کاربر به '${updatedUser.is_active ? 'فعال' : 'غیرفعال'}' تغییر کرد.`
+    );
+    queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+  },
+
+  onError: (error: any) => {
+  const message =
+    error?.response?.data?.detail ||
+    error?.response?.data?.message ||
+    'خطای غیرمنتظره‌ای رخ داد';
+
+  setSnackbarMessage(message);
+},
+
+
+  onSettled: () => setToggleActiveTarget(null),
+});
+
 useEffect(() => {
     document.title = "مدیریت کاربران";
   }, []);
@@ -102,10 +121,12 @@ useEffect(() => {
         </Tooltip>,
         <Tooltip title={row.is_active ? "غیرفعال کردن کاربر" : "فعال کردن کاربر"}>
           <GridActionsCellItem
-            icon={row.is_active ? <ToggleOffIcon /> : <ToggleOnIcon />}
-            label="Toggle Active"
-            onClick={() => setToggleActiveTarget(row)}
-          />
+  disabled={toggleActiveMutation.isPending}
+  icon={row.is_active ? <ToggleOffIcon /> : <ToggleOnIcon />}
+  label="Toggle Active"
+  onClick={() => setToggleActiveTarget(row)}
+/>
+
         </Tooltip>,
         <Tooltip title="حذف کامل کاربر">
             <GridActionsCellItem
@@ -162,7 +183,14 @@ useEffect(() => {
       <ConfirmationDialog
         open={!!toggleActiveTarget}
         onClose={() => setToggleActiveTarget(null)}
-        onConfirm={() => toggleActiveTarget && toggleActiveMutation.mutate(toggleActiveTarget.id)}
+        onConfirm={() =>
+  toggleActiveTarget &&
+  toggleActiveMutation.mutate({
+    userId: toggleActiveTarget.id,
+    isActive: !toggleActiveTarget.is_active,
+  })
+}
+
         title={`تغییر وضعیت کاربر ${toggleActiveTarget?.phone_number}`}
         description={`آیا از ${toggleActiveTarget?.is_active ? 'غیرفعال' : 'فعال'} کردن این کاربر اطمینان دارید؟`}
       />

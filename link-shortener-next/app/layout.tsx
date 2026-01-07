@@ -1,9 +1,10 @@
 import './globals.css'
-// import { Geist, Geist_Mono } from 'next/font/google'
+import type { Metadata } from 'next'
+import Script from 'next/script'
 import ClientProviders from './providers'
 import localFont from 'next/font/local'
 
-const myFont = localFont({
+const vazirmatn = localFont({
   src: [
     {
       path: '../public/fonts/Vazirmatn-Regular.woff2',
@@ -16,17 +17,91 @@ const myFont = localFont({
       style: 'normal',
     },
   ],
-  variable: '--font-my',
+  variable: '--font-vazirmatn',
   display: 'swap',
 })
 
-// const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] })
-// const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'] })
+/* =======================
+   Metadata (معادل <head>)
+   ======================= */
+export const metadata: Metadata = {
+  title: 'لِس (l1s) | کوتاه‌کننده لینک',
+  description: 'سرویس کوتاه‌کننده لینک سریع، امن و حرفه‌ای',
+  applicationName: 'l1s',
+  themeColor: '#0a84ff',
+  manifest: '/manifest.json',
+  icons: {
+    icon: [
+      { url: '/favicon.png', sizes: '32x32', type: 'image/png' },
+      { url: '/icon.svg', type: 'image/svg+xml' },
+    ],
+    apple: '/apple-icon.png',
+  },
+  metadataBase: new URL('https://l1s.ir'),
+  alternates: {
+    canonical: '/',
+  },
+}
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   return (
-    <html lang="fa">
-      <body dir="rtl" className="{myFont.variable}">
+    <html lang="fa" dir="rtl" className={vazirmatn.variable}>
+      <body>
+        {/* ========= Schema.org: WebSite ========= */}
+        <Script
+          id="schema-website"
+          type="application/ld+json"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'WebSite',
+              name: 'لِس',
+              url: 'https://l1s.ir/',
+              description:
+                'سرویس کوتاه‌کننده لینک سریع، امن و حرفه‌ای',
+              potentialAction: {
+                '@type': 'SearchAction',
+                target:
+                  'https://a.l1s.ir/?q={search_term_string}',
+                'query-input':
+                  'required name=search_term_string',
+              },
+            }),
+          }}
+        />
+
+        {/* ========= Schema.org: Organization ========= */}
+        <Script
+          id="schema-organization"
+          type="application/ld+json"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'Organization',
+              name: 'لِس',
+              url: 'https://l1s.ir',
+              logo: 'https://a.l1s.ir/favicon.png',
+              contactPoint: {
+                '@type': 'ContactPoint',
+                telephone: '+989960074607',
+                contactType: 'customer support',
+              },
+            }),
+          }}
+        />
+
+        {/* ========= NoScript ========= */}
+        <noscript>
+          برای استفاده بهتر از سرویس کوتاه‌کننده لینک لِس (l1s)
+          لطفاً جاوااسکریپت را فعال کنید.
+        </noscript>
+
         <ClientProviders>{children}</ClientProviders>
       </body>
     </html>

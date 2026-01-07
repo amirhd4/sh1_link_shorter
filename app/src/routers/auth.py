@@ -35,15 +35,13 @@ from ..schemas import ResetPasswordRequest, ChangePasswordRequest
 from fastapi.responses import JSONResponse
 from urllib.parse import urlparse
 
+url = settings.origin_backend_url
+parsed = urlparse(url).hostname
 
 if settings.DEBUG:
-    url = settings.frontend_url
-    parsed = urlparse(url)
-    url_set_cookie = parsed.netloc
+    url_set_cookie = parsed
 else:
-    url = settings.origin_backend_url
-    parsed = urlparse(url)
-    url_set_cookie = "." + parsed.netloc
+    url_set_cookie = "." + parsed
     
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -77,7 +75,6 @@ def generate_secure_random_password(length: int = 16) -> str:
 
 def set_client_cookie(access_token: str, role: str):
     response = JSONResponse(content={"success": True})
-
     response.set_cookie(
         key="access_token",
         value=access_token,
@@ -231,7 +228,6 @@ async def login_for_access_token(request: Request, form_data: OAuth2PasswordRequ
 
     identifier = user.phone_number
     access_token = security.create_access_token(data={"sub": identifier})
-    logger.info(str(user.role))
     return set_client_cookie(access_token, user.role)
 
     # return {"access_token": access_token, "token_type": "bearer"}
@@ -240,8 +236,6 @@ async def login_for_access_token(request: Request, form_data: OAuth2PasswordRequ
 @router.post("/logout")
 async def logout():
     response = JSONResponse({"success": True})
-
-    logger.info(url_set_cookie)
 
     response.delete_cookie(
         key="access_token",

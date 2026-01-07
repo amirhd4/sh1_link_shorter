@@ -1,23 +1,34 @@
 import i18n from "../i18n";
 
 export function getErrorMessage(error: any): string {
-  const status = error?.response?.status;
+  // اگر درخواست اصلاً پاسخی نداشته باشه (قطع شبکه یا CORS)
+  if (!error?.response) return i18n.t("errors.network");
+
+  const status = error.response.status;
+  const detail = error.response.data?.detail || "";
+
+  // پیام‌های خاص اپلیکیشن
+  if (status === 403) {
+    if (detail.includes("phone number not verified")) {
+      return i18n.t("errors.login.phoneNotVerified");
+    }
+    if (detail.includes("deactivated")) {
+      return i18n.t("errors.login.deactivated");
+    }
+  }
+
+  if (status === 401) {
+    return i18n.t("errors.login.invalidCredentials"); // نام کاربری یا رمز اشتباه
+  }
 
   switch (status) {
-    case 400:
-      return i18n.t("errors.invalidData"); // کد اشتباه یا منقضی شده
-    case 401:
-      return i18n.t("errors.unauthorized"); // نیاز به ورود / دسترسی غیرمجاز
-    case 404:
-      return i18n.t("errors.notFound");
-    case 422:
-      return i18n.t("errors.invalidDataFormat");
-    case 429:
-      return i18n.t("errors.tooManyAttempts"); // تلاش بیش‌ازحد
+    case 400: return i18n.t("errors.invalidData");
+    case 404: return i18n.t("errors.notFound");
+    case 422: return i18n.t("errors.invalidDataFormat");
+    case 429: return i18n.t("errors.tooManyAttempts");
     default:
-      if (status >= 500) {
-        return i18n.t("errors.serverError"); // خطای سرور
-      }
-      return i18n.t("errors.default"); // هر خطای دیگه
+      return status >= 500
+        ? i18n.t("errors.serverError")
+        : i18n.t("errors.default");
   }
 }
