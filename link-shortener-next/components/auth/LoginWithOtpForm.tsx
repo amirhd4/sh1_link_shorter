@@ -120,9 +120,18 @@ export function LoginWithOtpForm() {
           backgroundColor: "background.paper",
         }}
       >
-        <Typography variant="h4" sx={{ mb: 3, textAlign: "center", fontWeight: "bold" }}>
+        <Typography component="h1" variant="h4" sx={{ mb: 3, textAlign: "center", fontWeight: "bold" }}>
           ورود با شماره موبایل
         </Typography>
+
+          <Typography
+  variant="body2"
+  color="text.secondary"
+  sx={{ textAlign: "center", mb: 2 }}
+>
+  ورود سریع و امن با کد یکبار مصرف، بدون نیاز به رمز عبور
+</Typography>
+
 
         <Stack spacing={2}>
           {/* --- مرحله وارد کردن شماره موبایل --- */}
@@ -140,10 +149,11 @@ export function LoginWithOtpForm() {
                   }
                 }}
                 helperText={
-                    sendOtpMutation.isError
-                      ? sendOtpMutation.error?.message
-                      : t("otp.phoneHelper")
-                  }
+  sendOtpMutation.isError
+    ? (sendOtpMutation.error as any)?.customMessage
+    : t("otp.phoneHelper")
+}
+
                 error={sendOtpMutation.isError}
                 InputProps={{ startAdornment: <InputAdornment position="start">📱</InputAdornment> }}
 

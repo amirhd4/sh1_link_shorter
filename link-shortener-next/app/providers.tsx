@@ -23,7 +23,7 @@ export default function ClientProviders({ children }: { children: ReactNode }) {
 
   useEffect(() => setMounted(true), [])
 
-  if (!mounted) return null // فقط بعد از mount render شود
+  if (!mounted) return null
 
   return (
     <CacheProvider value={cacheRtl}>

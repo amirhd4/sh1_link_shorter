@@ -1,10 +1,9 @@
 import i18n from "../i18n";
 
 export function getOtpErrorMessage(error: any, step: "phone" | "verify"): string {
-  const status = error?.response?.status;
+  const status = error?.response?.status ?? null;
 
-  // خطای بدون اینترنت
-  if (error?.message === "Network Error") {
+  if (!error?.response) {
     return i18n.t("errors.network");
   }
 
@@ -16,8 +15,9 @@ export function getOtpErrorMessage(error: any, step: "phone" | "verify"): string
       case 422: return i18n.t("errors.otp.invalidPhone");
       case 429: return i18n.t("errors.otp.sendLimit");
       default:
-        if (status >= 500) return i18n.t("errors.otp.serverError");
-        return i18n.t("errors.default");
+        return status && status >= 500
+          ? i18n.t("errors.otp.serverError")
+          : i18n.t("errors.default");
     }
   }
 
@@ -28,8 +28,9 @@ export function getOtpErrorMessage(error: any, step: "phone" | "verify"): string
       case 422: return i18n.t("errors.verify.expiredCode");
       case 429: return i18n.t("errors.verify.tooManyAttempts");
       default:
-        if (status >= 500) return i18n.t("errors.verify.serverError");
-        return i18n.t("errors.default");
+        return status && status >= 500
+          ? i18n.t("errors.verify.serverError")
+          : i18n.t("errors.default");
     }
   }
 
