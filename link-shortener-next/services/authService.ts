@@ -93,17 +93,17 @@ export const authService = {
     // -------------------------
     // OTP for Login/Register
     // -------------------------
-    sendOtpLogin: async (phone: string, captchaToken: string) => {
+    sendOtpLogin: async (phone: string, captchaToken: string | null) => {
       const res = await apiClient.post('/auth/send-otp-login', { phone, captcha_token: captchaToken || "dummy" });
       return res.data as { message: string };
     },
 
-    verifyOtpLogin: async (phone: string, code: string, captchaToken: string) => {
+    verifyOtpLogin: async (phone: string, code: string, captchaToken: string | null) => {
       const res = await apiClient.post('/auth/verify-otp-login', { phone, code, captcha_token: captchaToken || "dummy" });
       return res.data as OtpLoginResponse;
     },
 
-    sendOtpRegister: async (phone: string, captchaToken: string) => {
+    sendOtpRegister: async (phone: string, captchaToken: string | null) => {
       const res = await apiClient.post('/auth/send-otp-register', { phone, captcha_token: captchaToken || "dummy" });
       return res.data as { message: string };
     },
@@ -113,7 +113,7 @@ export const authService = {
       code: string,
       first_name?: string,
       last_name?: string,
-      captchaToken?: string
+      captchaToken?: string | null
     ) => {
       const res = await apiClient.post('/auth/register-otp', { phone, code, first_name, last_name, captcha_token: captchaToken || "test" });
       return res.data as UserWithToken;

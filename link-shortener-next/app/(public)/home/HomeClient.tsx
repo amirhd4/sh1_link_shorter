@@ -41,6 +41,7 @@ import {
   CartesianGrid,
 } from "recharts";
 import HomeLinkShortener from "@/components/home/HomeLinkShortener";
+import Image from "next/image";
 
 
 /* ---------------- Data ---------------- */
@@ -155,6 +156,13 @@ const HomeClient: React.FC = () => {
 
       {/* Hero */}
       <Box sx={{ textAlign: "center", py: { xs: 6, md: 10 }, px: 2 }}>
+          <Image
+  src="/images/hero-dashboard.webp"
+  alt="کوتاه‌کننده لینک لس - l1s با داشبورد تحلیلی و قابلیت کسب درآمد"
+  width={1200}
+  height={630}
+  priority
+/>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
           <Typography
             variant="h2"
@@ -205,7 +213,27 @@ const HomeClient: React.FC = () => {
         </motion.div>
       </Box>
 
-        <HomeLinkShortener />
+        <Box
+  sx={{
+    mt: 4,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 3,
+  }}
+>
+  <HomeLinkShortener />
+
+  <Image
+    src="/images/link-shortener-example.webp"
+    alt="تبدیل لینک بلند به لینک کوتاه در l1s"
+    width={900}
+    height={450}
+    loading="lazy"
+    style={{ borderRadius: 12 }}
+  />
+</Box>
+
 
 
 {/* SEO Optimized Content Section */}
@@ -223,13 +251,30 @@ const HomeClient: React.FC = () => {
   <h1 style={{ fontSize: "2.25rem", fontWeight: "bold", marginBottom: "2rem", color: "#fff" }}>
     بهترین کوتاه‌کننده لینک رایگان و حرفه‌ای
   </h1>
+    <Image
+  src="/images/url-shortener-seo.webp"
+  alt="بهترین کوتاه‌کننده لینک رایگان با آمار دقیق"
+  width={900}
+  height={500}
+  loading="lazy"
+/>
+
   <p style={{ marginBottom: "1.5rem", fontSize: "1.125rem" }}>
     آیا لینک‌های شما طولانی و نامرتب هستند؟ با استفاده از کوتاه‌کننده لینک حرفه‌ای ما، می‌توانید لینک‌های بلند خود را به URLهای کوتاه، جذاب و قابل اشتراک‌گذاری تبدیل کنید. این کار باعث می‌شود لینک‌ها ظاهر حرفه‌ای داشته باشند و نرخ کلیک (CTR) شما افزایش یابد.
   </p>
 
-  <h2 style={{ fontSize: "1.875rem", fontWeight: "bold", marginBottom: "1rem", color: "#fff" }}>
+  <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: "1rem" }}>
+  <Image
+    src="/images/link-benefits.webp"
+    alt="مزایای کوتاه کردن لینک و افزایش نرخ کلیک"
+    width={40}
+    height={40}
+    loading="lazy"
+  />
+  <h2 style={{ fontSize: "1.875rem", fontWeight: "bold", color: "#fff" }}>
     چرا کوتاه کردن لینک مهم است؟
   </h2>
+</Box>
   <ul style={{ marginBottom: "1.5rem", paddingInlineStart: "1.25rem", fontSize: "1.125rem" }}>
     <li>لینک‌های کوتاه و مرتب ظاهر حرفه‌ای به کسب‌وکار شما می‌دهند.</li>
     <li>اشتراک‌گذاری آسان در شبکه‌های اجتماعی و پیام‌رسان‌ها.</li>

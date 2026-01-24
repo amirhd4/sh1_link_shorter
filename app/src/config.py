@@ -5,6 +5,7 @@ class Settings(BaseSettings):
     database_url: str
     redis_url: str
     DEBUG: bool = False
+    CAPTCHA: bool = True
 
     frontend_url: str
     backend_url: str

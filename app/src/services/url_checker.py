@@ -1,5 +1,6 @@
 import httpx
 from ..database import settings
+from ..config import settings
 
 GOOGLE_API_KEY = settings.google_api_key
 WEB_RISK_API_URL = f"https://webrisk.googleapis.com/v1/uris:search?key={GOOGLE_API_KEY}"
@@ -9,6 +10,9 @@ async def is_url_malicious(url: str) -> bool:
     """
     Checks if a URL is flagged as malicious by the Google Web Risk API.
     """
+    if not settings.CAPTCHA:
+        return False
+
     if not GOOGLE_API_KEY:
         print("WARNING: GOOGLE_API_KEY is not set. Skipping malware check.")
         return False

@@ -1,11 +1,15 @@
 # Base image (Keep it consistent and lightweight)
-FROM docker.arvancloud.ir/python:3.11-slim
+FROM python:3.11
 
 # Set working directory
 WORKDIR /app
 
 # Copy dependency definition
 COPY ./requirements.txt /app/requirements.txt
+
+RUN pip config --user set global.index https://mirror-pypi.runflare.com/simple
+RUN pip config --user set global.index-url https://mirror-pypi.runflare.com/simple
+RUN pip config --user set global.trusted-host mirror-pypi.runflare.com
 
 # Install dependencies
 RUN pip install --upgrade pip && \

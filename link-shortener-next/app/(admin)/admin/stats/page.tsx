@@ -3,8 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tabs, Tab } from '@mui/material';
 import { getAdStatsPerLink, getAdStatsPerUser } from '@/services/admin';
-import type {AdStatsPerLink, AdStatsPerUser} from "@/types";
-
+import type { AdStatsPerLink, AdStatsPerUser } from "@/types";
 
 export default function AdStatsPage() {
   const [statsLink, setStatsLink] = useState<AdStatsPerLink[]>([]);
@@ -12,44 +11,45 @@ export default function AdStatsPage() {
   const [error, setError] = useState<string | null>(null);
   const [tabIndex, setTabIndex] = useState(0);
 
+  // تنظیم عنوان صفحه فقط یک بار
   useEffect(() => {
-  if (typeof window === 'undefined') return;
-useEffect(() => {
-    document.title = "آمار تبلیغات";
+    if (typeof window !== 'undefined') {
+      document.title = "آمار تبلیغات";
+    }
   }, []);
 
-  const fetchStats = async () => {
-    try {
-      if (tabIndex === 0) {
-        const linkStats = await getAdStatsPerLink();
-        // ✅ مطمئن شو که خروجی واقعا آرایه است
-        if (Array.isArray(linkStats)) {
-          setStatsLink(linkStats);
+  // فراخوانی داده‌ها بر اساس tabIndex
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        setError(null); // ریست خطا قبل از fetch
+        if (tabIndex === 0) {
+          const linkStats = await getAdStatsPerLink();
+          if (Array.isArray(linkStats)) {
+            setStatsLink(linkStats);
+          } else {
+            console.warn('Unexpected linkStats data:', linkStats);
+            setStatsLink([]);
+          }
         } else {
-          console.warn('Unexpected linkStats data:', linkStats);
-          setStatsLink([]); // مقدار پیش‌فرض امن
+          const userStats = await getAdStatsPerUser();
+          if (Array.isArray(userStats)) {
+            setStatsUser(userStats);
+          } else {
+            console.warn('Unexpected userStats data:', userStats);
+            setStatsUser([]);
+          }
         }
-      } else {
-        const userStats = await getAdStatsPerUser();
-        if (Array.isArray(userStats)) {
-          setStatsUser(userStats);
-        } else {
-          console.warn('Unexpected userStats data:', userStats);
-          setStatsUser([]);
-        }
+      } catch (err) {
+        console.error('Error fetching stats:', err);
+        setError('Failed to fetch statistics.');
+        setStatsLink([]);
+        setStatsUser([]);
       }
-    } catch (err) {
-      console.error('Error fetching stats:', err);
-      setError('Failed to fetch statistics.');
-      // ✅ در صورت خطا هم state‌هارو ریست کن تا map ارور نده
-      setStatsLink([]);
-      setStatsUser([]);
-    }
-  };
+    };
 
-  fetchStats().then(r => null);
-}, [tabIndex]);
-
+    fetchStats();
+  }, [tabIndex]);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabIndex(newValue);
@@ -60,6 +60,7 @@ useEffect(() => {
       <Typography variant="h4" gutterBottom>
         آمار تبلیغات
       </Typography>
+
       {error && <Typography color="error">{error}</Typography>}
 
       <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>

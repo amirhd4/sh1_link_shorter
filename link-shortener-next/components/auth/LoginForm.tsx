@@ -115,7 +115,7 @@ export function LoginForm() {
   // };
 
   const onSubmit = (data: LoginFormInputs) => {
-    if (!captchaToken && !config.debug) {
+    if (!captchaToken && config.captcha) {
       setSnackbarMessage("لطفاً کپچا را کامل کنید 🛡️");
       return;
     }

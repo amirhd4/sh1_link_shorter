@@ -1,5 +1,6 @@
 import React from "react";
 import { Container, Typography, Box, List, ListItem } from "@mui/material";
+import Image from "next/image";
 import {Metadata} from "next";
 
 export const metadata: Metadata = {
@@ -44,6 +45,16 @@ const ShortUrlGeneratorPage: React.FC = () => {
           }),
         }}
       />
+
+         <Box mb={4} display="flex" justifyContent="center">
+        <Image
+          src="/images/url-shortener-seo.webp"
+          alt="بهترین کوتاه‌کننده لینک ایران | لس"
+          width={1200}
+          height={630}
+          priority
+        />
+      </Box>
 
       <Typography variant="h3" mb={3}>تولیدکننده لینک کوتاه لس</Typography>
       <Typography mb={2}>

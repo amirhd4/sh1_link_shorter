@@ -5,7 +5,9 @@ import AdRedirectClient from "./AdRedirectClient";
 type Props = { params: { domainId: string; shortCode: string } };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const ad = await adServiceServer.getActiveAd(params.shortCode);
+  const { shortCode } = await params;
+  const ad = await adServiceServer.getActiveAd(shortCode);
+
 
   if (!ad) {
     return {
@@ -25,7 +27,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function Page({ params }: Props) {
-  const ad = await adServiceServer.getActiveAd(params.shortCode);
+  const { shortCode } = await params;
+  const ad = await adServiceServer.getActiveAd(shortCode);
 
   return <AdRedirectClient ad={ad} />;
 }

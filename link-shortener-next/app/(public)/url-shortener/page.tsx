@@ -2,6 +2,7 @@ import React from "react";
 import { Container, Typography, Box, List, ListItem, Button, Stack } from "@mui/material";
 import Link from "next/link";
 import {Metadata} from "next";
+import Image from "next/image";
 
 export const metadata: Metadata = {
   title: "API کوتاه‌کننده لینک | لس",
@@ -34,9 +35,6 @@ const faqItems = [
 const ApiUrlShortenerPage: React.FC = () => {
   return (
     <Container sx={{ py: 8 }}>
-      <Typography variant="h3" mb={4}>
-        API کوتاه‌کننده لینک
-      </Typography>
 
       {/* JSON-LD برای FAQ */}
       <script
@@ -54,25 +52,39 @@ const ApiUrlShortenerPage: React.FC = () => {
         }}
       />
 
-      <Typography variant="h3" mb={3}>API کوتاه‌کننده لینک لِس</Typography>
+      <Typography component="h1" variant="h3" mb={3}>
+  API کوتاه‌کننده لینک حرفه‌ای | لس
+</Typography>
+
+
       <Typography mb={2} sx={{ lineHeight: 1.8 }}>
         توسعه‌دهندگان می‌توانند با API امن و حرفه‌ای لس، لینک‌های بلند خود را به لینک‌های کوتاه و قابل اشتراک‌گذاری تبدیل کنند. این API امکانات پیشرفته‌ای برای کسب‌وکارها، بازاریابی دیجیتال و توسعه اپلیکیشن‌ها ارائه می‌دهد.
       </Typography>
 
       <Stack direction={{ xs: "column", sm: "row" }} spacing={2} mb={4}>
-        <Link href="/register" passHref legacyBehavior>
+        <Link href="/register" passHref>
   <Button variant="contained" color="primary">
     ثبت‌نام و دریافت Api-Key
   </Button>
 </Link>
 
-<Link href="/short-url-generator" passHref legacyBehavior>
+<Link href="/short-url-generator" passHref>
   <Button variant="outlined" color="secondary">
     استفاده رایگان بدون ثبت‌نام
   </Button>
 </Link>
 
       </Stack>
+
+        <Image
+  src="/images/api-url-shortener-diagram.webp"
+  alt="API کوتاه‌کننده لینک لس برای توسعه‌دهندگان با دامنه اختصاصی و UTM"
+  width={1000}
+  height={520}
+  loading="lazy"
+  style={{ borderRadius: 12, margin: "24px 0" }}
+/>
+
 
       <Typography variant="h5" mb={2}>ویژگی‌های کلیدی API لس</Typography>
       <List>
@@ -135,6 +147,12 @@ Body:
           <ListItem>آیا امکان ردیابی کلیک‌ها وجود دارد؟ بله، گزارش کامل کلیک‌ها، موقعیت جغرافیایی و منابع ارجاع در دسترس است.</ListItem>
         </List>
       </Box>
+
+        <Typography mt={6} align="center">
+  برای شروع استفاده از <strong>API کوتاه‌کننده لینک لس</strong>،
+  <Link href="/register">ثبت‌نام کنید</Link> و Api-Key دریافت کنید.
+</Typography>
+
     </Container>
   );
 };

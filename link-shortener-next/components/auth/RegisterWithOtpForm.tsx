@@ -14,6 +14,7 @@ import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { getOtpErrorMessage } from "@/utils/otpErrorHandler";
 import { Turnstile } from "@marsidev/react-turnstile";
 import Link from "next/link";
+import config from "@/config";
 
 export function RegisterWithOtpForm() {
   const navigate = useRouter();
@@ -37,7 +38,7 @@ export function RegisterWithOtpForm() {
 
   // --- ارسال OTP ---
   const sendOtpMutation = useMutation({
-    mutationFn: (payload: { phone: string; captcha_token: string }) => 
+    mutationFn: (payload: { phone: string; captcha_token: string | null }) =>
       authService.sendOtpRegister(payload.phone, payload.captcha_token),
     onSuccess: () => {
       setStep("verify");
@@ -56,7 +57,7 @@ export function RegisterWithOtpForm() {
   // --- تایید OTP و ثبت‌نام ---
   const verifyOtpMutation = useMutation({
     mutationFn: ({ phone, code, firstName, lastName, captchaToken }: 
-      { phone: string; code: string; firstName: string; lastName: string; captchaToken: string }) =>
+      { phone: string; code: string; firstName: string; lastName: string; captchaToken: string | null }) =>
       authService.registerWithOtp(phone, code, firstName, lastName, captchaToken),
     onSuccess: async (data) => {
       // localStorage.setItem("access_token", data.access_token);
@@ -161,7 +162,7 @@ export function RegisterWithOtpForm() {
                 color="primary"
                 size="large"
                 onClick={() => {
-                  if (!captchaTokenSend) {
+                  if (!captchaTokenSend && config.captcha) {
                     setSnackbar({ message: "لطفاً کپچا را کامل کنید 🛡️", severity: "error" });
                     return;
                   }
@@ -225,7 +226,7 @@ export function RegisterWithOtpForm() {
                 color="success"
                 size="large"
                 onClick={() => {
-                  if (!captchaTokenVerify) {
+                  if (!captchaTokenVerify && config.captcha) {
                     setSnackbar({ message: "لطفاً کپچا را کامل کنید 🛡️", severity: "error" });
                     return;
                   }

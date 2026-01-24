@@ -14,6 +14,7 @@ import { getOtpErrorMessage } from "@/utils/otpErrorHandler";
 import { Turnstile } from "@marsidev/react-turnstile";
 import i18n from "@/i18n";
 import {useTranslation} from "react-i18next";
+import config from "@/config";
 
 
 export function LoginWithOtpForm() {
@@ -37,7 +38,7 @@ export function LoginWithOtpForm() {
 
   // --- ارسال OTP ---
   const sendOtpMutation = useMutation({
-    mutationFn: (payload: { phone: string; captcha_token: string }) =>
+    mutationFn: (payload: { phone: string; captcha_token: string | null }) =>
       authService.sendOtpLogin(payload.phone, payload.captcha_token),
     onSuccess: () => {
       setStep("verify");
@@ -57,7 +58,7 @@ export function LoginWithOtpForm() {
   // --- تایید OTP و ورود ---
   const verifyOtpMutation = useMutation({
     mutationFn: ({ phone, code }: { phone: string; code: string }) =>
-      authService.verifyOtpLogin(phone, code, captchaToken || ""),
+      authService.verifyOtpLogin(phone, code, captchaToken),
     onSuccess: async (data) => {
       if (!isClient) return;
 
@@ -167,7 +168,7 @@ export function LoginWithOtpForm() {
                 color="primary"
                 size="large"
                 onClick={() => {
-                  if (!captchaToken) {
+                  if (!captchaToken && config.captcha) {
                     setSnackbar({ message: "لطفاً کپچا را کامل کنید 🛡️", severity: "error" });
                     return;
                   }
@@ -228,7 +229,7 @@ export function LoginWithOtpForm() {
                   size="small"
                   disabled={!canResend || !captchaToken}
                   onClick={() => {
-                    if (!captchaToken) {
+                    if (!captchaToken && config.captcha) {
                       setSnackbar({ message: "لطفاً کپچا را کامل کنید 🛡️", severity: "error" });
                       return;
                     }

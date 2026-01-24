@@ -40,7 +40,7 @@ async def get_ad_stats_per_user(db: AsyncSession) -> List[dict]:
         )
         .select_from(models.User)
         .join(models.UserAdReward, models.User.id == models.UserAdReward.user_id, isouter=True)
-        .group_by(models.User.id, models.User.email, models.User.phone_number)
+        .group_by(models.User.id, models.User.phone_number)
         .order_by(func.sum(models.UserAdReward.total_points).desc())
     )
 
@@ -48,7 +48,7 @@ async def get_ad_stats_per_user(db: AsyncSession) -> List[dict]:
     return [
         {
             "user_id": row.user_id,
-            "user": row.email or row.phone_number or f"User {row.user_id}",
+            "user": row.phone_number or f"0939000000",
             "total_views": row.total_views,
             "unique_views": row.unique_views,
             "total_points": row.total_points,

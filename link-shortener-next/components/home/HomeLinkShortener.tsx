@@ -181,7 +181,7 @@ export default function HomeLinkShortener(): JSX.Element {
       setError("شماره موبایل باید با 09 شروع شود و 11 رقم باشد.");
       return;
     }
-    if (!captchaTokenSend && !config.debug) {
+    if (!captchaTokenSend && config.captcha) {
       setError("لطفاً کپچا را کامل کنید.");
       return;
     }
@@ -215,7 +215,7 @@ export default function HomeLinkShortener(): JSX.Element {
   setError(null);
 
   if (!otp) return setError("لطفاً کد تایید را وارد کنید.");
-  if (!captchaTokenVerify && !config.debug) return setError("لطفاً کپچا را کامل کنید.");
+  if (!captchaTokenVerify && config.captcha) return setError("لطفاً کپچا را کامل کنید.");
 
   setOtpLoading(true);
   try {
@@ -263,7 +263,7 @@ export default function HomeLinkShortener(): JSX.Element {
   // resend (باز ارسال کد) — اگر می‌خواهی کپچای جدید لازم باشه، باید Turnstile دوباره اجرا شود و captchaTokenSend تازه شود
   const handleResend = async () => {
     if (resendTimer > 0) return;
-    if (!captchaTokenSend && !config.debug) {
+    if (!captchaTokenSend && config.captcha) {
       setError("برای ارسال مجدد کپچا را دوباره کامل کنید.");
       return;
     }
@@ -417,7 +417,7 @@ export default function HomeLinkShortener(): JSX.Element {
                 variant="contained"
                 fullWidth
                 sx={{ mt: 2, borderRadius: 3, py: 1.1 }}
-                disabled={otpLoading || !phone || !captchaTokenSend && !config.debug}
+                disabled={otpLoading || !phone || !captchaTokenSend && config.captcha}
                 onClick={handleSendOtp}
               >
                 {otpLoading ? <CircularProgress size={20} color="inherit" /> : "ارسال کد تایید"}
@@ -446,7 +446,7 @@ export default function HomeLinkShortener(): JSX.Element {
                   variant="contained"
                   fullWidth
                   onClick={handleVerifyOtp}
-                  disabled={otpLoading || !otp || !captchaTokenVerify && !config.debug}
+                  disabled={otpLoading || !otp || !captchaTokenVerify && config.captcha}
                 >
                   {otpLoading ? <CircularProgress size={20} color="inherit" /> : "تایید و ادامه"}
                 </Button>

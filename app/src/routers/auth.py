@@ -197,7 +197,7 @@ class VerifyOtpRequest(schemas.BaseModel):
 @router.post("/token", response_model=schemas.Token)
 @limiter.limit("10/minute")
 async def login_for_access_token(request: Request, form_data: OAuth2PasswordRequestForm = Depends(), captcha_token: str = Form(...), db: AsyncSession = Depends(get_db)):
-    if not settings.DEBUG:
+    if settings.CAPTCHA:
         await verify_turnstile(request, captcha_token)
 
     # result = await db.execute(select(models.User).where(models.User.email == form_data.username))
@@ -503,7 +503,7 @@ async def send_otp_for_login(payload: PhoneRequestCaptcha, request: Request, db:
     ارسال OTP برای ورود.
     شماره باید قبلاً در سیستم ثبت شده باشد.
     """
-    if not settings.DEBUG:
+    if settings.CAPTCHA:
         await verify_turnstile(request, payload.captcha_token)
 
     phone = payload.phone
@@ -547,7 +547,7 @@ async def send_otp_for_register(payload: PhoneRequestCaptcha, request: Request, 
         raise HTTPException(status_code=400, detail="این شماره قبلاً ثبت شده است. لطفاً وارد شوید.")
 
 
-    if not settings.DEBUG:
+    if settings.CAPTCHA:
         await verify_turnstile(request, payload.captcha_token)
 
     code = str(random.randint(100000, 999999))
@@ -568,7 +568,7 @@ async def verify_otp_login(request: Request, payload: VerifyOtpRequestCaptcha, d
     """
     تایید OTP برای ورود.
     """
-    if not settings.DEBUG:
+    if settings.CAPTCHA:
         await verify_turnstile(request, payload.captcha_token)
 
     phone = payload.phone
@@ -601,7 +601,7 @@ async def register_with_otp(request: Request, payload: RegisterOtpRequestCaptcha
     """
     ثبت‌نام با OTP.
     """
-    if not settings.DEBUG:
+    if settings.CAPTCHA:
         await verify_turnstile(request, payload.captcha_token)
 
     phone = payload.phone
@@ -638,7 +638,7 @@ async def register_with_otp(request: Request, payload: RegisterOtpRequestCaptcha
 
     access_token = security.create_access_token(data={"sub": new_user.phone_number})
 
-    return set_client_cookie(access_token, user.role)
+    return set_client_cookie(access_token, new_user.role)
 
     # return {
     #     **schemas.UserResponse.model_validate(new_user).dict(),

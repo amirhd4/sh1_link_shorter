@@ -1,6 +1,7 @@
 import React from "react";
 import { Container, Typography, Box, List, ListItem, ListItemText } from "@mui/material";
 import {Metadata} from "next";
+import Image from "next/image";
 
 export const metadata: Metadata = {
   title: "سوالات متداول | لِس",
@@ -41,7 +42,15 @@ const FaqPage: React.FC = () => {
           })
         }}
       />
-
+ <Box mb={4} display="flex" justifyContent="center">
+        <Image
+          src="/images/url-shortener-faq.webp"
+          alt="بهترین کوتاه‌کننده لینک ایران | لس"
+          width={700}
+          height={400}
+          priority
+        />
+      </Box>
       <Typography variant="h3" mb={3}>سوالات متداول کاربران لس (l1s)</Typography>
       <Typography mb={2}>
         در این بخش مهم‌ترین سوالات کاربران درباره کوتاه‌کننده لینک لس و پاسخ‌های آن‌ها جمع‌آوری شده است تا تجربه استفاده شما از سرویس راحت‌تر و شفاف‌تر باشد.

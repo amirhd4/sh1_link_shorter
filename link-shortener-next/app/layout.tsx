@@ -1,5 +1,5 @@
 import './globals.css'
-import type { Metadata } from 'next'
+import type {Metadata, Viewport} from 'next'
 import Script from 'next/script'
 import ClientProviders from './providers'
 import localFont from 'next/font/local'
@@ -24,11 +24,15 @@ const vazirmatn = localFont({
 /* =======================
    Metadata (معادل <head>)
    ======================= */
+export function generateViewport(): Viewport {
+  return {
+    themeColor: "#000000",
+  };
+}
 export const metadata: Metadata = {
   title: 'لِس (l1s) | کوتاه‌کننده لینک',
   description: 'سرویس کوتاه‌کننده لینک سریع، امن و حرفه‌ای',
   applicationName: 'l1s',
-  themeColor: '#0a84ff',
   manifest: '/manifest.json',
   icons: {
     icon: [

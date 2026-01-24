@@ -1,6 +1,7 @@
 import React from "react";
 import { Container, Typography, Box, List, ListItem } from "@mui/material";
 import {Metadata} from "next";
+import Image from "next/image";
 
 export const metadata: Metadata = {
   title: "کوتاه‌کننده لینک حرفه‌ای و امن | لِس",
@@ -47,7 +48,15 @@ const LinkShortenerPage: React.FC = () => {
           }),
         }}
       />
-
+ <Box mb={4} display="flex" justifyContent="center">
+        <Image
+          src="/images/url-shortener-seo.webp"
+          alt="بهترین کوتاه‌کننده لینک ایران | l1s"
+          width={1200}
+          height={630}
+          priority
+        />
+      </Box>
       <Typography variant="h3" mb={3}>کوتاه‌کننده لینک حرفه‌ای لِس</Typography>
       <Typography mb={2}>
         با سرویس لس، لینک‌های طولانی و پیچیده خود را به لینک کوتاه، زیبا و قابل اشتراک‌گذاری تبدیل کنید. از امنیت، سرعت و امکانات پیشرفته ما بهره‌مند شوید.
