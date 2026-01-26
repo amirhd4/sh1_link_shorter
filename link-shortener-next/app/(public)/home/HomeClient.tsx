@@ -62,7 +62,7 @@ const features = [
   { title: "پلن‌ها و پرداخت", desc: "مدیریت اشتراک و تراکنش‌ها با یک کلیک.", icon: "💳" },
 ];
 
-const techStack = ["FastAPI", "React", "PostgreSQL", "Redis", "Docker", "MUI", "TypeScript", "Framer Motion"];
+const techStack = ["FastAPI", "React", "PostgreSQL", "Redis", "Docker", "MUI", "TypeScript", "Framer Motion", "Next.js"];
 
 const examples = [
   {
@@ -193,7 +193,7 @@ const HomeClient: React.FC = () => {
             </Button>
             <Button
               component={Link}
-              href="/docs"
+              href="/url-shortener"
               variant="outlined"
               size="large"
               sx={{ borderRadius: "50px", px: 5, color: "#cbd5e1", borderColor: "#475569" }}
@@ -202,7 +202,7 @@ const HomeClient: React.FC = () => {
             </Button>
             <Button
               component={Link}
-              href="/pricing"
+              href="/plans"
               variant="text"
               size="large"
               sx={{ color: "#cbd5e1" }}

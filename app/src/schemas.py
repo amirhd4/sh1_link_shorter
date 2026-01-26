@@ -5,7 +5,6 @@ from typing import Optional, List
 from datetime import date, datetime
 
 from . import models
-from . import schemas
 
 
 class UserSummary(BaseModel):
@@ -269,13 +268,27 @@ class DomainResponse(BaseModel):
         from_attributes = True
 
 
-class LinkAdCreate(schemas.BaseModel):
+class LinkAdCreate(BaseModel):
     link_id: int
     ad_id: int
 
-class LinkAdResponse(schemas.BaseModel):
+class LinkAdResponse(BaseModel):
     id: int
     link_id: int
     ad_id: int
     class Config:
         from_attributes = True
+
+class PaginationParams(BaseModel):
+    limit: int = 20
+    cursor_created_at: Optional[datetime] = None
+    cursor_id: Optional[int] = None
+
+class Cursor(BaseModel):
+    created_at: datetime
+    id: int
+
+class LinkListResponse(BaseModel):
+    items: list[LinkDetails]
+    has_more: bool
+    next_cursor: Optional[Cursor]

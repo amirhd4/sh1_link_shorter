@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     "با API امن لس لینک کوتاه بسازید. پشتیبانی از دامنه اختصاصی، ردیابی UTM، No-Ads و لینک محافظت‌شده. مناسب توسعه‌دهندگان و برنامه‌نویسان ایرانی.",
   keywords:
     "API کوتاه‌کننده لینک, کوتاه کردن لینک با API, لینک کوتاه برنامه نویسی, URL shortener API, لینک کوتاه امن",
-  alternates: { canonical: "https://a.l1s.ir/api/url-shortener" },
+  alternates: { canonical: "https://a.l1s.ir/url-shortener" },
 };
 
 const faqItems = [
@@ -68,9 +68,9 @@ const ApiUrlShortenerPage: React.FC = () => {
   </Button>
 </Link>
 
-<Link href="/short-url-generator" passHref>
+<Link href="/login" passHref>
   <Button variant="outlined" color="secondary">
-    استفاده رایگان بدون ثبت‌نام
+استفاده رایگان | ورود
   </Button>
 </Link>
 
@@ -152,6 +152,42 @@ Body:
   برای شروع استفاده از <strong>API کوتاه‌کننده لینک لس</strong>،
   <Link href="/register">ثبت‌نام کنید</Link> و Api-Key دریافت کنید.
 </Typography>
+<section id="internal-links" style={{ marginTop: "2rem" }}>
+  <Typography variant="h4" mb={3}>لینک‌های مرتبط و مفید</Typography>
+  <Box display="flex" flexWrap="wrap" gap={2}>
+    {[
+      { href: "https://a.l1s.ir/home", title: "صفحه اصلی" },
+      { href: "https://a.l1s.ir/short-url-generator", title: "تولید کننده لینک کوتاه" },
+      { href: "https://a.l1s.ir/free-url-shortener", title: "کوتاه کننده لینک رایگان" },
+      { href: "https://a.l1s.ir/link-shortener", title: "کوتاه کننده لینک حرفه‌ای" },
+      { href: "https://a.l1s.ir/best-url-shortener", title: "بهترین کوتاه کننده لینک" },
+    ].map((link, idx) => (
+      <Box
+        key={idx}
+        component="a"
+        href={link.href}
+        title={link.title}
+        sx={{
+          textDecoration: "none",
+          width: { xs: "100%", sm: "calc(50% - 8px)", md: "calc(33.33% - 8px)" },
+          p: 2,
+          borderRadius: 2,
+          boxShadow: 1,
+          transition: "all 0.3s",
+          backgroundColor: "background.paper",
+          "&:hover": {
+            boxShadow: 4,
+            transform: "translateY(-4px)",
+            backgroundColor: "primary.light",
+            color: "white"
+          },
+        }}
+      >
+        <Typography variant="h6">{link.title}</Typography>
+      </Box>
+    ))}
+  </Box>
+</section>
 
     </Container>
   );

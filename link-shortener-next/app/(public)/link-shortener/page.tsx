@@ -93,6 +93,42 @@ const LinkShortenerPage: React.FC = () => {
           <ListItem>آیا لینک‌ها امن هستند؟ تمامی لینک‌ها با استاندارد HTTPS و محافظت رمزگذاری می‌شوند.</ListItem>
         </List>
       </Box>
+        <section id="internal-links" style={{ marginTop: "2rem" }}>
+  <Typography variant="h4" mb={3}>لینک‌های مرتبط و مفید</Typography>
+  <Box display="flex" flexWrap="wrap" gap={2}>
+    {[
+      { href: "https://a.l1s.ir/home", title: "صفحه اصلی" },
+      { href: "https://a.l1s.ir/short-url-generator", title: "تولید کننده لینک کوتاه" },
+      { href: "https://a.l1s.ir/free-url-shortener", title: "کوتاه کننده لینک رایگان" },
+      { href: "https://a.l1s.ir/url-shortener", title: "کوتاه کننده لینک با API" },
+    ].map((link, idx) => (
+      <Box
+        key={idx}
+        component="a"
+        href={link.href}
+        title={link.title}
+        sx={{
+          textDecoration: "none",
+          width: { xs: "100%", sm: "calc(50% - 8px)", md: "calc(50% - 8px)" },
+          p: 2,
+          borderRadius: 2,
+          boxShadow: 1,
+          transition: "all 0.3s",
+          backgroundColor: "background.paper",
+          "&:hover": {
+            boxShadow: 4,
+            transform: "translateY(-4px)",
+            backgroundColor: "primary.light",
+            color: "white"
+          },
+        }}
+      >
+        <Typography variant="h6">{link.title}</Typography>
+      </Box>
+    ))}
+  </Box>
+</section>
+
     </Container>
   );
 };

@@ -107,7 +107,7 @@ useEffect(() => {
     paymentMutation.isPending
   }
                   >
-                    {isCurrentPlan
+                    {plan.name === "Free" ? "پلن رایگان" : isCurrentPlan
                       ? 'پلن فعلی شما'
                       : paymentMutation.isPending
                         ? 'در حال انتقال...'

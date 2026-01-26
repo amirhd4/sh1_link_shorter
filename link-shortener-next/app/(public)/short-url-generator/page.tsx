@@ -102,6 +102,46 @@ const ShortUrlGeneratorPage: React.FC = () => {
           <ListItem>آیا لینک‌ها قابل ردیابی هستند؟ بله، آمار کلیک‌ها و عملکرد لینک به صورت دقیق ارائه می‌شود.</ListItem>
         </List>
       </Box>
+
+        <section id="internal-links" style={{ marginTop: "2rem" }}>
+  <Typography variant="h4" mb={3}>لینک‌های مرتبط و مفید</Typography>
+  <Box display="flex" flexWrap="wrap" gap={2}>
+    {[
+      { href: "https://a.l1s.ir/home", title: "صفحه اصلی" },
+      { href: "https://a.l1s.ir/link-shortener", title: "کوتاه کننده لینک" },
+      { href: "https://a.l1s.ir/url-shortener", title: "کوتاه کننده لینک با API" },
+      { href: "https://a.l1s.ir/free-url-shortener", title: "کوتاه کننده لینک رایگان" },
+      { href: "https://a.l1s.ir/best-url-shortener", title: "بهترین کوتاه کننده لینک" },
+      { href: "https://a.l1s.ir/faq", title: "سوالات متداول" },
+    ].map((link, idx) => (
+      <Box
+        key={idx}
+        component="a"
+        href={link.href}
+        title={link.title}
+        sx={{
+          textDecoration: "none",
+          width: { xs: "100%", sm: "calc(50% - 8px)", md: "calc(33.33% - 8px)" },
+          p: 2,
+          borderRadius: 2,
+          boxShadow: 1,
+          transition: "all 0.3s",
+          backgroundColor: "background.paper",
+          "&:hover": {
+            boxShadow: 4,
+            transform: "translateY(-4px)",
+            backgroundColor: "primary.light",
+            color: "white"
+          },
+        }}
+      >
+        <Typography variant="h6">{link.title}</Typography>
+      </Box>
+    ))}
+  </Box>
+</section>
+
+
     </Container>
   );
 };

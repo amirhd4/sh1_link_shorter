@@ -57,13 +57,35 @@ const FaqPage: React.FC = () => {
       </Typography>
 
       <Box mb={4}>
-        {faqs.map((faq, index) => (
-          <Box key={index} mb={2}>
-            <Typography variant="h5" mb={1}>{faq.question}</Typography>
-            <Typography>{faq.answer}</Typography>
-          </Box>
-        ))}
-      </Box>
+  {faqs.map((faq, index) => (
+    <Box key={index} mb={3}>
+      <Typography variant="h5" mb={1}>{faq.question}</Typography>
+      <Typography mb={1}>
+        {(() => {
+          switch(index) {
+            case 0: // کوتاه‌کننده لینک چیست؟
+              return <>کوتاه‌کننده لینک ابزاری آنلاین است که لینک‌های بلند و پیچیده را به لینک کوتاه، ساده و قابل اشتراک‌گذاری تبدیل می‌کند. برای تجربه عملی، می‌توانید از <a href="https://a.l1s.ir/short-url-generator" title="تولید کننده لینک کوتاه">تولید کننده لینک کوتاه لس</a> استفاده کنید.</>;
+            case 1: // مزایای کوتاه کردن لینک چیست؟
+              return <>کوتاه کردن لینک باعث ظاهر حرفه‌ای، راحتی اشتراک‌گذاری و امکان ردیابی کلیک‌ها می‌شود. برای امکانات بیشتر، صفحه <a href="https://a.l1s.ir/best-url-shortener" title="بهترین کوتاه کننده لینک">بهترین کوتاه‌کننده لینک</a> را ببینید.</>;
+            case 2: // رایگان بودن سرویس
+              return <>بله، سرویس کوتاه‌کننده لینک لس رایگان است و بدون تبلیغات مزاحم می‌توانید لینک کوتاه بسازید. همچنین می‌توانید از <a href="https://a.l1s.ir/free-url-shortener" title="کوتاه کننده لینک رایگان">کوتاه‌کننده لینک رایگان</a> استفاده کنید.</>;
+            case 3: // رمزگذاری
+              return <>بله، هنگام ایجاد لینک می‌توانید برای امنیت بیشتر رمز عبور تعیین کنید. این امکان هم در <a href="https://a.l1s.ir/link-shortener" title="کوتاه کننده لینک حرفه‌ای">کوتاه‌کننده لینک حرفه‌ای</a> موجود است.</>;
+            case 4: // دامنه اختصاصی
+              return <>بله، لس امکان استفاده از دامنه اختصاصی برای برندینگ لینک‌ها را فراهم کرده است. اطلاعات بیشتر در <a href="https://a.l1s.ir/api/url-shortener" title="API کوتاه‌کننده لینک">API کوتاه‌کننده لینک</a> موجود است.</>;
+            case 5: // ردیابی لینک‌ها
+              return <>با ورود به داشبورد لِس می‌توانید تعداد کلیک‌ها، تاریخ و زمان، و منابع کلیک‌ها را مشاهده کنید. همچنین می‌توانید از <a href="https://a.l1s.ir/url-shortener" title="کوتاه کننده لینک با API">کوتاه‌کننده لینک با API</a> برای ردیابی حرفه‌ای استفاده کنید.</>;
+            case 7: // API
+              return <>بله، API کوتاه‌کننده لینک لس با امکانات دامنه اختصاصی، ردیابی UTM و لینک محافظت‌شده ارائه می‌شود. صفحه <a href="https://a.l1s.ir/api/url-shortener" title="API کوتاه‌کننده لینک">API کوتاه‌کننده لینک</a> را ببینید.</>;
+            default:
+              return faq.answer;
+          }
+        })()}
+      </Typography>
+    </Box>
+  ))}
+</Box>
+
 
       <Box mb={4}>
         <Typography variant="h5" mb={2}>نکات مهم درباره سرویس کوتاه‌کننده لینک</Typography>
@@ -85,6 +107,45 @@ const FaqPage: React.FC = () => {
           </ListItem>
         </List>
       </Box>
+
+        <section id="related-links" style={{ marginTop: "2rem" }}>
+  <Typography variant="h4" mb={3}>صفحات مرتبط</Typography>
+  <Box display="flex" flexWrap="wrap" gap={2}>
+    {[
+      { href: "https://a.l1s.ir/home", title: "صفحه اصلی" },
+      { href: "https://a.l1s.ir/short-url-generator", title: "تولید کننده لینک کوتاه" },
+      { href: "https://a.l1s.ir/free-url-shortener", title: "کوتاه کننده لینک رایگان" },
+      { href: "https://a.l1s.ir/link-shortener", title: "کوتاه کننده لینک حرفه‌ای" },
+      { href: "https://a.l1s.ir/url-shortener", title: "کوتاه کننده لینک با API" },
+      { href: "https://a.l1s.ir/best-url-shortener", title: "بهترین کوتاه کننده لینک" },
+    ].map((link, idx) => (
+      <Box
+        key={idx}
+        component="a"
+        href={link.href}
+        title={link.title}
+        sx={{
+          textDecoration: "none",
+          width: { xs: "100%", sm: "calc(50% - 8px)", md: "calc(33.33% - 8px)" },
+          p: 2,
+          borderRadius: 2,
+          boxShadow: 1,
+          transition: "all 0.3s",
+          backgroundColor: "background.paper",
+          "&:hover": {
+            boxShadow: 4,
+            transform: "translateY(-4px)",
+            backgroundColor: "primary.light",
+            color: "white"
+          },
+        }}
+      >
+        <Typography variant="h6">{link.title}</Typography>
+      </Box>
+    ))}
+  </Box>
+</section>
+
     </Container>
   );
 };

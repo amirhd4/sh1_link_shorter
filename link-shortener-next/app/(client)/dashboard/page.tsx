@@ -1,13 +1,15 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import { linkService } from '@/services/linkService';
 import { DataGrid, type GridColDef, GridActionsCellItem } from '@mui/x-data-grid';
 import {
     Alert, Box, Typography, Button, Snackbar, Container, Paper, Stack, Tooltip,
     useMediaQuery, useTheme, Card, CardContent, CardActions, IconButton, Divider,
-    Link as MuiLink, Skeleton, alpha
+    Link as MuiLink, Skeleton, alpha,
+    TextField,
+    InputAdornment
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { CreateLinkForm } from '@/components/client-dashboard/CreateLinkForm';
@@ -29,6 +31,7 @@ import SubdirectoryArrowRightIcon from '@mui/icons-material/SubdirectoryArrowRig
 
 import config from '../../../config';
 import { usePersianDataGridLocale } from '@/hooks/usePersianDataGridLocale';
+import {InfiniteData} from "@tanstack/query-core";
 
 // =================================================================
 // ✨ Copy Button Component
@@ -178,6 +181,19 @@ const MobileLinkCard = ({ link, index, onDetailsClick, onEditClick, onDeleteClic
 type DeleteTarget = { shortCode: string; domainId: string };
 
 
+export type Cursor = {
+  created_at: string;
+  id: number;
+};
+
+export type LinkListPage = {
+  items: LinkDetails[];
+  has_more: boolean;
+  next_cursor: Cursor | null;
+};
+import { useMemo } from 'react';
+import { SearchIcon } from "lucide-react";
+
 export default function LinksDashboard() {
     const navigate = useRouter();
     useEffect(() => {
@@ -196,13 +212,47 @@ export default function LinksDashboard() {
     // const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
     const [snackbarMessage, setSnackbarMessage] = useState<{ text: string; severity: "success" | "error" } | null>(null);
 
-    const [mobilePage, setMobilePage] = useState(0);
-    const pageSize = 5;
+    const [searchTerm, setSearchTerm] = useState('');
 
-    const { data: links, isLoading, isError, error } = useQuery({
-        queryKey: ['my-links'],
-        queryFn: linkService.getMyLinks,
-    });
+
+   const {
+  data,
+  isLoading,
+  isError,
+  error,
+  fetchNextPage,
+  hasNextPage,
+  isFetchingNextPage,
+} = useInfiniteQuery<
+  LinkListPage,          // TQueryFnData
+  Error,                 // TError
+  InfiniteData<LinkListPage>, // TData ← خیلی مهم
+  ['my-links'],          // TQueryKey
+  Cursor | undefined     // TPageParam
+>({
+  queryKey: ['my-links'],
+  queryFn: ({ pageParam }) =>
+    linkService.getMyLinks({
+      limit: 5,
+      cursor_created_at: pageParam?.created_at,
+      cursor_id: pageParam?.id,
+    }),
+  initialPageParam: undefined,
+  getNextPageParam: (lastPage) =>
+    lastPage.has_more ? lastPage.next_cursor ?? undefined : undefined,
+});
+
+const links = data?.pages.flatMap(page => page.items) ?? [];
+const filteredLinks = useMemo(() => {
+  if (!searchTerm.trim()) return links;
+
+  const term = searchTerm.toLowerCase();
+
+  return links.filter(link =>
+    link.short_code.toLowerCase().includes(term) ||
+    link.long_url.toLowerCase().includes(term)
+  );
+}, [links, searchTerm]);
 
 
    useEffect(() => {
@@ -281,68 +331,88 @@ export default function LinksDashboard() {
     ];
 
     const renderContent = () => {
-        if (isLoading) return isMobile
-            ? <Stack>{[...Array(3)].map((_, i) => <MobileLinkCardSkeleton key={i} />)}</Stack>
-            : <DataGrid rows={[]} columns={columns} loading sx={{ height: 370 }} />;
+  if (isLoading) {
+    return isMobile
+      ? <Stack>{[...Array(3)].map((_, i) => <MobileLinkCardSkeleton key={i} />)}</Stack>
+      : <DataGrid rows={[]} columns={columns} loading sx={{ height: 370 }} />;
+  }
 
-        if (isError) return <Alert severity="error">{t('messages.error')}: {error.message}</Alert>;
-        if (!links || links.length === 0) return <EmptyState />;
+  if (isError) {
+    return <Alert severity="error">{t('messages.error')}: {error.message}</Alert>;
+  }
 
-        // موبایل با pagination ساده
-        if (isMobile) {
-            const start = mobilePage * pageSize;
-            const end = start + pageSize;
-            const pageLinks = links.slice(start, end);
+  if (!filteredLinks.length) {
+  return searchTerm
+    ? <Alert severity="info">نتیجه‌ای برای جستجوی شما پیدا نشد.</Alert>
+    : <EmptyState />;
+}
 
-            return (
-                <Box>
-                    {pageLinks.map((link, idx) => (
-                        <MobileLinkCard
-                            key={link.short_code}
-                            index={start + idx}
-                            link={link}
-                            onDetailsClick={handleDetailsClick(link.short_code, link.domain_id || "0")}
-                            onEditClick={handleEditClick(link)}
-                            onDeleteClick={handleDeleteClick(link.short_code, link.domain_id || "0")}
-                            isDeleting={deleteMutation.isPending && deleteMutation.variables?.shortCode === link.short_code}
-                        />
-                    ))}
-                    <Stack direction="row" justifyContent="center" spacing={2} mt={2}>
-                        <Button disabled={mobilePage === 0} onClick={() => setMobilePage(p => p - 1)}>قبلی</Button>
-                        <Typography variant="body2" mt={0.5}>{mobilePage + 1} / {Math.ceil(links.length / pageSize)}</Typography>
-                        <Button disabled={end >= links.length} onClick={() => setMobilePage(p => p + 1)}>بعدی</Button>
-                    </Stack>
-                </Box>
-            );
-        }
 
-        // دسکتاپ
-        return (
-            <DataGrid
-                rows={links}
-                columns={columns}
-                getRowId={(row) => row.short_code}
-                loading={deleteMutation.isPending}
-                initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
-                localeText={localeText}
-                pageSizeOptions={[5, 10, 20]}
-                autoHeight
-                // disableSelectionOnClick
-                // disableColumnMenu
-                // disableStrictModeCompat  // ⚡ رفع خطای ":first-child" در SSR
-                sx={{
-                    border: 'none',
-                    '& .MuiDataGrid-columnHeaders': {
-                        backgroundColor: alpha(theme.palette.primary.light, 0.1),
-                        borderBottom: `1px solid ${theme.palette.divider}`
-                    },
-                    '& .MuiDataGrid-row:nth-of-type(odd)': {
-                        backgroundColor: alpha(theme.palette.action.hover, 0.02),
-                    },
-                }}
-            />
-        );
-    };
+  // ✅ موبایل
+  if (isMobile) {
+    return (
+      <Stack spacing={2}>
+        {filteredLinks.map((link, idx) => (
+          <MobileLinkCard
+            key={link.short_code}
+            index={idx}
+            link={link}
+            onDetailsClick={handleDetailsClick(link.short_code, link.domain_id || "0")}
+            onEditClick={handleEditClick(link)}
+            onDeleteClick={handleDeleteClick(link.short_code, link.domain_id || "0")}
+            isDeleting={deleteMutation.isPending}
+          />
+        ))}
+
+        {hasNextPage && (
+          <Button
+            onClick={() => fetchNextPage()}
+            disabled={isFetchingNextPage}
+          >
+            {isFetchingNextPage ? 'در حال بارگذاری...' : 'نمایش بیشتر'}
+          </Button>
+        )}
+      </Stack>
+    );
+  }
+
+  // ✅ دسکتاپ
+  return (
+    <>
+      <DataGrid
+        rows={filteredLinks}
+        columns={columns}
+        getRowId={(row) => row.short_code}
+        loading={deleteMutation.isPending}
+        initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
+        localeText={localeText}
+        pageSizeOptions={[5, 10, 20]}
+        autoHeight
+        sx={{
+          border: 'none',
+          '& .MuiDataGrid-columnHeaders': {
+            backgroundColor: alpha(theme.palette.primary.light, 0.1),
+            borderBottom: `1px solid ${theme.palette.divider}`
+          },
+          '& .MuiDataGrid-row:nth-of-type(odd)': {
+            backgroundColor: alpha(theme.palette.action.hover, 0.02),
+          },
+        }}
+      />
+
+      {hasNextPage && (
+        <Box textAlign="center" mt={2}>
+          <Button
+            onClick={() => fetchNextPage()}
+            disabled={isFetchingNextPage}
+          >
+            نمایش بیشتر
+          </Button>
+        </Box>
+      )}
+    </>
+  );
+};
 
     return (
         <>
@@ -363,6 +433,21 @@ export default function LinksDashboard() {
                         ایجاد لینک جدید
                     </Button>
                 </Stack>
+<TextField
+  fullWidth
+  size="small"
+  placeholder="جستجو در لینک‌ها (کد کوتاه یا آدرس)..."
+  value={searchTerm}
+  onChange={(e) => setSearchTerm(e.target.value)}
+  InputProps={{
+    startAdornment: (
+      <InputAdornment position="start">
+        <SearchIcon fontSize="small" />
+      </InputAdornment>
+    ),
+  }}
+  sx={{ mb: 2 }}
+/>
 
                 <Paper sx={{ p: { xs: 1, sm: 2 }, borderRadius: 3 }} elevation={3}>
                     {renderContent()}

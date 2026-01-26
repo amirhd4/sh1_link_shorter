@@ -6,14 +6,25 @@ import type {
     UpdateLinkPayload,
     URLCreate,
     URLResponse
-} from "../types/api";
+} from "@/types/api";
 
 
 export const linkService = {
-  getMyLinks: async (): Promise<LinkDetails[]> => {
-    const response = await apiClient.get('/links/my-links'); // <<<< اصلاح شد
-    return response.data;
-  },
+  // getMyLinks: async (): Promise<LinkDetails[]> => {
+  //   const response = await apiClient.get('/links/my-links'); // <<<< اصلاح شد
+  //   return response.data;
+  // },
+
+    getMyLinks: async (params?: {
+  limit?: number;
+  cursor_created_at?: string;
+  cursor_id?: number;
+}) => {
+  const response = await apiClient.get('/links/my-links', {
+    params,
+  });
+  return response.data;
+},
 
   // createShortLink: async (longUrl: string): Promise<URLResponse> => {
   //   const response = await apiClient.post('/links/shorten', { long_url: longUrl }); // <<<< اصلاح شد

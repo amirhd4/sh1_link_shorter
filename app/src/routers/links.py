@@ -198,38 +198,62 @@ async def create_short_url(
     raise HTTPException(status_code=500, detail="Could not generate a unique short link. Please try again later.")
 
 
-@router.get("/my-links", response_model=List[schemas.LinkDetails])
+@router.get("/my-links", response_model=schemas.LinkListResponse)
 @limiter.limit("60/minute")
 async def get_user_links(
-        request: Request,
-        current_user: models.User = Depends(security.get_current_user),
-        db: AsyncSession = Depends(get_db)
+    request: Request,
+    limit: int = 20,
+    cursor_created_at: datetime | None = None,
+    cursor_id: int | None = None,
+    current_user: models.User = Depends(security.get_current_user),
+    db: AsyncSession = Depends(get_db)
 ):
-    """
-    لیست تمام لینک‌هایی که توسط کاربر فعلی ساخته شده را برمی‌گرداند.
-    """
-    result = await db.execute(
+    query = (
         select(models.Link)
         .options(selectinload(models.Link.domain))
         .where(models.Link.owner_id == current_user.id)
-        .order_by(models.Link.id.desc())
+        .order_by(models.Link.created_at.desc(), models.Link.id.desc())
+        .limit(limit + 1)
     )
 
+    if cursor_created_at and cursor_id:
+        query = query.where(
+            (models.Link.created_at < cursor_created_at) |
+            (
+                (models.Link.created_at == cursor_created_at) &
+                (models.Link.id < cursor_id)
+            )
+        )
+
+    result = await db.execute(query)
     links = result.scalars().all()
-    my_links: List[schemas.LinkDetails] = []
+
+    has_more = len(links) > limit
+    links = links[:limit]
+
+    response = []
     for link in links:
         domain_name = link.domain.name if link.domain else settings.origin_backend_url
-        my_links.append(schemas.LinkDetails(
-            long_url=link.long_url,
-            short_code=link.short_code,
-            clicks=link.clicks,
-            created_at=link.created_at,
-            domain_id=link.domain_id,
-            domain_name=domain_name,
-            is_protected=link.is_protected,
-        ))
-
-    return my_links
+        response.append(
+            schemas.LinkDetails(
+                long_url=link.long_url,
+                short_code=link.short_code,
+                clicks=link.clicks,
+                created_at=link.created_at,
+                domain_id=link.domain_id,
+                domain_name=domain_name,
+                is_protected=link.is_protected,
+            )
+        )
+    logger.info(response)
+    return {
+        "items": response,
+        "has_more": has_more,
+        "next_cursor": {
+            "created_at": links[-1].created_at if links else None,
+            "id": links[-1].id if links else None
+        }
+    }
 
 
 @router.delete("/{short_code}/{domain_id}", status_code=status.HTTP_204_NO_CONTENT)
