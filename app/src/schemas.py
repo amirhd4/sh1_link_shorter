@@ -291,4 +291,4 @@ class Cursor(BaseModel):
 class LinkListResponse(BaseModel):
     items: list[LinkDetails]
     has_more: bool
-    next_cursor: Optional[Cursor]
+    next_cursor: Optional[Cursor] | None

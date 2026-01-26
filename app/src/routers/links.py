@@ -249,10 +249,12 @@ async def get_user_links(
     return {
         "items": response,
         "has_more": has_more,
-        "next_cursor": {
+        "next_cursor": (
+            {
             "created_at": links[-1].created_at if links else None,
             "id": links[-1].id if links else None
         }
+        ) if links else None,
     }
 
 
