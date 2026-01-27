@@ -95,7 +95,7 @@ async def create_short_url(
 
     # domain selection (fix: use settings.default_domain consistently)
     domain_id = None
-    logger.info(url_data.domain_id)
+    # logger.info(url_data.domain_id)
     if url_data.domain_id is not None:
         if url_data.domain_id != 0:
             domain = await db.scalar(
@@ -245,7 +245,7 @@ async def get_user_links(
                 is_protected=link.is_protected,
             )
         )
-    logger.info(response)
+    # logger.info(response)
     return {
         "items": response,
         "has_more": has_more,
