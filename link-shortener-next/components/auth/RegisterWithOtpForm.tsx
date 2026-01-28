@@ -232,7 +232,7 @@ export function RegisterWithOtpForm() {
                   }
                   verifyOtpMutation.mutate({ phone, code, firstName, lastName, captchaToken: captchaTokenVerify });
                 }}
-                disabled={!code || !firstName || !lastName || verifyOtpMutation.isPending || !captchaTokenVerify}
+                disabled={!code || !firstName || !lastName || verifyOtpMutation.isPending || (!captchaTokenVerify && config.captcha)}
                 startIcon={verifyOtpMutation.isPending ? <CircularProgress size={20} /> : null}
               >
                 {verifyOtpMutation.isPending ? "در حال بررسی..." : "تایید و ثبت‌نام"}
