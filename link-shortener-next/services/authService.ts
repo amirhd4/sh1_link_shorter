@@ -100,7 +100,7 @@ export const authService = {
 
     verifyOtpLogin: async (phone: string, code: string, captchaToken: string | null) => {
       const res = await apiClient.post('/auth/verify-otp-login', { phone, code, captcha_token: captchaToken || "dummy" });
-      return res.data as OtpLoginResponse;
+      return res.data;
     },
 
     sendOtpRegister: async (phone: string, captchaToken: string | null) => {
@@ -116,7 +116,7 @@ export const authService = {
       captchaToken?: string | null
     ) => {
       const res = await apiClient.post('/auth/register-otp', { phone, code, first_name, last_name, captcha_token: captchaToken || "test" });
-      return res.data as UserWithToken;
+      return res.data;
     },
 
 };

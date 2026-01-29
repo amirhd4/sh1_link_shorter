@@ -19,6 +19,7 @@ import apiClient from "@/lib/axios";
 import config from "@/config";
 import {useUserStore} from "@/store/userStore";
 import type { URLCreate } from '@/types/api';
+import {useQuery, useQueryClient} from "@tanstack/react-query";
 
 // type URLCreate = {
 //   long_url: string;
@@ -45,6 +46,7 @@ export default function HomeLinkShortener(): JSX.Element {
   const [otpLoading, setOtpLoading] = useState(false);
   const [resendTimer, setResendTimer] = useState(0);
   const [otpMode, setOtpMode] = useState<"register" | "login" | null>(null);
+  const queryClient = useQueryClient();
 
   const user = useUserStore((s) => s.user);
   const setUser = useUserStore.getState().setUser;
@@ -137,9 +139,10 @@ export default function HomeLinkShortener(): JSX.Element {
     setError("کد دلخواه فقط می‌تواند شامل حروف، اعداد، - و _ باشد (حداکثر 50 حرف).");
     return;
   }
+  const currentUser = useUserStore.getState().user; // آخرین user
 
   // user is already available from hook
-  if (!user) {
+  if (!currentUser) {
     setOtpModalOpen(true);
     setOtpStep("enter-phone");
     return;
@@ -210,7 +213,8 @@ export default function HomeLinkShortener(): JSX.Element {
   };
 
   // ===== OTP: verify (register/login) =====
-  const handleVerifyOtp = async () => {
+  // ===== OTP: verify (register/login) =====
+const handleVerifyOtp = async () => {
   if (otpLoading) return;
   setError(null);
 
@@ -221,37 +225,36 @@ export default function HomeLinkShortener(): JSX.Element {
   try {
     let res;
     if (otpMode === "login") {
-      res = await authService.verifyOtpLogin(phone, otp, captchaTokenSend || "dummy");
+      res = await authService.verifyOtpLogin(phone, otp, captchaTokenVerify || "dummy");
     } else {
       // پیش‌فرض register (برای کاربران جدید)
-      res = await authService.registerWithOtp(phone, otp, "کاربر", "سیستم", captchaTokenSend || "dummy");
+      res = await authService.registerWithOtp(phone, otp, "کاربر", "سیستم", captchaTokenVerify || "dummy");
     }
 
-    const access = res?.access_token || null;
-    if (access) {
-      // localStorage.setItem("access_token", access);
-      // document.cookie = `access_token=${access}; path=/`;
-      // apiClient.defaults.headers.common["Authorization"] = `Bearer ${access}`;
+    // const access = res?.access_token || null;
+      const success = res?.success || null;
+    // console.log("🚀 full response:", JSON.stringify(res, null, 2));
 
-      try {
-    const me = await authService.getMe();
-    setUser(me);
-  } catch {
-    setUser(null);
-  }
+    if (success) {
+      // فقط وقتی success === true است user رو آپدیت کن
+      const freshUser = await authService.getMe();
+      setUser(freshUser); // Zustand state فوراً UI رو آپدیت می‌کنه
+      queryClient.setQueryData(['me'], freshUser);
+
+      setOtpModalOpen(false);
+      setOtpStep("enter-phone");
+      setOtp("");
+      setPhone("");
+      setCaptchaTokenSend(null);
+      setCaptchaTokenVerify(null);
+      setOtpMode(null);
+      setSuccessMessage("ورود/ثبت‌نام موفق ✅");
+// await new Promise((resolve) => setTimeout(resolve, 650));
+
+      await handleShorten(); // ادامه فرآیند کوتاه کردن لینک
+    } else {
+      setError("ورود/ثبت‌نام ناموفق 😅");
     }
-
-    setOtpModalOpen(false);
-    setOtpStep("enter-phone");
-    setOtp("");
-    setPhone("");
-    setCaptchaTokenSend(null);
-    setCaptchaTokenVerify(null);
-    setOtpMode(null);
-    setSuccessMessage("ورود/ثبت‌نام موفق ✅");
-
-    await new Promise((r) => setTimeout(r, 200));
-    await handleShorten();
   } catch (e: any) {
     setError(e?.response?.data?.detail || "کد تایید اشتباه است یا منقضی شده است.");
   } finally {

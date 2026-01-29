@@ -9,17 +9,19 @@ import { ThemeProvider, CssBaseline } from '@mui/material'
 import theme from '@/styles/theme'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import dynamic from 'next/dynamic'
+import AppInitializer from "@/app/AppInitializer";
 
 const cacheRtl = createCache({
   key: 'muirtl',
   stylisPlugins: [rtlPlugin],
 })
 
-const AppInitializer = dynamic(() => import('./AppInitializer'), { ssr: false })
+// const AppInitializer = dynamic(() => import('./AppInitializer'), { ssr: false })
+const queryClient = new QueryClient()
 
 export default function ClientProviders({ children }: { children: ReactNode }) {
   const [mounted, setMounted] = useState(false)
-  const [queryClient] = useState(() => new QueryClient())
+  // const [queryClient] = useState(() => new QueryClient())
 
   useEffect(() => setMounted(true), [])
 

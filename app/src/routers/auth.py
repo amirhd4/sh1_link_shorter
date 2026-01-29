@@ -595,7 +595,7 @@ class RegisterOtpRequestCaptcha(RegisterOtpRequest):
     captcha_token: str
 
 
-@router.post("/register-otp", response_model=schemas.UserWithToken, status_code=status.HTTP_201_CREATED)
+@router.post("/register-otp", status_code=status.HTTP_201_CREATED)
 @limiter.limit("10/minute")
 async def register_with_otp(request: Request, payload: RegisterOtpRequestCaptcha, db: AsyncSession = Depends(get_db)):
     """
