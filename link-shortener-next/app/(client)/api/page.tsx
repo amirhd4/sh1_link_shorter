@@ -91,50 +91,42 @@ export default function ApiPage() {
   // نمونه کدها
   // =========================================================================
   const baseUrl = "https://l1s.ir/api/v1/shorten";
-  const authHeader = `"Api-Key": "${apiKey || "YOUR_API_KEY"}"`;
+  const authHeader = apiKey ? `Api-Key: ${apiKey}` : `Api-Key: YOUR_API_KEY`;
 
-  const exampleSimple = `{ "long_url": "https://example.com" }`;
-  const exampleCustomDomain = `{ "long_url": "https://your-website.com", "domain_id": 42 }`;
-  const examplePassword = `{ "long_url": "https://secure-page.com", "password": "1234" }`;
-  const exampleUTM = `{
-  "long_url": "https://mysite.com/offer",
-  "utm_source": "instagram",
-  "utm_medium": "bio",
-  "utm_campaign": "black_friday"
-}`;
-  const exampleAds = `{ "long_url": "https://target.com", "show_ads": true }`;
+  const exampleSimple = { long_url: "https://example.com" };
+  const exampleCustomDomain = { long_url: "https://your-website.com", domain_id: 42 };
+  const examplePassword = { long_url: "https://secure-page.com", password: "1234" };
+  const exampleUTM = {
+    long_url: "https://mysite.com/offer",
+    utm_source: "instagram",
+    utm_medium: "bio",
+    utm_campaign: "black_friday"
+  };
+  const exampleAds = { long_url: "https://target.com", show_ads: true };
 
-  const curlExample = (data: string) => `
-curl -X POST "${baseUrl}" \\
--H ${authHeader} \\
--H "Content-Type: application/json" \\
--d '${data}'`;
+  const curlExample = (data: any) => {
+    const json = JSON.stringify(data).replace(/"/g, '\\"'); // escape " for Windows
+    return `curl -X POST "${baseUrl}" \\\n-H "${authHeader}" \\\n-H "Content-Type: application/json" \\\n-d "${json}"`;
+  };
 
-  const pythonExample = (data: string) => `
-import requests
-res = requests.post("${baseUrl}",
-  headers={${authHeader}},
-  json=${data}
-)
-print(res.json())`;
+  const pythonExample = (data: any) => {
+    const json = JSON.stringify(data, null, 2);
+    return `import requests\n\nres = requests.post("${baseUrl}",\n  headers={"Api-Key": "${apiKey || 'YOUR_API_KEY'}", "Content-Type": "application/json"},\n  json=${json}\n)\nprint(res.json())`;
+  };
 
-  const jsExample = (data: string) => `
-fetch("${baseUrl}", {
-  method: "POST",
-  headers: { "Content-Type": "application/json", ${authHeader} },
-  body: JSON.stringify(${data})
-})
-.then(r => r.json())
-.then(console.log);`;
+  const jsExample = (data: any) => {
+    const json = JSON.stringify(data, null, 2);
+    return `fetch("${baseUrl}", {\n  method: "POST",\n  headers: {\n    "Content-Type": "application/json",\n    "Api-Key": "${apiKey || 'YOUR_API_KEY'}"\n  },\n  body: JSON.stringify(${json})\n})\n.then(r => r.json())\n.then(console.log);`;
+  };
 
   // =========================================================================
   // رندر صفحه
   // =========================================================================
-    useEffect(() => {
+  useEffect(() => {
     document.title = "مدیریت API";
   }, []);
-  return (
 
+  return (
     <Box sx={{ maxWidth: 1000, mx: "auto", p: isMobile ? 1 : 3 }}>
       <Typography variant="h4" sx={{ mb: 4, fontWeight: 700, color: theme.palette.primary.main }}>
         مستندات و کلید API
@@ -177,7 +169,6 @@ fetch("${baseUrl}", {
             برای هر درخواست، هدر <b>`Api-Key`</b> الزامی است.
           </Alert>
 
-          {/* حالت ساده */}
           <Typography variant="h5" sx={{ mt: 3, mb: 2, color: theme.palette.success.dark }}>۱. لینک ساده</Typography>
           <CodeBlock title="Curl" code={curlExample(exampleSimple)} language="bash" />
           <CodeBlock title="JavaScript" code={jsExample(exampleSimple)} language="js" />
@@ -185,7 +176,6 @@ fetch("${baseUrl}", {
 
           <Divider sx={{ my: 4 }} />
 
-          {/* دامنه اختصاصی */}
           <Typography variant="h5" sx={{ mb: 2, color: theme.palette.secondary.dark }}>۲. دامنه سفارشی</Typography>
           <Alert severity="warning" sx={{ mb: 2 }}>
             برای استفاده از دامنه سفارشی، باید آن را در پنل کاربری ثبت و تایید کرده باشید.
@@ -195,7 +185,6 @@ fetch("${baseUrl}", {
 
           <Divider sx={{ my: 4 }} />
 
-          {/* لینک رمزدار */}
           <Typography variant="h5" sx={{ mb: 2, color: theme.palette.error.dark }}>۳. لینک رمزدار</Typography>
           <Alert severity="error" sx={{ mb: 2 }}>
             لینک‌های رمزدار در پایگاه داده به‌صورت <b>هش‌شده</b> ذخیره می‌شوند و رمز واقعی قابل بازیابی نیست.
@@ -205,18 +194,15 @@ fetch("${baseUrl}", {
 
           <Divider sx={{ my: 4 }} />
 
-          {/* UTM Parameters */}
           <Typography variant="h5" sx={{ mb: 2, color: theme.palette.info.dark }}>۴. لینک با UTM Parameters</Typography>
           <CodeBlock title="Curl" code={curlExample(exampleUTM)} language="bash" />
           <CodeBlock title="JavaScript" code={jsExample(exampleUTM)} language="js" />
 
           <Divider sx={{ my: 4 }} />
 
-          {/* تبلیغات */}
           <Typography variant="h5" sx={{ mb: 2, color: theme.palette.warning.dark }}>۵. لینک با تبلیغات</Typography>
           <CodeBlock title="Curl" code={curlExample(exampleAds)} language="bash" />
           <CodeBlock title="Python" code={pythonExample(exampleAds)} language="python" />
-
         </CardContent>
       </Card>
 
@@ -225,7 +211,10 @@ fetch("${baseUrl}", {
         <CardContent>
           <Typography variant="h6" fontWeight="bold" sx={{ mb: 1 }}>⚡ محدودیت‌های پلن</Typography>
           <Divider sx={{ mb: 1 }} />
-          <Typography>پلن فعلی: <Chip label={user?.plan?.name || "رایگان"} color="primary" /></Typography>
+          <Typography component="span">
+  پلن فعلی: <Chip label={user?.plan?.name || "رایگان"} color="primary" />
+</Typography>
+
           <Typography>سقف لینک ماهانه: {user?.plan?.link_limit_per_month || "-"} لینک</Typography>
           <Typography>تاریخ انقضا: {user?.subscription_end_date ? new Date(user.subscription_end_date).toLocaleDateString('fa-IR') : "-"}</Typography>
         </CardContent>

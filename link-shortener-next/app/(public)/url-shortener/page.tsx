@@ -32,6 +32,42 @@ const faqItems = [
   },
 ];
 
+
+const examples = [
+  {
+    label: "لینک ساده",
+    code: `curl -X POST "https://l1s.ir/api/v1/shorten" \\\n  -H "Api-Key: sk_your_api_key_here" \\\n  -H "Content-Type: application/json" \\\n  -d "{\\"long_url\\":\\"https://example.com\\"}"`,
+    response: `{
+  "long_url": "https://example.com",
+  "short_url": "https://l1s.ir/Ab12Xy"
+}`,
+  },
+  {
+    label: "دامنه اختصاصی + UTM",
+    code: `curl -X POST "https://l1s.ir/api/v1/shorten" \\\n  -H "Api-Key: sk_your_api_key_here" \\\n  -H "Content-Type: application/json" \\\n  -d "{\\"long_url\\":\\"https://example.com/project\\",\\"domain_id\\":42,\\"utm_source\\":\\"twitter\\",\\"utm_medium\\":\\"social\\",\\"utm_campaign\\":\\"launch\\"}"`,
+    response: `{
+  "long_url": "https://example.com/project",
+  "short_url": "https://customdomain.com/Xy12Ab"
+}`,
+  },
+  {
+    label: "لینک محافظت‌شده با رمز 🔒",
+    code: `curl -X POST "https://l1s.ir/api/v1/shorten" \\\n  -H "Api-Key: sk_your_api_key_here" \\\n  -H "Content-Type: application/json" \\\n  -d "{\\"long_url\\":\\"https://example.com/secret\\",\\"password\\":\\"mypassword123\\"}"`,
+    response: `{
+  "long_url": "https://example.com/secret",
+  "short_url": "https://l1s.ir/SeCrEt1"
+}`,
+  },
+  {
+    label: "لینک با تبلیغات و No-Ads",
+    code: `curl -X POST "https://l1s.ir/api/v1/shorten" \\\n  -H "Api-Key: sk_your_api_key_here" \\\n  -H "Content-Type: application/json" \\\n  -d "{\\"long_url\\":\\"https://example.com/offer\\",\\"show_ads\\":false}"`,
+    response: `{
+  "long_url": "https://example.com/offer",
+  "short_url": "https://l1s.ir/Xy12NoAds"
+}`,
+  },
+];
+
 const ApiUrlShortenerPage: React.FC = () => {
   return (
     <Container sx={{ py: 8 }}>
@@ -105,6 +141,21 @@ const ApiUrlShortenerPage: React.FC = () => {
           <ListItem>۴. (اختیاری) محافظت لینک با رمز عبور یا تنظیمات پیشرفته دیگر.</ListItem>
           <ListItem>۵. مشاهده و مدیریت لینک‌ها و آمار کلیک‌ها از طریق داشبورد.</ListItem>
         </List>
+      </Box>
+
+      <Box my={4}>
+        <Typography variant="h5" mb={2}>نمونه کد استفاده از API</Typography>
+        {examples.map((ex, idx) => (
+          <Box key={idx} mb={3}>
+            <Typography variant="subtitle1" mb={1}>{ex.label}</Typography>
+            <Typography component="pre" sx={{ background: "#f5f5f5", p: 2, borderRadius: 1, overflowX: "auto" }}>
+              {ex.code}
+            </Typography>
+            <Typography component="pre" sx={{ background: "#e0f7fa", p: 2, borderRadius: 1, overflowX: "auto", mt: 1 }}>
+              {ex.response}
+            </Typography>
+          </Box>
+        ))}
       </Box>
 
       <Box my={4}>

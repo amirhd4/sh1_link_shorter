@@ -63,31 +63,29 @@ const features = [
 ];
 
 const techStack = ["FastAPI", "React", "PostgreSQL", "Redis", "Docker", "MUI", "TypeScript", "Framer Motion", "Next.js"];
-
 const examples = [
   {
-    label: "cURL (پیش‌فرض)",
-    code: `curl -X POST "https://l1s.ir/api/v1/shorten" \\\n  -H "Api-Key: sk_your_api_key_here" \\\n  -H "Content-Type: application/json" \\\n  -d '{"long_url":"https://example.com"}'`,
+    label: "cURL (لینک ساده)",
+    code: `curl -X POST "https://l1s.ir/api/v1/shorten" \\\n  -H "Api-Key: sk_your_api_key_here" \\\n  -H "Content-Type: application/json" \\\n  -d "{\\"long_url\\":\\"https://example.com\\"}"`,
     response: `{
-    "long_url": "https://example.com",
-    "short_url": "https://l1s.ir/Ab12Xy"
+  "long_url": "https://example.com",
+  "short_url": "https://l1s.ir/Ab12Xy"
 }`,
   },
   {
     label: "دامنه سفارشی + پارامترهای UTM",
-    code: `curl -X POST "https://l1s.ir/api/v1/shorten" \\\n  -H "Api-Key: sk_your_api_key_here" \\\n  -H "Content-Type: application/json" \\\n  -d '{\n    "long_url": "https://example.com/project",\n    "domain_id": 42,\n    "utm_source": "twitter",\n    "utm_medium": "social",\n    "utm_campaign": "launch"\n  }'`,
+    code: `curl -X POST "https://l1s.ir/api/v1/shorten" \\\n  -H "Api-Key: sk_your_api_key_here" \\\n  -H "Content-Type: application/json" \\\n  -d "{\\"long_url\\":\\"https://example.com/project\\",\\"domain_id\\":42,\\"utm_source\\":\\"twitter\\",\\"utm_medium\\":\\"social\\",\\"utm_campaign\\":\\"launch\\"}"`,
     response: `{
-    "long_url": "https://example.com/project",
-    "short_url": "https://customdomain.com/Xy12Ab"
+  "long_url": "https://example.com/project",
+  "short_url": "https://customdomain.com/Xy12Ab"
 }`,
   },
-  // 🔹 این رو اضافه کن
   {
     label: "لینک محافظت‌شده با پسورد 🔒",
-    code: `curl -X POST "https://l1s.ir/api/v1/shorten" \\\n  -H "Api-Key: sk_your_api_key_here" \\\n  -H "Content-Type: application/json" \\\n  -d '{\n    "long_url": "https://example.com/secret",\n    "password": "mypassword123"\n  }'`,
+    code: `curl -X POST "https://l1s.ir/api/v1/shorten" \\\n  -H "Api-Key: sk_your_api_key_here" \\\n  -H "Content-Type: application/json" \\\n  -d "{\\"long_url\\":\\"https://example.com/secret\\",\\"password\\":\\"mypassword123\\"}"`,
     response: `{
-    "long_url": "https://example.com/secret",
-    "short_url": "https://l1s.ir/SeCrEt1"
+  "long_url": "https://example.com/secret",
+  "short_url": "https://l1s.ir/SeCrEt1"
 }`,
   },
 ];
