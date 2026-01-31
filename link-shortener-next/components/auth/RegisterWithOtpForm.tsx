@@ -148,6 +148,7 @@ export function RegisterWithOtpForm() {
                 fullWidth
                 label="شماره موبایل"
                 placeholder="نمونه: 09960074607"
+                type="tel"
                 autoComplete="tel"
                 value={phone}
                 onChange={(e) => {
@@ -219,7 +220,7 @@ export function RegisterWithOtpForm() {
                 label="کد تایید"
                 autoComplete="one-time-code"
                 placeholder="کد ارسال شده به موبایل"
-                type={showCode ? "text" : "password"}
+                type={showCode ? "number" : "password"}
                 value={code}
                 onChange={(e) => {
                     const onlyNumbers = e.target.value.replace(/\D/g, "");

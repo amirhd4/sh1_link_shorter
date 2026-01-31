@@ -143,6 +143,7 @@ export function LoginWithOtpForm() {
                 label={t("otp.phoneLabel") || "شماره موبایل"}
                 placeholder="نمونه: 09960074607"
                 autoComplete="tel"
+                type="tel"
                 value={phone}
                 onChange={(e) => {
                   const v = e.target.value.replace(/\D/g, "");
@@ -201,7 +202,7 @@ export function LoginWithOtpForm() {
                 label={t("verify.codeLabel") || "کد تایید"}
                 autoComplete="one-time-code"
                 placeholder="کد ارسال شده به موبایل"
-                type={showCode ? "text" : "password"}
+                type={showCode ? "number" : "password"}
                 value={code}
                 onChange={(e) => {
                   const value = e.target.value.replace(/\D/g, '').slice(0, 6);

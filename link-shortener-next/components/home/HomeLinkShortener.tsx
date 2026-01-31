@@ -405,6 +405,7 @@ const handleVerifyOtp = async () => {
                 fullWidth
                 label="شماره موبایل"
                 value={phone}
+                type="tel"
                 onChange={(e) => setPhone(e.target.value)}
                 sx={{ mb: 2 }}
                 placeholder="09XXXXXXXXX"
@@ -447,6 +448,7 @@ const handleVerifyOtp = async () => {
                 value={otp}
                 onChange={(e) => setOtp(e.target.value)}
                 sx={{ mb: 2 }}
+                type="number"
                 slotProps={{
                     input: {
                       inputMode: "numeric",

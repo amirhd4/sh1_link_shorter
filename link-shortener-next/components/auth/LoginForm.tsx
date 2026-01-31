@@ -209,6 +209,7 @@ export function LoginForm() {
                     label="شماره موبایل"
                     placeholder="نمونه: 09960074607"
                     autoComplete="tel"
+                    type="tel"
                     autoFocus
                     error={!!errors.phone_number}
                     helperText={errors.phone_number?.message}
