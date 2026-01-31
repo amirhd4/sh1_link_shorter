@@ -4,6 +4,8 @@ from pydantic import BaseModel, HttpUrl, validator, field_validator
 from typing import Optional, List
 from datetime import date, datetime
 
+from pydantic.v1 import Field
+
 from . import models
 
 
@@ -150,7 +152,12 @@ class URLCreate(BaseModel):
     utm_content: Optional[str] = None
 
     password: Optional[str] = None
-    custom_alias: Optional[str] = None
+    custom_alias: Optional[str] = Field(
+        None,
+        min_length=1,
+        max_length=32,
+        regex="^[a-zA-Z0-9_-]+$"
+    )
 
 
 class URLResponse(BaseModel):

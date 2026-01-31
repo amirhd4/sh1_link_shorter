@@ -21,7 +21,7 @@ import {
 } from "@mui/material";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
-import EmailIcon from "@mui/icons-material/AlternateEmail";
+import PhoneIcon from "@mui/icons-material/Phone";
 import LockIcon from "@mui/icons-material/Lock";
 import {motion} from "framer-motion";
 import {useMutation} from "@tanstack/react-query";
@@ -197,7 +197,7 @@ export function LoginForm() {
                 </Alert>
               )}
 
-              {/* Email / Phone */}
+              {/* Phone */}
               <Controller
                 name="phone_number"
                 control={control}
@@ -207,18 +207,27 @@ export function LoginForm() {
                     {...field}
                     fullWidth
                     label="شماره موبایل"
-                    autoComplete="email"
+                    placeholder="نمونه: 09960074607"
+                    autoComplete="tel"
                     autoFocus
                     error={!!errors.phone_number}
                     helperText={errors.phone_number?.message}
                     variant="outlined"
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <EmailIcon color="secondary" />
-                        </InputAdornment>
-                      ),
+                    onChange={(e)=> {
+                        const onu = e.target.value.replace(/\D/g, "")
+                        field.onChange(onu)
                     }}
+                    slotProps={{
+                    input: {
+                        startAdornment: (
+                            <InputAdornment position="start"> <PhoneIcon color="secondary" /> </InputAdornment>
+                        ),
+                       inputMode: "numeric",
+                       inputProps: {
+                        pattern: "[0-9]*",
+                      },
+                    },
+                }}
                     sx={{ background: "#fff", borderRadius: 3 }}
                   />
                 )}
@@ -238,7 +247,8 @@ export function LoginForm() {
                     error={!!errors.password}
                     helperText={errors.password?.message}
                     variant="outlined"
-                    InputProps={{
+                    slotProps={{
+                    input: {
                       startAdornment: (
                         <InputAdornment position="start">
                           <LockIcon color="secondary" />
@@ -246,12 +256,21 @@ export function LoginForm() {
                       ),
                       endAdornment: (
                         <InputAdornment position="end">
-                          <IconButton onClick={() => setShowPassword((s) => !s)} edge="end" size="small">
-                            {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                          <IconButton
+                            onClick={() => setShowPassword((s) => !s)}
+                            edge="end"
+                            size="small"
+                          >
+                            {showPassword ? (
+                              <VisibilityOff fontSize="small" />
+                            ) : (
+                              <Visibility fontSize="small" />
+                            )}
                           </IconButton>
                         </InputAdornment>
                       ),
-                    }}
+                    },
+                  }}
                     sx={{ background: "#fff", borderRadius: 3 }}
                   />
                 )}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { 
+import {
   Button, TextField, Box, Typography, Alert, Stack, CircularProgress, InputAdornment, IconButton, Snackbar, Paper
 } from "@mui/material";
 import { useMutation } from "@tanstack/react-query";
@@ -141,26 +141,37 @@ export function LoginWithOtpForm() {
               <TextField
                 fullWidth
                 label={t("otp.phoneLabel") || "شماره موبایل"}
-                placeholder="مثال: 09922768848"
+                placeholder="نمونه: 09960074607"
+                autoComplete="tel"
                 value={phone}
                 onChange={(e) => {
-                  setPhone(e.target.value);
+                  const v = e.target.value.replace(/\D/g, "");
+                  setPhone(v);
                   if (sendOtpMutation.isError) {
                     sendOtpMutation.reset();
                   }
                 }}
                 helperText={
-  sendOtpMutation.isError
-    ? (sendOtpMutation.error as any)?.customMessage
-    : t("otp.phoneHelper")
-}
+                  sendOtpMutation.isError
+                    ? (sendOtpMutation.error as any)?.customMessage
+                    : t("otp.phoneHelper")
+                }
 
                 error={sendOtpMutation.isError}
-                InputProps={{ startAdornment: <InputAdornment position="start">📱</InputAdornment> }}
-
+                slotProps={{
+                    input: {
+                        startAdornment: (
+                            <InputAdornment position="start">📱</InputAdornment>
+                        ),
+                       inputMode: "numeric",
+                       inputProps: {
+                        pattern: "[0-9]*",
+                      },
+                    },
+                }}
               />
 
-              
+
 
               <Button
                 fullWidth
@@ -188,20 +199,30 @@ export function LoginWithOtpForm() {
               <TextField
                 fullWidth
                 label={t("verify.codeLabel") || "کد تایید"}
+                autoComplete="one-time-code"
                 placeholder="کد ارسال شده به موبایل"
                 type={showCode ? "text" : "password"}
                 value={code}
-                onChange={(e) => setCode(e.target.value)}
-                error={verifyOtpMutation.isError}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton onClick={toggleShowCode} edge="end">
-                        {showCode ? <VisibilityOff /> : <Visibility />}
-                      </IconButton>
-                    </InputAdornment>
-                  )
+                onChange={(e) => {
+                  const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+                  setCode(value);
                 }}
+                error={verifyOtpMutation.isError}
+                slotProps={{
+                    input: {
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton onClick={toggleShowCode} edge="end">
+                            {showCode ? <VisibilityOff /> : <Visibility />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                      inputMode: 'numeric',
+                      inputProps:{
+                        pattern: '[0-9]*',
+                      }
+                    },
+                  }}
               />
 
               <Button

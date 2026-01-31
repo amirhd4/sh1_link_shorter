@@ -147,13 +147,27 @@ export function RegisterWithOtpForm() {
               <TextField
                 fullWidth
                 label="شماره موبایل"
-                placeholder="مثال: 09123456789"
+                placeholder="نمونه: 09960074607"
                 autoComplete="tel"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={(e) => {
+                    const onlyNumbers = e.target.value.replace(/\D/g, "");
+                    setPhone(onlyNumbers);
+                  }}
                 helperText="شماره موبایل خود را بدون فاصله وارد کنید"
                 error={sendOtpMutation.isError}
-                InputProps={{ startAdornment: <InputAdornment position="start">📱</InputAdornment> }}
+                slotProps={{
+                    input: {
+                      inputMode: "numeric",      // کیبورد عددی موبایل
+                      inputProps: {
+                          pattern: "[0-9]*",
+                          maxLength: 11,             // اختیاری (برای موبایل ایران)
+                      },
+                      startAdornment: (
+                        <InputAdornment position="start">📱</InputAdornment>
+                      ),
+                    },
+                  }}
               />
 
               <Button
@@ -207,17 +221,31 @@ export function RegisterWithOtpForm() {
                 placeholder="کد ارسال شده به موبایل"
                 type={showCode ? "text" : "password"}
                 value={code}
-                onChange={(e) => setCode(e.target.value)}
+                onChange={(e) => {
+                    const onlyNumbers = e.target.value.replace(/\D/g, "");
+                    setCode(onlyNumbers);
+                  }}
                 error={verifyOtpMutation.isError}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton onClick={toggleShowCode} edge="end">
-                        {showCode ? <VisibilityOff /> : <Visibility />}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
+                slotProps={{
+                    input: {
+                      inputMode: "numeric",
+                      inputProps:{
+                          pattern: "[0-9]*",
+                          maxLength: 6,
+                      },
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            onClick={toggleShowCode}
+                            edge="end"
+                            aria-label="نمایش یا مخفی کردن کد"
+                          >
+                            {showCode ? <VisibilityOff /> : <Visibility />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    },
+                  }}
               />
 
               <Button

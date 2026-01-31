@@ -6,18 +6,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 import redis.asyncio as redis
 from datetime import date, timedelta
-from urllib.parse import urlparse
 import json
 import logging
 
 from ..rate_limiter import limiter
-from ..services import url_checker
 from ..services.security import get_user_by_api_key
 from .. import models, schemas
 from ..config import settings
 from ..database import get_db
 from ..services.kgs import generate_unique_short_key
-from .. services.security import get_password_hash, verify_password
+from .. services.security import get_password_hash
 from ..services.url_checker import is_url_malicious
 
 api_router = APIRouter(prefix="/v1", tags=["Public API"])
@@ -99,9 +97,32 @@ async def api_shorten_url(
     if url_data.password:
         password_hash = get_password_hash(url_data.password)
 
+    short_code: str | None = None
     # ✅ ایجاد لینک جدید با تلاش مجدد برای short_code یکتا
-    for _ in range(5):
-        short_code = await generate_unique_short_key(redis_client)
+    if url_data.custom_alias:
+        short_code = url_data.custom_alias.strip().lower()
+
+        # بررسی تکراری بودن
+        exists = await db.scalar(
+            select(models.Link.id).where(
+                models.Link.short_code == short_code,
+                models.Link.domain_id == link_domain_id,
+            )
+        )
+        if exists:
+            raise HTTPException(
+                status_code=409,
+                detail="Custom alias already in use."
+            )
+
+        attempts = 1
+    else:
+        attempts = 5
+
+    for _ in range(attempts):
+        if not url_data.custom_alias:
+            short_code = await generate_unique_short_key(redis_client)
+
         new_link = models.Link(
             long_url=str(url_data.long_url),
             short_code=short_code,

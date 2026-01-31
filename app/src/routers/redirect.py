@@ -1,12 +1,9 @@
-from datetime import datetime, timezone
-
-from fastapi import APIRouter, Request, BackgroundTasks, Depends, HTTPException, Path
+from fastapi import APIRouter, Request, BackgroundTasks, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import update, or_
 import logging
 import hashlib
-from urllib.parse import urlparse, parse_qs, urlencode, urlunparse  # <--- اضافه شد
 
 import redis.asyncio as redis
 from sqlalchemy.orm import selectinload
