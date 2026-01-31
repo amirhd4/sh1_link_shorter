@@ -2,15 +2,15 @@
 
 import React, {type JSX, useEffect, useState} from "react";
 import {
-  Box,
-  TextField,
-  Button,
-  Typography,
-  Paper,
-  Stack,
-  CircularProgress,
-  Modal,
-  Alert,
+    Box,
+    TextField,
+    Button,
+    Typography,
+    Paper,
+    Stack,
+    CircularProgress,
+    Modal,
+    Alert, InputAdornment, IconButton,
 } from "@mui/material";
 import { Turnstile } from "@marsidev/react-turnstile";
 import { linkService } from "@/services/linkService";
@@ -20,6 +20,8 @@ import config from "@/config";
 import {useUserStore} from "@/store/userStore";
 import type { URLCreate } from '@/types/api';
 import {useQuery, useQueryClient} from "@tanstack/react-query";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import Visibility from "@mui/icons-material/Visibility";
 
 // type URLCreate = {
 //   long_url: string;
@@ -406,6 +408,17 @@ const handleVerifyOtp = async () => {
                 onChange={(e) => setPhone(e.target.value)}
                 sx={{ mb: 2 }}
                 placeholder="09XXXXXXXXX"
+                slotProps={{
+                    input: {
+                        startAdornment: (
+                            <InputAdornment position="start">📱</InputAdornment>
+                        ),
+                       inputMode: "numeric",
+                       inputProps: {
+                        pattern: "[0-9]*",
+                      },
+                    },
+                }}
               />
 
               <Turnstile
@@ -434,6 +447,15 @@ const handleVerifyOtp = async () => {
                 value={otp}
                 onChange={(e) => setOtp(e.target.value)}
                 sx={{ mb: 2 }}
+                slotProps={{
+                    input: {
+                      inputMode: "numeric",
+                      inputProps:{
+                          pattern: "[0-9]*",
+                          maxLength: 6,
+                      },
+                    },
+                  }}
               />
 
               <Turnstile
