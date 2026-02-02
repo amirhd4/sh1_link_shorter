@@ -12,6 +12,7 @@ import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import SupervisorAccountIcon from '@mui/icons-material/SupervisorAccount';
 import ApiIcon from '@mui/icons-material/Api';
 import { useUserStore } from "@/store/userStore";
+import Ticket from "@mui/icons-material/AirplaneTicket";
 
 const drawerWidth = 260;
 
@@ -30,6 +31,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     { text: 'تاریخچه صورتحساب', icon: <ReceiptLongIcon />, path: '/billing', roles: ['user', 'admin'] },
     { text: 'مدیریت API', icon: <ApiIcon />, path: '/api', roles: ['user', 'admin'] },
     { text: 'دامنه‌ها', icon: <WorkspacePremiumIcon />, path: '/domains', roles: ['user', 'admin'] },
+    { text: 'تیکت ها', icon: <Ticket />, path: '/tickets' , roles: ['user', 'admin'] },
   ];
 
   const adminNavItems = [

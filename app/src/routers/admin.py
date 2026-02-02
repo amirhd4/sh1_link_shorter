@@ -9,7 +9,8 @@ from sqlalchemy.orm import selectinload
 
 from .. import models, schemas
 from ..database import get_db
-from ..schemas import DailyStat, SystemStats
+from ..models import TicketStatus
+from ..schemas import DailyStat, SystemStats, TicketResponse, TicketMessageResponse, TicketMessageCreate
 from ..services import security, ads as ads_service, stats as stats_service
 from ..config import settings
 from fastapi import Request
@@ -360,3 +361,91 @@ async def unassign_ad_from_link(
     await db.delete(assignment)
     await db.commit()
     return None
+
+
+@router.get("/tickets", response_model=list[TicketResponse])
+async def list_all_tickets(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(
+        select(models.Ticket)
+        .options(selectinload(models.Ticket.messages))
+        .order_by(models.Ticket.created_at.desc())
+    )
+    return result.scalars().all()
+
+
+@router.post("/tickets/{ticket_id}/reply", response_model=TicketMessageResponse)
+async def admin_reply(
+    ticket_id: int,
+    data: TicketMessageCreate,
+    db: AsyncSession = Depends(get_db),
+    admin: models.User = Depends(security.get_current_admin_user)
+):
+    ticket = await db.get(models.Ticket, ticket_id)
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+
+    msg = models.TicketMessage(
+        ticket_id=ticket.id,
+        sender_id=admin.id,
+        message=data.message,
+        is_admin=True
+    )
+
+    ticket.status = TicketStatus.ANSWERED
+    db.add(msg)
+    await db.commit()
+    await db.refresh(msg)
+
+    return msg
+
+
+@router.get("/tickets/{ticket_id}", response_model=schemas.TicketResponse)
+async def get_ticket_details(
+    ticket_id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    دریافت جزئیات یک تیکت مشخص برای ادمین
+    شامل تمام پیام‌ها
+    """
+    result = await db.execute(
+        select(models.Ticket)
+        .options(selectinload(models.Ticket.messages))
+        .where(models.Ticket.id == ticket_id)
+    )
+
+    ticket = result.scalar_one_or_none()
+
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+
+    return ticket
+
+@router.patch("/tickets/{ticket_id}/close", response_model=schemas.TicketBase)
+async def close_ticket(
+    ticket_id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    بستن یک تیکت توسط ادمین
+    تغییر وضعیت به CLOSED و برگرداندن تیکت
+    """
+    # ticket = await db.get(models.Ticket, ticket_id)
+    result = await db.execute(
+        select(models.Ticket)
+        .where(models.Ticket.id == ticket_id)
+    )
+    ticket = result.scalars().first()
+
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+
+    if ticket.status == TicketStatus.CLOSED:
+        raise HTTPException(status_code=400, detail="Ticket is already closed")
+
+    ticket.status = TicketStatus.CLOSED
+    db.add(ticket)
+    await db.commit()
+    await db.refresh(ticket)
+
+    return ticket

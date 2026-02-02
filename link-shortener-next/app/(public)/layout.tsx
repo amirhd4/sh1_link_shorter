@@ -289,8 +289,8 @@ const navLinks = [
 
             {/* Social & Contact */}
             <Stack direction="row" spacing={2} alignItems="center" mt={{ xs: 3, sm: 0 }}>
-              <IconButton component="a" href="https://t.me/l1s_ir" target="_blank" color="primary"><FaTelegramPlane /></IconButton>
-              <IconButton component="a" href="#" target="_blank" color="primary"><FaInstagram /></IconButton>
+              <IconButton component="a" href="https://t.me/l1s_link_shortener" target="_blank" color="primary"><FaTelegramPlane /></IconButton>
+              <IconButton component="a" href="https://www.instagram.com/lis.link_shortener" target="_blank" color="primary"><FaInstagram /></IconButton>
               <IconButton component="a" href="#" target="_blank" color="primary"><FaFacebookF /></IconButton>
               <IconButton component="a" href="#" target="_blank" color="primary"><FaLinkedin /></IconButton>
             </Stack>

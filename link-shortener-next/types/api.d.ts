@@ -184,3 +184,48 @@ export interface AdSystemStats {
   total_unique_ad_views: number;
   total_points_rewarded: number;
 }
+
+export type TicketStatus =
+  | "open"
+  | "in_progress"
+  | "answered"
+  | "closed";
+
+export type TicketPriority =
+  | "low"
+  | "medium"
+  | "high";
+
+
+export interface Ticket {
+  id: number;
+  subject: string;
+  status: TicketStatus;
+  priority: TicketPriority;
+  created_at: string;
+}
+
+export interface TicketMessage {
+  id: number;
+  message: string;
+  is_admin: boolean;
+  created_at: string;
+}
+
+export interface TicketDetails extends Ticket {
+  messages: TicketMessage[];
+}
+
+export interface CreateTicketPayload {
+  subject: string;
+  message: string;
+  priority: TicketPriority;
+}
+
+export interface ReplyTicketPayload {
+  message: string;
+}
+
+export interface AdminTicket extends Ticket {
+  messages?: TicketMessage[];
+}

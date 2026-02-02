@@ -299,3 +299,46 @@ class LinkListResponse(BaseModel):
     items: list[LinkDetails]
     has_more: bool
     next_cursor: Optional[Cursor] | None
+
+
+class TicketCreate(BaseModel):
+    subject: str
+    message: str
+    priority: models.TicketPriority = models.TicketPriority.MEDIUM
+
+
+class TicketMessageCreate(BaseModel):
+    message: str
+
+
+class TicketMessageResponse(BaseModel):
+    id: int
+    message: str
+    is_admin: bool
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class TicketResponse(BaseModel):
+    id: int
+    subject: str
+    status: models.TicketStatus
+    priority: models.TicketPriority
+    created_at: datetime
+    messages: list[TicketMessageResponse]
+
+    class Config:
+        from_attributes = True
+
+
+class TicketBase(BaseModel):
+    id: int
+    subject: str
+    status: models.TicketStatus
+    priority: models.TicketPriority
+    created_at: datetime
+
+    class Config:
+        from_attributes = True

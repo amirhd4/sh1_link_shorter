@@ -7,6 +7,7 @@ import PeopleIcon from '@mui/icons-material/People';
 import LinkIcon from '@mui/icons-material/Link';
 import CampaignIcon from '@mui/icons-material/Campaign';
 import BarChartIcon from '@mui/icons-material/BarChart';
+import Ticket from '@mui/icons-material/AirplaneTicket';
 
 
 const drawerWidth = 240;
@@ -22,6 +23,7 @@ const navItems = [
     { text: 'مدیریت لینک‌ها', icon: <LinkIcon />, path: '/admin/links' },
     { text: 'مدیریت تبلیغات', icon: <CampaignIcon />, path: '/admin/ads' },
     { text: 'آمار تبلیغات', icon: <BarChartIcon />, path: '/admin/stats' },
+    { text: 'تیکت ها', icon: <Ticket />, path: '/admin/tickets' },
 ];
 
 export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {

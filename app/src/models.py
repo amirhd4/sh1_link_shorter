@@ -285,3 +285,64 @@ class AdViewEvent(Base):
         Index("ix_ad_view_user_link_time", "user_id", "link_id", "timestamp"),
         Index("ix_ad_view_ip_link_time", "ip_hash", "link_id", "timestamp"),
     )
+
+# Ticket
+class TicketStatus(str, enum.Enum):
+    OPEN = "open"
+    IN_PROGRESS = "in_progress"
+    ANSWERED = "answered"
+    CLOSED = "closed"
+
+
+class TicketPriority(str, enum.Enum):
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+
+
+class Ticket(Base):
+    __tablename__ = "tickets"
+
+    id = Column(Integer, primary_key=True)
+    subject = Column(String(255), nullable=False)
+
+    status = Column(
+        SQLAlchemyEnum(TicketStatus),
+        default=TicketStatus.OPEN,
+        nullable=False
+    )
+
+    priority = Column(
+        SQLAlchemyEnum(TicketPriority),
+        default=TicketPriority.MEDIUM,
+        nullable=False
+    )
+
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    user = relationship("User", backref="tickets")
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    messages = relationship(
+        "TicketMessage",
+        back_populates="ticket",
+        cascade="all, delete-orphan"
+    )
+
+class TicketMessage(Base):
+    __tablename__ = "ticket_messages"
+
+    id = Column(Integer, primary_key=True)
+    ticket_id = Column(Integer, ForeignKey("tickets.id", ondelete="CASCADE"), nullable=False)
+
+    sender_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    sender = relationship("User")
+
+    message = Column(Text, nullable=False)
+
+    is_admin = Column(Boolean, default=False)
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    ticket = relationship("Ticket", back_populates="messages")

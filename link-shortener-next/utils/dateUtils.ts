@@ -17,6 +17,5 @@ export const getDaysRemaining = (dateString: string | null | undefined): number 
 
   if (differenceInTime < 0) return 0; // اگر تاریخ گذشته باشد
 
-  const differenceInDays = Math.ceil(differenceInTime / (1000 * 3600 * 24));
-  return differenceInDays;
+  return Math.ceil(differenceInTime / (1000 * 3600 * 24));
 };

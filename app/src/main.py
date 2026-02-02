@@ -9,7 +9,7 @@ from aiosmtplib import SMTP
 import ssl
 
 from .database import engine, Base, async_session_factory
-from .routers import auth, links, admin, payment, stats, plans, redirect, api, domains, ads
+from .routers import auth, links, admin, payment, stats, plans, redirect, api, domains, ads, tickets
 from .rate_limiter import limiter
 from .models import Plan
 from .config import settings
@@ -89,6 +89,7 @@ app.include_router(plans.router, prefix="/api")
 app.include_router(api.api_router, prefix="/api")
 app.include_router(domains.router, prefix="/api")
 app.include_router(ads.router, prefix="/api")
+app.include_router(tickets.router, prefix="/api")
 app.include_router(redirect.router)
 
 

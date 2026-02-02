@@ -23,6 +23,7 @@ export function getErrorMessage(error: any): string {
 
   switch (status) {
     case 400: return i18n.t("errors.invalidData");
+    case 403: return i18n.t("errors.forbidden");
     case 404: return i18n.t("errors.notFound");
     case 422: return i18n.t("errors.invalidDataFormat");
     case 429: return i18n.t("errors.tooManyAttempts");
