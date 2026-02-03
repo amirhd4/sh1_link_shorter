@@ -1,6 +1,6 @@
 import redis.asyncio as redis
 
-BASE62_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+BASE62_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_"
 COUNTER_KEY = "kgs:unique_counter"
 
 
@@ -10,7 +10,7 @@ def to_base62(num: int) -> str:
 
     encoded = ""
     while num > 0:
-        num, rem = divmod(num, 62)
+        num, rem = divmod(num, 64)
         encoded = BASE62_CHARS[rem] + encoded
     return encoded
 

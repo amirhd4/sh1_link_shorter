@@ -13,6 +13,7 @@ import {
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import queryClient from "@/lib/queryClient";
+import {statusLabels} from "@/utils/ticketLabels";
 
 export default function AdminTicketPage() {
   const params = useParams();
@@ -94,7 +95,7 @@ export default function AdminTicketPage() {
       </Typography>
 
       <Typography color="text.secondary" mb={3}>
-        وضعیت: {data.status}
+        وضعیت: {statusLabels[data.status]}
       </Typography>
 
       {data.messages.map((msg) => (
