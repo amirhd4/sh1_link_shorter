@@ -346,3 +346,33 @@ class TicketMessage(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     ticket = relationship("Ticket", back_populates="messages")
+
+
+class UserSecretType(str, enum.Enum):
+    INITIAL_PASSWORD = "initial_password"
+    RECOVERY_NOTE = "recovery_note"
+    CUSTOM = "custom"
+
+
+class UserSecret(Base):
+    __tablename__ = "user_secrets"
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), index=True)
+
+    type = Column(SQLAlchemyEnum(UserSecretType), nullable=False)
+
+    # ❗ فقط موقت
+    encrypted_value = Column(Text, nullable=True)
+
+    is_viewed = Column(Boolean, default=False, nullable=False)
+    is_revoked = Column(Boolean, default=False, nullable=False)
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    viewed_at = Column(DateTime(timezone=True), nullable=True)
+
+    user = relationship("User", backref="secrets")
+
+    __table_args__ = (
+        Index("ix_user_secret_active", "user_id", "type", "is_viewed", "is_revoked"),
+    )

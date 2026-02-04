@@ -65,7 +65,7 @@ export function RegisterWithOtpForm() {
       localStorage.setItem(
         "welcome_msg",
         JSON.stringify({
-          text: "ثبت‌نام موفق 🎉 رمز عبور شما، شماره شماست، لطفا آن را تغییر دهید.",
+          text: "ثبت‌نام موفق 🎉 لطفا رمز عبور خود را ذخیره کنید.",
           severity: "success"
         })
       );

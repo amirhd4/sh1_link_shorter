@@ -9,10 +9,10 @@ import secrets
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from sqlalchemy.future import select
-from sqlalchemy import or_
+from sqlalchemy import or_, update
 from google_auth_oauthlib.flow import Flow
 from google.oauth2 import id_token
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 import random
 import phonenumbers
 import logging
@@ -22,7 +22,9 @@ import string
 import secrets
 import random
 
+from ..models import UserSecretType
 from ..schemas import RegisterOtpRequest
+from ..services.security import encrypt_secret, decrypt_secret
 from ..services.sms_service import send_otp
 from .. import schemas, models, config
 from ..config import settings
@@ -352,6 +354,18 @@ async def change_current_user_password(
 
     # Hash and save the new password
     current_user.hashed_password = security.get_password_hash(request_body.new_password)
+    # ❌ invalidate همه secrets مرتبط با رمز
+    await db.execute(
+        update(models.UserSecret)
+        .where(
+            models.UserSecret.user_id == current_user.id,
+            models.UserSecret.type == UserSecretType.INITIAL_PASSWORD
+        )
+        .values(
+            is_revoked=True,
+            encrypted_value=None
+        )
+    )
     await db.commit()
 
     return {"message": "Password changed successfully"}
@@ -618,10 +632,12 @@ async def register_with_otp(request: Request, payload: RegisterOtpRequestCaptcha
     if not free_plan:
         raise HTTPException(status_code=500, detail="پلن پیش‌فرض 'Free' یافت نشد.")
 
+    generated_password = generate_secure_random_password()
+
     new_user = models.User(
         # email=None,
         phone_number=phone,
-        hashed_password=security.get_password_hash(phone),
+        hashed_password=security.get_password_hash(generated_password),
         first_name=payload.first_name,
         last_name=payload.last_name,
         is_verified=True,
@@ -630,6 +646,16 @@ async def register_with_otp(request: Request, payload: RegisterOtpRequestCaptcha
         subscription_end_date=date.today() + timedelta(days=free_plan.duration_days)
     )
     db.add(new_user)
+    await db.flush()  # گرفتن ID بدون commit
+
+    # 👇 ذخیره رمز فقط برای نمایش یک‌بار
+    secret = models.UserSecret(
+        user_id=new_user.id,
+        type=UserSecretType.INITIAL_PASSWORD,
+        encrypted_value=encrypt_secret(generated_password)
+    )
+
+    db.add(secret)
     await db.commit()
     await db.refresh(new_user)
 
@@ -663,3 +689,58 @@ async def generate_api_key(
 @router.get("/api-key")
 async def get_api_key(current_user: models.User = Depends(security.get_current_user)):
     return {"api_key": current_user.api_key}
+
+
+@router.get("/users/me/secrets/{secret_type}")
+async def get_user_secret(
+    secret_type: UserSecretType,
+    current_user: models.User = Depends(security.get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    secret = await db.scalar(
+        select(models.UserSecret)
+        .where(
+            models.UserSecret.user_id == current_user.id,
+            models.UserSecret.type == secret_type,
+            models.UserSecret.is_viewed.is_(False),
+            models.UserSecret.is_revoked.is_(False),
+            models.UserSecret.encrypted_value.is_not(None),
+        )
+    )
+
+    if not secret:
+        raise HTTPException(status_code=404, detail="No secret available")
+
+    return {
+        "type": secret.type,
+        "value": decrypt_secret(secret.encrypted_value),
+        "warning": "این اطلاعات فقط یک بار نمایش داده می‌شود"
+    }
+
+
+
+@router.post("/users/me/secrets/{secret_type}/confirm")
+async def confirm_user_secret(
+    secret_type: UserSecretType,
+    current_user: models.User = Depends(security.get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    secret = await db.scalar(
+        select(models.UserSecret)
+        .where(
+            models.UserSecret.user_id == current_user.id,
+            models.UserSecret.type == secret_type,
+            models.UserSecret.is_viewed.is_(False),
+            models.UserSecret.is_revoked.is_(False),
+        )
+    )
+
+    if not secret:
+        return {"success": True}
+
+    secret.is_viewed = True
+    secret.viewed_at = datetime.utcnow()
+    secret.encrypted_value = None
+
+    await db.commit()
+    return {"success": True}

@@ -16,6 +16,15 @@ from ..database import get_db
 from ..config import settings
 from fastapi import Header
 import hmac, hashlib, base64
+from cryptography.fernet import Fernet
+
+fernet = Fernet(settings.secret_note_key)
+
+def encrypt_secret(value: str) -> str:
+    return fernet.encrypt(value.encode()).decode()
+
+def decrypt_secret(value: str) -> str:
+    return fernet.decrypt(value.encode()).decode()
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

@@ -32,6 +32,8 @@ import SubdirectoryArrowRightIcon from '@mui/icons-material/SubdirectoryArrowRig
 import config from '../../../config';
 import { usePersianDataGridLocale } from '@/hooks/usePersianDataGridLocale';
 import {InfiniteData} from "@tanstack/query-core";
+import { useUserStore } from "@/store/userStore";
+import { getDaysRemaining } from "@/utils/dateUtils";
 
 // =================================================================
 // ✨ Copy Button Component
@@ -193,6 +195,7 @@ export type LinkListPage = {
 };
 import { useMemo } from 'react';
 import { SearchIcon } from "lucide-react";
+import {InitialPasswordCard} from "@/components/client-dashboard/SecretPasswordCard";
 
 export default function LinksDashboard() {
     const navigate = useRouter();
@@ -214,6 +217,11 @@ export default function LinksDashboard() {
 
     const [searchTerm, setSearchTerm] = useState('');
 
+    const { user } = useUserStore();
+
+    const daysRemaining = getDaysRemaining(user?.subscription_end_date);
+    const isExpired = daysRemaining !== null && daysRemaining <= 0;
+    const isLastDay = daysRemaining === 1;
 
    const {
   data,
@@ -448,6 +456,28 @@ const filteredLinks = useMemo(() => {
   }}
   sx={{ mb: 2 }}
 />
+
+                {user?.plan && (isExpired || isLastDay) && (
+                  <Alert
+                    severity={isExpired ? "error" : "warning"}
+                    sx={{ mb: 2 }}
+                    action={
+                      <Button
+                        color="inherit"
+                        size="small"
+                        onClick={() => navigate.push("/plans")}
+                      >
+                        مشاهده پلن‌ها
+                      </Button>
+                    }
+                  >
+                    {isExpired
+                      ? "اشتراک شما به پایان رسیده است. برای ادامه استفاده، لطفاً پلن خود را تمدید کنید."
+                      : "امروز آخرین روز اشتراک شماست. برای جلوگیری از محدود شدن امکانات، پلن خود را تمدید کنید."}
+                  </Alert>
+                )}
+
+                <InitialPasswordCard />
 
                 <Paper sx={{ p: { xs: 1, sm: 2 }, borderRadius: 3 }} elevation={3}>
                     {renderContent()}
