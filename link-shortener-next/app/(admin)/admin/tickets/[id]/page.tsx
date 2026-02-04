@@ -41,7 +41,7 @@ export default function AdminTicketPage() {
     mutationFn: () => adminTicketService.replyTicket(ticketId, { message }),
     onSuccess: () => {
       setMessage("");
-      refetch();
+      refetch().then(r => null)
     },
   });
 
@@ -89,6 +89,30 @@ export default function AdminTicketPage() {
       >
         بازگشت به لیست تیکت‌ها
       </Button>
+
+        <Box
+          mb={3}
+          p={2}
+          bgcolor="grey.100"
+          borderRadius={2}
+          sx={{
+            cursor: "pointer",
+            "&:hover": { bgcolor: "grey.200" },
+          }}
+          onClick={() =>
+            router.push(`/admin/users/${data.user?.id}`)
+          }
+        >
+          <Typography variant="subtitle2">
+            👤 {data.user?.first_name} {data.user?.last_name} –{" "}
+            {data.user?.phone_number}
+          </Typography>
+
+          <Typography variant="body2" color="text.secondary">
+            نوع حساب: {data.user?.plan ? "پرو ⭐" : "رایگان"}
+          </Typography>
+        </Box>
+
 
       <Typography variant="h5" mb={2}>
         {data.subject}

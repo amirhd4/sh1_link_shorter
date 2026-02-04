@@ -129,23 +129,23 @@ services:
       - app
       - frontend
 
-  pgadmin:
-    image: dpage/pgadmin4
-    container_name: app_pgadmin
-    env_file: .env
-    volumes:
-      - pgadmin_data:/var/lib/pgadmin
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          memory: 256M
-    depends_on:
-      - db
-        
-    networks:
-      - 1sl_default # مهم: قرار دادن در شبکه مشترک با Nginx و DB
-    # مهم: پورت‌ها را اینجا expose نکنید. Nginx مدیریت را انجام می‌دهد.
+#  pgadmin:
+#    image: dpage/pgadmin4
+#    container_name: app_pgadmin
+#    env_file: .env
+#    volumes:
+#      - pgadmin_data:/var/lib/pgadmin
+#    restart: unless-stopped
+#    deploy:
+#      resources:
+#        limits:
+#          memory: 256M
+#    depends_on:
+#      - db
+#
+#    networks:
+#      - 1sl_default # مهم: قرار دادن در شبکه مشترک با Nginx و DB
+#    # مهم: پورت‌ها را اینجا expose نکنید. Nginx مدیریت را انجام می‌دهد.
 
   frontend:
     build:

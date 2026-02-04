@@ -1,5 +1,6 @@
 import apiClient from '../lib/axios';
 import type { Ad, AdCreate, AdStatsPerLink, AdStatsPerUser, AdUpdate } from "../types";
+import {AdminUserSummary, UserResponse} from "@/types/api";
 
 // Helper function to simplify Axios responses
 const extractData = <T>(promise: Promise<{ data: T }>): Promise<T> =>
@@ -41,4 +42,12 @@ export const getAdStatsPerLink = (): Promise<AdStatsPerLink[]> => {
 // Ads per user
 export const getAdStatsPerUser = (): Promise<AdStatsPerUser[]> => {
   return extractData(apiClient.get('/admin/stats/ads-per-user'));
+};
+
+
+export const adminUserService = {
+  getUserById: async (userId: number): Promise<AdminUserSummary> => {
+    const res = await apiClient.get(`/admin/users/${userId}`);
+    return res.data;
+  },
 };

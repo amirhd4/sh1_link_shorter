@@ -7,6 +7,59 @@ from datetime import date, datetime
 from pydantic.v1 import Field
 
 from . import models
+from .models import UserRole, TransactionStatus
+
+class TransactionResponse(BaseModel):
+    id: int
+    plan_id: int
+    amount: int
+    authority: str
+    status: TransactionStatus
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class AdminUserSummary(BaseModel):
+    id: int
+
+    first_name: str | None
+    last_name: str | None
+    phone_number: str | None
+
+    role: UserRole
+    is_active: bool
+    is_verified: bool
+
+    # Plan & Subscription
+    plan_name: str | None
+    plan_price: int | None
+    subscription_start_date: date | None
+    subscription_end_date: date | None
+    is_subscription_active: bool
+
+    # Stats
+    total_links: int
+    total_domains: int
+    total_clicks: int
+
+    # Financial
+    total_transactions: int
+    total_paid_amount: int
+    last_transaction_status: TransactionStatus | None
+
+    # Ads
+    total_ad_points: int
+    total_ad_views: int
+    total_unique_ad_views: int
+
+    # Meta
+    created_at: datetime
+    transactions: list[TransactionResponse] = []
+
+    class Config:
+        from_attributes = True
 
 
 class UserSummary(BaseModel):
@@ -327,6 +380,8 @@ class TicketResponse(BaseModel):
     status: models.TicketStatus
     priority: models.TicketPriority
     created_at: datetime
+    user: Optional[UserResponse] | None
+    user_full: Optional[AdminUserSummary] | None = None
     messages: list[TicketMessageResponse]
 
     class Config:

@@ -15,6 +15,43 @@ export interface PlanResponse {
   duration_days: number;
 }
 
+export interface AdminUserSummary {
+  id: number;
+
+  first_name?: string | null;
+  last_name?: string | null;
+  phone_number?: string | null;
+
+  role: "user" | "admin";
+  is_active: boolean;
+  is_verified: boolean;
+
+  // Plan
+  plan_name?: string | null;
+  plan_price?: number | null;
+  subscription_start_date?: string | null;
+  subscription_end_date?: string | null;
+  is_subscription_active: boolean;
+
+  // Stats
+  total_links: number;
+  total_domains: number;
+  total_clicks: number;
+
+  // Financial
+  total_transactions: number;
+  total_paid_amount: number;
+  last_transaction_status?: "pending" | "completed" | "failed" | null;
+
+  // Ads
+  total_ad_points: number;
+  total_ad_views: number;
+  total_unique_ad_views: number;
+
+  created_at: string;
+  transactions: TransactionResponse[] | [];
+}
+
 export interface UserResponse {
   id: number;
   // email: string;
@@ -213,6 +250,8 @@ export interface TicketMessage {
 }
 
 export interface TicketDetails extends Ticket {
+  user?: UserResponse | null;
+  user_full?: AdminUserSummary | null;
   messages: TicketMessage[];
 }
 

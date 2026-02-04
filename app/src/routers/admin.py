@@ -9,8 +9,9 @@ from sqlalchemy.orm import selectinload
 
 from .. import models, schemas
 from ..database import get_db
-from ..models import TicketStatus
-from ..schemas import DailyStat, SystemStats, TicketResponse, TicketMessageResponse, TicketMessageCreate
+from ..models import TicketStatus, Transaction, Domain, Link, UserAdReward, TransactionStatus
+from ..schemas import DailyStat, SystemStats, TicketResponse, TicketMessageResponse, TicketMessageCreate, \
+    AdminUserSummary
 from ..services import security, ads as ads_service, stats as stats_service
 from ..config import settings
 from fastapi import Request
@@ -362,6 +363,103 @@ async def unassign_ad_from_link(
     await db.commit()
     return None
 
+@router.get(
+    "/users/{user_id}",
+    response_model=schemas.AdminUserSummary
+)
+async def get_admin_user_summary(
+    user_id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    user = await db.get(models.User, user_id)
+
+    total_links = await db.scalar(
+        select(func.count(Link.id)).where(Link.owner_id == user_id)
+    )
+
+    total_domains = await db.scalar(
+        select(func.count(Domain.id)).where(Domain.user_id == user_id)
+    )
+
+    total_clicks = await db.scalar(
+        select(func.coalesce(func.sum(Link.clicks), 0))
+        .where(Link.owner_id == user_id)
+    )
+
+    total_transactions = await db.scalar(
+        select(func.count(Transaction.id)).where(Transaction.user_id == user_id)
+    )
+
+    total_paid_amount = await db.scalar(
+        select(func.coalesce(func.sum(Transaction.amount), 0))
+        .where(
+            Transaction.user_id == user_id,
+            Transaction.status == TransactionStatus.COMPLETED
+        )
+    )
+
+    last_tx = await db.scalar(
+        select(Transaction)
+        .where(Transaction.user_id == user_id)
+        .order_by(Transaction.created_at.desc())
+        .limit(1)
+    )
+
+    ad_stats = await db.execute(
+        select(
+            func.coalesce(func.sum(UserAdReward.total_points), 0),
+            func.coalesce(func.sum(UserAdReward.ad_view_count), 0),
+            func.coalesce(func.sum(UserAdReward.unique_view_count), 0)
+        ).where(UserAdReward.user_id == user_id)
+    )
+    total_points, ad_views, unique_views = ad_stats.one()
+
+    # گرفتن همه تراکنش‌ها
+    transactions = await db.execute(
+        select(Transaction)
+        .where(Transaction.user_id == user_id)
+        .order_by(Transaction.created_at.desc())
+    )
+    transactions_list = transactions.scalars().all()
+
+    # تبدیل به Pydantic
+    transactions_response = [TransactionResponse.from_orm(tx) for tx in transactions_list]
+
+    return AdminUserSummary(
+        id=user.id,
+        first_name=user.first_name,
+        last_name=user.last_name,
+        phone_number=user.phone_number,
+        role=user.role,
+        is_active=user.is_active,
+        is_verified=user.is_verified,
+
+        plan_name=user.plan.name if user.plan else None,
+        plan_price=user.plan.price if user.plan else None,
+        subscription_start_date=user.subscription_start_date,
+        subscription_end_date=user.subscription_end_date,
+        is_subscription_active=(
+            user.subscription_end_date and user.subscription_end_date >= date.today()
+        ),
+
+        total_links=total_links,
+        total_domains=total_domains,
+        total_clicks=total_clicks,
+
+        total_transactions=total_transactions,
+        total_paid_amount=total_paid_amount,
+        last_transaction_status=last_tx.status if last_tx else None,
+
+        total_ad_points=total_points,
+        total_ad_views=ad_views,
+        total_unique_ad_views=unique_views,
+
+        created_at=user.created_at,
+        transactions=transactions_response  # ✅ اینجا
+
+    )
+
+
 
 @router.get("/tickets", response_model=list[TicketResponse])
 async def list_all_tickets(db: AsyncSession = Depends(get_db)):
@@ -411,6 +509,7 @@ async def get_ticket_details(
     result = await db.execute(
         select(models.Ticket)
         .options(selectinload(models.Ticket.messages))
+        .options(selectinload(models.Ticket.user))
         .where(models.Ticket.id == ticket_id)
     )
 

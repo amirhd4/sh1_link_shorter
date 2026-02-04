@@ -163,6 +163,8 @@ async def get_ticket_details(
         priority=ticket.priority,
         status=ticket.status,
         created_at=ticket.created_at.isoformat(),
+        user=None,
+        user_full=None,
         messages=[
             TicketMessageResponse(
                 id=msg.id,
