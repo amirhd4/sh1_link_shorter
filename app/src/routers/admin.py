@@ -16,6 +16,7 @@ from ..services import security, ads as ads_service, stats as stats_service
 from ..config import settings
 from fastapi import Request
 import redis.asyncio as redis
+from ..rate_limiter import limiter
 
 
 router = APIRouter(
@@ -38,9 +39,9 @@ class AssignPlanRequest(schemas.BaseModel):
 class UpdateUserRoleRequest(schemas.BaseModel):
     role: models.UserRole
 
-
+@limiter.limit("10/minute")
 @router.get("/users", response_model=List[schemas.UserResponse])
-async def list_users(skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db)):
+async def list_users(request: Request, skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db)):
     """لیست تمام کاربران را به همراه اطلاعات پلن آنها برمی‌گرداند."""
     stmt = (
         select(models.User)
@@ -54,8 +55,9 @@ async def list_users(skip: int = 0, limit: int = 100, db: AsyncSession = Depends
     return users
 
 
+@limiter.limit("10/minute")
 @router.get("/links", response_model=List[schemas.LinkDetailsForAdmin])
-async def list_all_links(db: AsyncSession = Depends(get_db)):
+async def list_all_links(request: Request, db: AsyncSession = Depends(get_db)):
     """لیست تمام لینک‌های موجود در سیستم را برمی‌گرداند."""
     stmt = (
         select(models.Link)
@@ -68,9 +70,10 @@ async def list_all_links(db: AsyncSession = Depends(get_db)):
     links = result.scalars().all()
     return links
 
-    
+
+@limiter.limit("1/minute")
 @router.post("/users", response_model=schemas.UserResponse, status_code=status.HTTP_201_CREATED)
-async def create_user_by_admin(user_create: schemas.UserCreate, db: AsyncSession = Depends(get_db)):
+async def create_user_by_admin(request: Request, user_create: schemas.UserCreate, db: AsyncSession = Depends(get_db)):
     """
     یک کاربر جدید توسط ادمین ایجاد می‌کند.
     """
@@ -89,8 +92,9 @@ async def create_user_by_admin(user_create: schemas.UserCreate, db: AsyncSession
     return new_user
 
 
+@limiter.limit("5/minute")
 @router.post("/users/{user_id}/assign-plan", response_model=schemas.UserResponse)
-async def assign_plan_to_user(user_id: int, request: AssignPlanRequest, db: AsyncSession = Depends(get_db)):
+async def assign_plan_to_user(request: Request, user_id: int, request_assign: AssignPlanRequest, db: AsyncSession = Depends(get_db)):
     """
     یک پلن را به کاربر اختصاص داده و اشتراک او را فعال می‌کند.
     """
@@ -105,10 +109,10 @@ async def assign_plan_to_user(user_id: int, request: AssignPlanRequest, db: Asyn
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    plan_result = await db.execute(select(models.Plan).where(models.Plan.name == request.plan_name))
+    plan_result = await db.execute(select(models.Plan).where(models.Plan.name == request_assign.plan_name))
     plan = plan_result.scalar_one_or_none()
     if not plan:
-        raise HTTPException(status_code=404, detail=f"Plan '{request.plan_name}' not found")
+        raise HTTPException(status_code=404, detail=f"Plan '{request_assign.plan_name}' not found")
 
     user.plan_id = plan.id
     user.subscription_start_date = date.today()
@@ -120,52 +124,57 @@ async def assign_plan_to_user(user_id: int, request: AssignPlanRequest, db: Asyn
     return user
 
 
-
+@limiter.limit("1/minute")
 @router.patch("/users/{user_id}/role", response_model=schemas.UserResponse)
-async def update_user_role(user_id: int, request: UpdateUserRoleRequest, db: AsyncSession = Depends(get_db)):
+async def update_user_role(request: Request, user_id: int, request_update: UpdateUserRoleRequest, db: AsyncSession = Depends(get_db)):
     """نقش یک کاربر را (به user یا admin) تغییر می‌دهد."""
     user_result = await db.execute(select(models.User).where(models.User.id == user_id))
     user = user_result.scalar_one_or_none()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    user.role = request.role
+    user.role = request_update.role
     await db.commit()
     await db.refresh(user)
     return user
 
 
 # Ad Statistics Endpoints
+@limiter.limit("20/minute")
 @router.get("/stats/ads-per-link", response_model=List[schemas.AdStatsPerLink])
-async def get_ad_stats_per_link_by_admin(db: AsyncSession = Depends(get_db)):
+async def get_ad_stats_per_link_by_admin(request: Request, db: AsyncSession = Depends(get_db)):
     """آمار بازدید و امتیازات تبلیغات را به تفکیک لینک برمی‌گرداند."""
     stats = await stats_service.get_ad_stats_per_link(db)
     return stats
 
 
+@limiter.limit("20/minute")
 @router.get("/stats/ads-per-user", response_model=List[schemas.AdStatsPerUser])
-async def get_ad_stats_per_user_by_admin(db: AsyncSession = Depends(get_db)):
+async def get_ad_stats_per_user_by_admin(request: Request, db: AsyncSession = Depends(get_db)):
     """آمار بازدید و امتیازات تبلیغات را به تفکیک کاربر برمی‌گرداند."""
     stats = await stats_service.get_ad_stats_per_user(db)
     return stats
 
 
 # Ad Management Endpoints
+@limiter.limit("5/minute")
 @router.post("/ads", response_model=schemas.AdResponse, status_code=status.HTTP_201_CREATED)
-async def create_ad_by_admin(ad_create: schemas.AdCreate, db: AsyncSession = Depends(get_db)):
+async def create_ad_by_admin(request: Request, ad_create: schemas.AdCreate, db: AsyncSession = Depends(get_db)):
     """ایجاد یک تبلیغ جدید توسط ادمین"""
     return await ads_service.create_ad(db=db, ad=ad_create)
 
 
+@limiter.limit("5/minute")
 @router.get("/ads", response_model=List[schemas.AdResponse])
-async def list_ads_by_admin(skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db)):
+async def list_ads_by_admin(request: Request, skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db)):
     """لیست تمام تبلیغات را برمی‌گرداند"""
     ads = await ads_service.get_ads(db, skip=skip, limit=limit)
     return ads
 
 
+@limiter.limit("5/minute")
 @router.get("/ads/{ad_id}", response_model=schemas.AdResponse)
-async def get_ad_by_admin(ad_id: int, db: AsyncSession = Depends(get_db)):
+async def get_ad_by_admin(request: Request, ad_id: int, db: AsyncSession = Depends(get_db)):
     """دریافت اطلاعات یک تبلیغ خاص"""
     db_ad = await ads_service.get_ad(db, ad_id=ad_id)
     if db_ad is None:
@@ -173,8 +182,9 @@ async def get_ad_by_admin(ad_id: int, db: AsyncSession = Depends(get_db)):
     return db_ad
 
 
+@limiter.limit("5/minute")
 @router.put("/ads/{ad_id}", response_model=schemas.AdResponse)
-async def update_ad_by_admin(ad_id: int, ad_update: schemas.AdUpdate, db: AsyncSession = Depends(get_db)):
+async def update_ad_by_admin(request: Request, ad_id: int, ad_update: schemas.AdUpdate, db: AsyncSession = Depends(get_db)):
     """به‌روزرسانی اطلاعات یک تبلیغ"""
     updated_ad = await ads_service.update_ad(db=db, ad_id=ad_id, ad_update=ad_update)
     if updated_ad is None:
@@ -182,8 +192,9 @@ async def update_ad_by_admin(ad_id: int, ad_update: schemas.AdUpdate, db: AsyncS
     return updated_ad
 
 
+@limiter.limit("3/minute")
 @router.delete("/ads/{ad_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_ad_by_admin(ad_id: int, db: AsyncSession = Depends(get_db)):
+async def delete_ad_by_admin(request: Request, ad_id: int, db: AsyncSession = Depends(get_db)):
     """حذف یک تبلیغ"""
     success = await ads_service.delete_ad(db=db, ad_id=ad_id)
     if not success:
@@ -191,8 +202,9 @@ async def delete_ad_by_admin(ad_id: int, db: AsyncSession = Depends(get_db)):
     return None
 
 
+@limiter.limit("10/minute")
 @router.delete("/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_user_by_admin(user_id: int, db: AsyncSession = Depends(get_db)):
+async def delete_user_by_admin(request: Request, user_id: int, db: AsyncSession = Depends(get_db)):
     """یک کاربر را به طور کامل از سیستم حذف می‌کند."""
     user = await db.get(models.User, user_id)
     if not user:
@@ -202,9 +214,11 @@ async def delete_user_by_admin(user_id: int, db: AsyncSession = Depends(get_db))
     await db.commit()
     return None
 
+
+@limiter.limit("15/minute")
 @router.delete("/links/{short_code}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_link_by_admin(
-        short_code: str,
+        request: Request, short_code: str,
         domain_id: int | None = None,
         db: AsyncSession = Depends(get_db),
         current_admin: models.User = Depends(security.get_current_admin_user),
@@ -230,9 +244,9 @@ async def delete_link_by_admin(
     return None
 
 
-
+@limiter.limit("10/minute")
 @router.get("/stats", response_model=SystemStats)
-async def get_system_stats(db: AsyncSession = Depends(get_db)):
+async def get_system_stats(request: Request, db: AsyncSession = Depends(get_db)):
     seven_days_ago = datetime.now(timezone.utc).date() - timedelta(days=7)
     new_users_data = await db.execute(
         select(func.date(models.User.created_at), func.count(models.User.id))
@@ -259,8 +273,9 @@ class AdSystemStats(BaseModel):
     total_points_rewarded: int
 
 
+@limiter.limit("7/minute")
 @router.get("/stats/ads", response_model=AdSystemStats)
-async def get_ad_system_stats(db: AsyncSession = Depends(get_db)):
+async def get_ad_system_stats(request: Request, db: AsyncSession = Depends(get_db)):
     """آمار کلی سیستم تبلیغات را برمی‌گرداند."""
     total_views_result = await db.execute(select(func.sum(models.UserAdReward.ad_view_count)))
     total_unique_views_result = await db.execute(select(func.sum(models.UserAdReward.unique_view_count)))
@@ -277,10 +292,11 @@ async def get_ad_system_stats(db: AsyncSession = Depends(get_db)):
     )
 
 
+@limiter.limit("7/minute")
 @router.patch("/users/{user_id}/active", response_model=schemas.UserResponse)
 async def update_user_active_status(
-    user_id: int,
-    request: UpdateUserActiveRequest,
+    request: Request, user_id: int,
+    request_active: UpdateUserActiveRequest,
     db: AsyncSession = Depends(get_db)
 ):
     """وضعیت فعال/غیرفعال یک کاربر را تغییر می‌دهد."""
@@ -288,7 +304,7 @@ async def update_user_active_status(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    user.is_active = request.is_active
+    user.is_active = request_active.is_active
     await db.commit()
     result = await db.execute(
         select(models.User)
@@ -300,9 +316,10 @@ async def update_user_active_status(
     return user_with_plan
 
 
+@limiter.limit("2/minute")
 @router.post("/ads/assign-to-link", response_model=schemas.LinkAdResponse, status_code=status.HTTP_201_CREATED)
 async def assign_ad_to_link(
-        assignment: schemas.LinkAdCreate,  # فرض می‌کنیم این اسکیما را ساخته‌اید
+        request: Request, assignment: schemas.LinkAdCreate,  # فرض می‌کنیم این اسکیما را ساخته‌اید
         db: AsyncSession = Depends(get_db)
 ):
     """
@@ -343,9 +360,10 @@ async def assign_ad_to_link(
         return new_assignment
 
 
+@limiter.limit("2/minute")
 @router.delete("/ads/unassign-from-link/{link_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def unassign_ad_from_link(
-        link_id: int,
+        request: Request, link_id: int,
         db: AsyncSession = Depends(get_db)
 ):
     """
@@ -363,12 +381,14 @@ async def unassign_ad_from_link(
     await db.commit()
     return None
 
+
+@limiter.limit("10/minute")
 @router.get(
     "/users/{user_id}",
     response_model=schemas.AdminUserSummary
 )
 async def get_admin_user_summary(
-    user_id: int,
+    request: Request, user_id: int,
     db: AsyncSession = Depends(get_db)
 ):
     user = await db.get(models.User, user_id)
@@ -460,9 +480,9 @@ async def get_admin_user_summary(
     )
 
 
-
+@limiter.limit("15/minute")
 @router.get("/tickets", response_model=list[TicketResponse])
-async def list_all_tickets(db: AsyncSession = Depends(get_db)):
+async def list_all_tickets(request: Request, db: AsyncSession = Depends(get_db)):
     result = await db.execute(
         select(models.Ticket)
         .options(selectinload(models.Ticket.messages))
@@ -471,9 +491,10 @@ async def list_all_tickets(db: AsyncSession = Depends(get_db)):
     return result.scalars().all()
 
 
+@limiter.limit("15/minute")
 @router.post("/tickets/{ticket_id}/reply", response_model=TicketMessageResponse)
 async def admin_reply(
-    ticket_id: int,
+    request: Request, ticket_id: int,
     data: TicketMessageCreate,
     db: AsyncSession = Depends(get_db),
     admin: models.User = Depends(security.get_current_admin_user)
@@ -497,9 +518,10 @@ async def admin_reply(
     return msg
 
 
+@limiter.limit("15/minute")
 @router.get("/tickets/{ticket_id}", response_model=schemas.TicketResponse)
 async def get_ticket_details(
-    ticket_id: int,
+    request: Request, ticket_id: int,
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -520,9 +542,11 @@ async def get_ticket_details(
 
     return ticket
 
+
+@limiter.limit("10/minute")
 @router.patch("/tickets/{ticket_id}/close", response_model=schemas.TicketBase)
 async def close_ticket(
-    ticket_id: int,
+    request: Request, ticket_id: int,
     db: AsyncSession = Depends(get_db)
 ):
     """
