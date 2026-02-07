@@ -13,6 +13,7 @@ import SupervisorAccountIcon from '@mui/icons-material/SupervisorAccount';
 import ApiIcon from '@mui/icons-material/Api';
 import { useUserStore } from "@/store/userStore";
 import Ticket from "@mui/icons-material/AirplaneTicket";
+import BioLink from "@mui/icons-material/Biotech";
 
 const drawerWidth = 260;
 
@@ -32,6 +33,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     { text: 'مدیریت API', icon: <ApiIcon />, path: '/api', roles: ['user', 'admin'] },
     { text: 'دامنه‌ها', icon: <WorkspacePremiumIcon />, path: '/domains', roles: ['user', 'admin'] },
     { text: 'تیکت ها', icon: <Ticket />, path: '/tickets' , roles: ['user', 'admin'] },
+    { text: 'یک لینک', icon: <BioLink />, path: '/bio-pages' , roles: ['user', 'admin'] },
   ];
 
   const adminNavItems = [

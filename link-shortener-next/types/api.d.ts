@@ -268,3 +268,63 @@ export interface ReplyTicketPayload {
 export interface AdminTicket extends Ticket {
   messages?: TicketMessage[];
 }
+
+export type LinkType = "url" | "email" | "phone" | "text" | "payment";
+
+export interface BioLinkBase {
+  title: string;
+  value: string; // لینک اصلی، شماره یا ایمیل
+  link_type: LinkType;
+  icon?: string | null;
+  position?: number | null;
+}
+
+export interface BioLinkCreate extends BioLinkBase {}
+
+export interface BioLinkResponse extends BioLinkBase {
+  id: number;
+  click_count: number;
+  is_active: boolean;
+}
+
+export interface BioPageBase {
+  slug: string;
+  title?: string | null;
+  description?: string | null;
+  avatar_url?: string | null;
+}
+
+export interface BioPageCreate extends BioPageBase {
+  is_active?: boolean;
+  is_public?: boolean;
+}
+export interface BioPageForm {
+  title: string;
+  slug: string;
+  description?: string;
+  avatar?: File | null;
+}
+
+export interface BioPageResponse extends BioPageBase {
+  id: number;
+  is_active: boolean;
+  is_public: boolean;
+  links: BioLinkResponse[];
+}
+
+export interface SuccessResponse {
+  success: boolean;
+  message?: string;
+}
+
+export interface BioPageUpdate {
+  title?: string | null;
+  description?: string | null;
+  avatar_url?: string | null;
+  is_active?: boolean;
+  is_public?: boolean;
+}
+
+export interface ToggleLinkActive {
+  is_active: boolean;
+}

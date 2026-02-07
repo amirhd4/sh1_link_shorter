@@ -1,13 +1,15 @@
 import re
 
-from pydantic import BaseModel, HttpUrl, validator, field_validator
+from pydantic import BaseModel, field_validator, EmailStr, HttpUrl, ValidationError, AnyUrl
+
 from typing import Optional, List
 from datetime import date, datetime
 
 from pydantic.v1 import Field
 
 from . import models
-from .models import UserRole, TransactionStatus
+from .models import UserRole, TransactionStatus, LinkTypeEnum
+
 
 class TransactionResponse(BaseModel):
     id: int
@@ -397,3 +399,52 @@ class TicketBase(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class BioLinkCreate(BaseModel):
+    title: str
+    value: str
+    link_type: LinkTypeEnum = LinkTypeEnum.url
+    icon: str | None = None
+    position: int | None = 0
+
+
+class BioLinkResponse(BioLinkCreate):
+    id: int
+    click_count: int
+    is_active: bool
+
+    class Config:
+        from_attributes = True
+
+
+class BioPageCreate(BaseModel):
+    slug: str
+    title: str | None = None
+    description: str | None = None
+    avatar_url: str | None = None
+
+
+class BioPageResponse(BaseModel):
+    id: int
+    slug: str
+    title: str | None
+    description: str | None
+    avatar_url: str | None
+    is_active: bool
+    is_public: bool
+    links: list[BioLinkResponse]
+
+    class Config:
+        from_attributes = True
+
+
+class BioPageUpdate(BaseModel):
+    title: str | None = None
+    description: str | None = None
+    avatar_url: str | None = None
+    is_active: bool | None = None
+    is_public: bool | None = None
+
+class ToggleLinkActive(BaseModel):
+    is_active: bool

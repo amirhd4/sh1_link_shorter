@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import { linkService } from '@/services/linkService';
 import { DataGrid, type GridColDef, GridActionsCellItem } from '@mui/x-data-grid';
@@ -441,21 +441,23 @@ const filteredLinks = useMemo(() => {
                         ایجاد لینک جدید
                     </Button>
                 </Stack>
-<TextField
-  fullWidth
-  size="small"
-  placeholder="جستجو در لینک‌ها (کد کوتاه یا آدرس)..."
-  value={searchTerm}
-  onChange={(e) => setSearchTerm(e.target.value)}
-  InputProps={{
-    startAdornment: (
-      <InputAdornment position="start">
-        <SearchIcon fontSize="small" />
-      </InputAdornment>
-    ),
-  }}
-  sx={{ mb: 2 }}
-/>
+                <TextField
+                  fullWidth
+                  size="small"
+                  placeholder="جستجو در لینک‌ها (کد کوتاه یا آدرس)..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  slotProps={{
+                    input: {
+                        startAdornment: (
+                            <InputAdornment position="start">
+                                <SearchIcon fontSize="small" />
+                              </InputAdornment>
+                        ),
+                    },
+                  }}
+                  sx={{ mb: 2 }}
+                  />
 
                 {user?.plan && (isExpired || isLastDay) && (
                   <Alert

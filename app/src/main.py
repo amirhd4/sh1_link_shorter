@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -8,8 +10,10 @@ from slowapi.errors import RateLimitExceeded
 from aiosmtplib import SMTP
 import ssl
 
+from starlette.staticfiles import StaticFiles
+
 from .database import engine, Base, async_session_factory
-from .routers import auth, links, admin, payment, stats, plans, redirect, api, domains, ads, tickets
+from .routers import auth, links, admin, payment, stats, plans, redirect, api, domains, ads, tickets, bio_link
 from .rate_limiter import limiter
 from .models import Plan
 from .config import settings
@@ -67,7 +71,9 @@ app = FastAPI(lifespan=lifespan)
 app.state.limiter = limiter
 from slowapi import _rate_limit_exceeded_handler
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+UPLOAD_DIR = Path(__file__).parent / "../uploads"
 
+app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 origins = [
     settings.frontend_url,
 ]
@@ -90,6 +96,7 @@ app.include_router(api.api_router, prefix="/api")
 app.include_router(domains.router, prefix="/api")
 app.include_router(ads.router, prefix="/api")
 app.include_router(tickets.router, prefix="/api")
+app.include_router(bio_link.router, prefix="/api")
 app.include_router(redirect.router)
 
 

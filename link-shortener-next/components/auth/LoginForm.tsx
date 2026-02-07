@@ -34,6 +34,7 @@ import {Turnstile} from "@marsidev/react-turnstile";
 import config from "@/config";
 import { AlertColor } from "@mui/material";
 import {getErrorMessage} from "@/utils/errorHandler";
+import { PersonAddRounded, SmsRounded } from "@mui/icons-material";
 
 const phoneSchema = z.object({
   phone_number: z.string().refine(
@@ -322,16 +323,70 @@ export function LoginForm() {
               {/*    رمز عبورت رو یادت رفته؟ 🤔*/}
               {/*  </MuiLink>*/}
               {/*</Grid>*/}
-              <Grid>
-                <MuiLink component={Link} href="/register" variant="body2" sx={{ color: "#7e22ce" }}>
-                  حساب نداری؟ همین الان بساز 💫
-                </MuiLink>
-              </Grid>
-              <Grid>
-                <MuiLink component={Link} href="/login-otp" variant="body2" sx={{ color: "#7e22ce" }}>
-                  ورود با رمز یکبار مصرف 📱
-                </MuiLink>
-              </Grid>
+              <Grid container spacing={2}>
+  <Grid size={{ xs: 12 }}>
+    <MuiLink
+      component={Link}
+      href="/register"
+      underline="none"
+    >
+      <Box
+        sx={{
+          p: 2,
+          borderRadius: 2,
+          border: "1px solid #e9d5ff",
+          backgroundColor: "#faf5ff",
+          display: "flex",
+          alignItems: "center",
+          gap: 1.5,
+          transition: "all 0.25s ease",
+          "&:hover": {
+            backgroundColor: "#f3e8ff",
+            transform: "translateY(-2px)",
+            boxShadow: "0 6px 20px rgba(126,34,206,0.15)",
+          },
+        }}
+      >
+        <PersonAddRounded sx={{ color: "#7e22ce" }} />
+        <Typography variant="body2" color="#7e22ce" fontWeight={600}>
+          حساب نداری؟ همین الان بساز
+        </Typography>
+      </Box>
+    </MuiLink>
+  </Grid>
+
+  <Grid size={{ xs: 12 }}>
+    <MuiLink
+      component={Link}
+      href="/login-otp"
+      underline="none"
+    >
+      <Box
+        sx={{
+          p: 2,
+          borderRadius: 2,
+          border: "1px dashed #e9d5ff",
+          backgroundColor: "#ffffff",
+          display: "flex",
+          alignItems: "center",
+          gap: 1.5,
+          transition: "all 0.25s ease",
+          "&:hover": {
+            backgroundColor: "#faf5ff",
+            transform: "translateY(-2px)",
+            boxShadow: "0 6px 20px rgba(126,34,206,0.12)",
+          },
+        }}
+      >
+        <SmsRounded sx={{ color: "#7e22ce" }} />
+        <Typography variant="body2" color="#7e22ce" fontWeight={600}>
+          ورود با رمز یکبار مصرف
+        </Typography>
+      </Box>
+    </MuiLink>
+  </Grid>
+</Grid>
+
             </Grid>
           </Box>
         </Paper>

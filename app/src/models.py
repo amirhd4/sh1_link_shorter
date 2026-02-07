@@ -376,3 +376,81 @@ class UserSecret(Base):
     __table_args__ = (
         Index("ix_user_secret_active", "user_id", "type", "is_viewed", "is_revoked"),
     )
+
+
+class BioPage(Base):
+    __tablename__ = "bio_pages"
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+
+    slug = Column(String(64), unique=True, index=True, nullable=False)
+    title = Column(String(255), nullable=True)
+    description = Column(Text, nullable=True)
+    avatar_url = Column(Text, nullable=True)
+
+    is_active = Column(Boolean, default=True)
+    is_public = Column(Boolean, default=True)
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    user = relationship("User", backref="bio_pages")
+    links = relationship(
+        "BioLink",
+        back_populates="bio_page",
+        cascade="all, delete-orphan",
+        order_by="BioLink.position"
+    )
+
+
+class LinkTypeEnum(str, enum.Enum):
+    url = "url"
+    email = "email"
+    phone = "phone"
+    text = "text"
+    payment = "payment"
+
+class BioLink(Base):
+    __tablename__ = "bio_links"
+
+    id = Column(Integer, primary_key=True)
+    bio_page_id = Column(Integer, ForeignKey("bio_pages.id", ondelete="CASCADE"))
+
+    title = Column(String(255), nullable=False)
+    value = Column(Text, nullable=False)  # لینک اصلی یا شماره یا ایمیل
+    link_type = Column(SQLAlchemyEnum(LinkTypeEnum), default=LinkTypeEnum.url)
+    icon = Column(String(50), nullable=True)   # هر نوع آیکن دلخواه
+    position = Column(Integer, default=0)
+
+    is_active = Column(Boolean, default=True)
+    click_count = Column(Integer, default=0)
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    bio_page = relationship("BioPage", back_populates="links")
+
+
+
+class BioPageVisit(Base):
+    __tablename__ = "bio_page_visits"
+
+    id = Column(BigInteger, primary_key=True)
+    bio_page_id = Column(Integer, ForeignKey("bio_pages.id", ondelete="CASCADE"))
+
+    ip_hash = Column(String(128), nullable=True)
+    user_agent = Column(Text, nullable=True)
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class BioLinkClick(Base):
+    __tablename__ = "bio_link_clicks"
+
+    id = Column(BigInteger, primary_key=True)
+    bio_link_id = Column(Integer, ForeignKey("bio_links.id", ondelete="CASCADE"))
+
+    ip_hash = Column(String(128), nullable=True)
+    user_agent = Column(Text, nullable=True)
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
