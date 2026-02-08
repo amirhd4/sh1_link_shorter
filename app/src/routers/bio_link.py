@@ -61,13 +61,13 @@ async def create_bio_page(
             )
 
     # محدودیت بر اساس پلن
-    if current_user.plan == "free" and pages_count >= 1:
+    if current_user.plan == "Free" and pages_count >= 1:
         raise HTTPException(
             status_code=403,
             detail="در پلن رایگان فقط امکان ساخت یک صفحه bio وجود دارد"
         )
 
-    if current_user.plan == "pro" and pages_count >= 3:
+    if current_user.plan == "Pro" and pages_count >= 3:
         raise HTTPException(
             status_code=403,
             detail="حداکثر تعداد صفحات bio در پلن Pro سه عدد است"

@@ -22,8 +22,8 @@ export default function BioPagesDashboard() {
   const isExpired = daysRemaining !== null && daysRemaining <= 0;
 
   const maxPages =
-    user?.plan?.name === "pro" ? 3 :
-    user?.plan?.name === "free" ? 1 :
+    user?.plan?.name === "Pro" ? 3 :
+    user?.plan?.name === "Free" ? 1 :
     0;
 
   const canCreatePage = !isExpired && pages.length < maxPages;
