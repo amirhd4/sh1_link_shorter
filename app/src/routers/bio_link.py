@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from sqlalchemy.future import select
 from sqlalchemy import update
+from datetime import date, datetime, timedelta, timezone, date
 
 from .. import schemas
 from ..rate_limiter import limiter
@@ -54,7 +55,7 @@ async def create_bio_page(
 
     # بررسی انقضای پلن
     if current_user.subscription_end_date:
-        if current_user.subscription_end_date < datetime.now(timezone.utc):
+        if current_user.subscription_end_date < datetime.now(timezone.utc).date():
             raise HTTPException(
                 status_code=403,
                 detail="اشتراک شما منقضی شده است"
