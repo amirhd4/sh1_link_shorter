@@ -55,7 +55,7 @@ export default function AvatarEditor({
     preview
       ? preview
       : currentAvatar
-      ? config.backendBaseUrlOrigin + currentAvatar
+      ? config.backendBaseUrl + currentAvatar
       : "/avatar-placeholder.png"
   }
   alt="Avatar"

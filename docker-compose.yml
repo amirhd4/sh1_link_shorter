@@ -13,8 +13,8 @@ services:
       - ./app:/app
       - ./app/uploads:/app/uploads
     # Expose the application port directly
-    ports:
-      - "8000:8000" # Assuming your app runs on port 8000 in the container
+#    ports:
+#      - "8000:8000" # Assuming your app runs on port 8000 in the container
 #    environment:
       # SOCKS5_PROXY is kept as it's a core dependency
 #      - SOCKS5_PROXY=xray:10808
@@ -125,26 +125,35 @@ services:
       db:
         condition: service_healthy
 
-  # -----------------------------------------------------------------
-  # 6. Nginx Service (Removed for Dev)
-  # -----------------------------------------------------------------
-  # The Nginx service has been removed. You should run your frontend
-  # development server (e.g., npm run dev) separately on your host machine.
-
+#  # Next.js frontend
 #  frontend:
-#    image: node:20-alpine
-#    working_dir: /app
-#    volumes:
-#      - ./link-shortener-next:/app
-#      - /app/node_modules
-#    command: sh -c "npm install && npm run dev"
-#    ports:
-#      - "3000:3000"
-#    environment:
-#      - NODE_ENV=development
-#      - NEXT_PUBLIC_API_BASE=http://localhost:8000
-#    depends_on:
-#      - app
+#      image: node:20-alpine
+#      working_dir: /app
+#      volumes:
+#        - ./link-shortener-next:/app
+#        - /app/node_modules
+#      command: sh -c "npm install && npm run dev"
+#      ports:
+#        - "3000:3000"
+#      environment:
+#        - NODE_ENV=development
+#        - NEXT_PUBLIC_API_BASE=http://localhost:8000
+#      depends_on:
+#        - app
+
+  # Nginx dev proxy
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: nginx_dev
+    ports:
+      - "3000:3000"
+      - "8000:8000"
+    volumes:
+      - ./nginx/nginx_dev.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
+    restart: unless-stopped
+
 
 volumes:
   postgres_data:

@@ -204,7 +204,7 @@ export default function PublicBioPage() {
               width={96}
               height={96}
               className="rounded-full object-cover"
-              src={`${config.backendBaseUrlOrigin}${page.avatar_url}`}
+              src={`${config.backendBaseUrl}${page.avatar_url}`}
             />
           </div>
         )}

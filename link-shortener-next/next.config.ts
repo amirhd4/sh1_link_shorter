@@ -8,13 +8,13 @@ const nextConfig: NextConfig = {
         protocol: 'http',
         hostname: 'localhost',
         port: '8000',
-        pathname: '/uploads/avatars/**',
+        pathname: '/api/uploads/avatars/**',
       },
         {
         protocol: 'https',
         hostname: 'a.l1s.ir',
         port: '443',
-        pathname: '/uploads/avatars/**',
+        pathname: '/api/uploads/avatars/**',
       },
       // اگه backendBaseUrlOrigin متغیر هست، می‌تونی اون رو هم اضافه کنی
     ],

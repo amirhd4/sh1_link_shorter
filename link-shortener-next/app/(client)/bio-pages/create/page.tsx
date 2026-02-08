@@ -89,7 +89,7 @@ export default function CreateBioPage() {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="w-full rounded-xl border px-4 py-2.5 bg-transparent focus:outline-none focus:ring-2 focus:ring-black/20 transition"
-              placeholder="مثلاً Amir Links"
+              placeholder="مثلاً لینک های من"
               required
             />
           </div>
@@ -104,7 +104,7 @@ export default function CreateBioPage() {
               value={slug}
               onChange={(e) => setSlug(e.target.value.toLowerCase())}
               className="w-full rounded-xl border px-4 py-2.5 bg-transparent focus:outline-none focus:ring-2 focus:ring-black/20 transition"
-              placeholder="amir-links"
+              placeholder="my-links"
               required
             />
             <p className="text-xs text-gray-500 mt-2">
