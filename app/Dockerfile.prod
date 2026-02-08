@@ -15,6 +15,7 @@ COPY ./requirements.txt /app/requirements.txt
 RUN pip install --upgrade pip && pip install -r requirements.txt
 
 RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
+RUN mkdir -p /app/uploads/avatars && chown -R appuser:appgroup /app/uploads
 USER appuser
 
 # کپی سورس کد

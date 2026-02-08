@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 2f215d878645
-Revises: fd743ab9a8de
-Create Date: 2026-02-04 15:36:52.449261
+Revision ID: 51c73da5fbb3
+Revises: 
+Create Date: 2026-02-07 15:33:38.098684
 
 """
 from typing import Sequence, Union
@@ -12,8 +12,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '2f215d878645'
-down_revision: Union[str, Sequence[str], None] = 'fd743ab9a8de'
+revision: str = '51c73da5fbb3'
+down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -24,7 +24,7 @@ def upgrade() -> None:
     op.create_table('bio_pages',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=False),
-    sa.Column('[slug]', sa.String(length=64), nullable=False),
+    sa.Column('slug', sa.String(length=64), nullable=False),
     sa.Column('title', sa.String(length=255), nullable=True),
     sa.Column('description', sa.Text(), nullable=True),
     sa.Column('avatar_url', sa.Text(), nullable=True),
@@ -35,12 +35,13 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_index(op.f('ix_bio_pages_slug'), 'bio_pages', ['[slug]'], unique=True)
+    op.create_index(op.f('ix_bio_pages_slug'), 'bio_pages', ['slug'], unique=True)
     op.create_table('bio_links',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('bio_page_id', sa.Integer(), nullable=True),
     sa.Column('title', sa.String(length=255), nullable=False),
-    sa.Column('url', sa.Text(), nullable=False),
+    sa.Column('value', sa.Text(), nullable=False),
+    sa.Column('link_type', sa.Enum('url', 'email', 'phone', 'text', 'payment', name='linktypeenum'), nullable=True),
     sa.Column('icon', sa.String(length=50), nullable=True),
     sa.Column('position', sa.Integer(), nullable=True),
     sa.Column('is_active', sa.Boolean(), nullable=True),
