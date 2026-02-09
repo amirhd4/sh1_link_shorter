@@ -198,15 +198,32 @@ export default function PublicBioPage() {
 
         {/* Avatar */}
         {page.avatar_url && (
+          // <div className="mb-4 flex justify-center">
+          //   <Image
+          //     alt={page.title ?? "avatar"}
+          //     width={96}
+          //     height={96}
+          //     className="rounded-full object-cover"
+          //     src={`${config.backendBaseUrl}${page.avatar_url}`}
+          //   />
+          // </div>
           <div className="mb-4 flex justify-center">
-            <Image
-              alt={page.title ?? "avatar"}
-              width={96}
-              height={96}
-              className="rounded-full object-cover"
-              src={`${config.backendBaseUrl}${page.avatar_url}`}
-            />
-          </div>
+  <img
+    src={`${config.backendBaseUrl}${page.avatar_url}`}
+    alt={page.title ?? "avatar"}
+    className="
+      w-24 h-24
+      sm:w-28 sm:h-28
+      md:w-32 md:h-32
+      rounded-full
+      object-cover
+      shadow-md
+      ring-2 ring-white/70
+    "
+    loading="lazy"
+  />
+</div>
+
         )}
 
         {/* Title */}
