@@ -65,7 +65,7 @@ async def create_bio_page(
     if current_user.plan == "Free" and pages_count >= 1:
         raise HTTPException(
             status_code=403,
-            detail="در پلن رایگان فقط امکان ساخت یک صفحه bio وجود دارد"
+            detail="در پلن رایگان فقط امکان ساخت یک لینک بیو وجود دارد"
         )
 
     if current_user.plan == "Pro" and pages_count >= 3:

@@ -87,7 +87,12 @@ const ApiUrlShortenerPage: React.FC = () => {
           }),
         }}
       />
-
+{/* Breadcrumb */}
+      <Box mb={4}>
+        <Typography variant="h6" color="textSecondary">
+          <a href="https://a.l1s.ir/home" style={{ textDecoration: "none" }}>خانه</a> &gt; <a href="https://a.l1s.ir/url-shortener" style={{ textDecoration: "none" }}>API کوتاه‌کننده لینک</a>
+        </Typography>
+      </Box>
       <Typography component="h1" variant="h3" mb={3}>
   API کوتاه‌کننده لینک حرفه‌ای | لس
 </Typography>

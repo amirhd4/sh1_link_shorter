@@ -105,18 +105,18 @@ export default function BioPagesDashboard() {
       {/* Empty state */}
       {pages.length === 0 && (
   <div className="border rounded-2xl p-8 sm:p-12 text-center text-gray-500">
-    <p className="text-lg font-medium mb-2">صفحه bio وجود ندارد</p>
+    <p className="text-lg font-medium mb-2">لینک بیو وجود ندارد</p>
 
     {canCreatePage ? (
       <>
         <p className="text-sm mb-4">
-          اولین صفحه bio خود را بسازید
+          اولین لینک بیو خود را بسازید
         </p>
         <Link
           href="/bio-pages/create"
           className="inline-block w-full sm:w-auto px-4 py-2 rounded-lg bg-blue-600 text-white text-sm"
         >
-          اولین صفحه bio خودت رو بساز
+          اولین لینک بیو خودت رو بساز
         </Link>
       </>
     ) : (

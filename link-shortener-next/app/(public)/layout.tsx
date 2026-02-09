@@ -63,12 +63,13 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
 
 const navLinks = [
     { title: "خانه", href: "/home" },
-    { title: "بهترین لینک کوتاه", href: "/best-url-shortener" },
-    { title: "تولید لینک کوتاه", href: "/short-url-generator" },
-    { title: "رایگان", href: "/free-url-shortener" },
-    { title: "حرفه‌ای", href: "/link-shortener" },
+    { title: "بهترین کوتاه کننده لینک", href: "/best-url-shortener" },
+    { title: "تولید کننده لینک کوتاه", href: "/short-url-generator" },
+    { title: " کوتاه کننده رایگان", href: "/free-url-shortener" },
+    { title: "کوتاه کننده حرفه‌ای", href: "/link-shortener" },
     { title: "API", href: "/url-shortener" },
     { title: "FAQ", href: "/faq" },
+    { title: "لینک بیو", href: "/bio-link" },
   ];
 
   return (
@@ -279,12 +280,13 @@ const navLinks = [
             {/* Navigation Links */}
             <Stack direction="row" spacing={3} flexWrap="wrap" style={{ color: "ActiveText" }}>
               <MuiLink href="/home" underline="hover" color="inherit">خانه</MuiLink>
-              <MuiLink href="/best-url-shortener" underline="hover" color="inherit">بهترین لینک کوتاه</MuiLink>
-              <MuiLink href="/short-url-generator" underline="hover" color="inherit">تولید لینک کوتاه</MuiLink>
-              <MuiLink href="/free-url-shortener" underline="hover" color="inherit">رایگان</MuiLink>
-              <MuiLink href="/link-shortener" underline="hover" color="inherit">حرفه‌ای</MuiLink>
-              <MuiLink href="/api/url-shortener" underline="hover" color="inherit">API</MuiLink>
+              <MuiLink href="/best-url-shortener" underline="hover" color="inherit">بهترین کوتاه کننده لینک</MuiLink>
+              <MuiLink href="/short-url-generator" underline="hover" color="inherit">تولید کننده لینک کوتاه</MuiLink>
+              <MuiLink href="/free-url-shortener" underline="hover" color="inherit">کوتاه کننده رایگان</MuiLink>
+              <MuiLink href="/link-shortener" underline="hover" color="inherit">کوتاه کننده حرفه ای</MuiLink>
+              <MuiLink href="/url-shortener" underline="hover" color="inherit">API</MuiLink>
               <MuiLink href="/faq" underline="hover" color="inherit">FAQ</MuiLink>
+              <MuiLink href="/bio-link" underline="hover" color="inherit">bio link</MuiLink>
             </Stack>
 
             {/* Social & Contact */}

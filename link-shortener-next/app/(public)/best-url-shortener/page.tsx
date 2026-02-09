@@ -59,7 +59,12 @@ const BestUrlShortenerPage: React.FC = () => {
           }),
         }}
       />
-
+    {/* Breadcrumb */}
+      <Box mb={4}>
+        <Typography variant="h6" color="textSecondary">
+          <a href="https://a.l1s.ir/home" style={{ textDecoration: "none" }}>خانه</a> &gt; <a href="https://a.l1s.ir/best-url-shortener" style={{ textDecoration: "none" }}>بهترین کوتاه کننده لینک ایران</a>
+        </Typography>
+      </Box>
       {/* تصویر سئو */}
       <Box mb={4} display="flex" justifyContent="center">
         <Image
@@ -73,10 +78,10 @@ const BestUrlShortenerPage: React.FC = () => {
 
       <Typography variant="h3" mb={3}>بهترین کوتاه‌کننده لینک ایران</Typography>
       <Typography mb={2}>
-        لس با سرعت بالا، رابط کاربری روان و امکانات حرفه‌ای، بهترین تجربه کوتاه کردن لینک را به کاربران ایرانی ارائه می‌دهد. این سرویس مناسب بازاریابی دیجیتال، شبکه‌های اجتماعی و اشتراک‌گذاری لینک‌ها است.
+        لس با سرعت بالا، رابط کاربری روان و امکانات حرفه‌ای، بهترین تجربه کوتاه کردن لینک را به کاربران ایرانی ارائه می‌دهد. این سرویس مناسب بازاریابی دیجیتال، شبکه‌های اجتماعی و اشتراک‌گذاری لینک‌ها است. همچنین قابلیت bio link page نیز بصورت رایگان در دسترس قرار دارد.
       </Typography>
       <Typography mb={2}>
-        ویژگی‌ها: بدون تبلیغات مزاحم، دامنه اختصاصی، لینک محافظت‌شده با رمز، آمار دقیق کلیک‌ها و امکان ردیابی کاربران به صورت کامل.
+        ویژگی‌ها: بدون تبلیغات مزاحم، دامنه اختصاصی، لینک محافظت‌شده با رمز، آمار دقیق کلیک‌ها و امکان ردیابی کاربران به صورت کامل. قابلیت ایجاد لینک در بیو (لینک بیو).
       </Typography>
 
       <Box mb={4}>
@@ -120,6 +125,7 @@ const BestUrlShortenerPage: React.FC = () => {
       { href: "https://a.l1s.ir/url-shortener", title: "کوتاه کننده لینک با API" },
       { href: "https://a.l1s.ir/free-url-shortener", title: "کوتاه کننده لینک رایگان" },
       { href: "https://a.l1s.ir/short-url-generator", title: "تولید کننده لینک کوتاه" },
+      { href: "https://a.l1s.ir/bio-link", title: "بیو لینک (لینک در بیو)" },
       { href: "https://a.l1s.ir/faq", title: "سوالات متداول" },
     ].map((link, idx) => (
       <Box

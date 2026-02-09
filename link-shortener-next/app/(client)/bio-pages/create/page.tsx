@@ -60,7 +60,7 @@ export default function CreateBioPage() {
 
       router.push(`/bio-pages/${page.id}`);
     } catch (err: any) {
-      setError(err?.response?.data?.detail || "خطا در ساخت صفحه bio");
+      setError(err?.response?.data?.detail || "خطا در ساخت لینک بیو");
     } finally {
       setLoading(false);
     }
@@ -74,7 +74,7 @@ export default function CreateBioPage() {
         </Button>
 
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold mb-2">ساخت صفحه bio جدید</h1>
+          <h1 className="text-3xl font-bold mb-2">ساخت لینک بیو جدید</h1>
           <p className="text-sm text-gray-500">
             لینک‌های مهمت رو در یک صفحه شیک جمع کن ✨
           </p>
@@ -150,7 +150,7 @@ export default function CreateBioPage() {
             disabled={loading}
             className="w-full rounded-xl py-3 font-medium text-white bg-gradient-to-r from-black to-gray-800 hover:opacity-90 transition disabled:opacity-60"
           >
-            {loading ? "در حال ساخت..." : "ساخت صفحه bio 🚀"}
+            {loading ? "در حال ساخت..." : "ساخت لینک بیو 🚀"}
           </button>
         </form>
       </div>

@@ -25,6 +25,7 @@ import ContentCopyOutlinedIcon from "@mui/icons-material/ContentCopyOutlined";
 import CheckIcon from "@mui/icons-material/Check";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import MonetizationOnIcon from "@mui/icons-material/MonetizationOn";
+import BusinessCenter from "@mui/icons-material/BusinessCenter";
 import DomainIcon from "@mui/icons-material/Domain";
 import SecurityIcon from "@mui/icons-material/Security";
 import ShareIcon from "@mui/icons-material/Share";
@@ -123,6 +124,10 @@ const faqItems = [
   {
     q: "امنیت لینک‌های کوتاه در لِس (l1s) چگونه تضمین می‌شود؟",
     a: "تمام لینک‌ها قبل از کوتاه شدن با سیستم هوشمند بررسی می‌شوند تا از سالم بودن و غیر‌مخرب بودن آن‌ها اطمینان حاصل شود. همچنین داده‌ها با رمزگذاری امن نگهداری می‌شوند و شما می‌توانید با تنظیم رمز یا محدودیت زمانی، امنیت بیشتری برای لینک‌های خود ایجاد کنید.",
+  },
+    {
+    q: "لینک در بیو یا لینک بیو در کوتاه کننده لینک لِس",
+    a: "l1s.ir برای کاربران خود قابلیت ایجاد رایگان لینک در بیو را فراهم آورده است. این یک قابلیت کلیدی است که تمام لینک ها را در یک صفحه برای خود قرار بدهید. همچنین کاربرانی که اشتراک پولی و pro خریداری میکنند میتوانند تا 3 صفحه لینک بیو ایجاد کنند.",
   },
 ];
 
@@ -315,7 +320,12 @@ const HomeClient: React.FC = () => {
     <li><a href="/url-shortener" style={{ color: "#a855f7" }}>API کوتاه‌کننده لینک برای توسعه‌دهندگان</a></li>
     <li><a href="/short-url-generator" style={{ color: "#a855f7" }}>تولید لینک کوتاه با دامنه اختصاصی</a></li>
   </ul>
-
+<Typography variant="h4" mb={2}>ویژگی جدید: بیو لینک</Typography>
+      <Typography variant="body1" mb={4}>
+        ویژگی «بیو لینک» یا لینک در بیو لِس این امکان را به شما می‌دهد که تمامی لینک‌های شخصی خود را در یک صفحه واحد جمع‌آوری کنید. این قابلیت برای افرادی که نیاز به ارائه چندین لینک به مخاطبان خود دارند بسیار کاربردی است.
+        <br />
+        برای اطلاعات بیشتر، به مقاله اختصاصی <a href="/bio-link">بیو لینک</a> مراجعه کنید.
+      </Typography>
   <h2 style={{ fontSize: "1.875rem", fontWeight: "bold", marginBottom: "1rem", color: "#fff" }}>
     پرسش‌های متداول
   </h2>
@@ -360,7 +370,7 @@ const HomeClient: React.FC = () => {
               </Typography>
               <Typography sx={{ color: "#94a3b8", mt: 0.5, lineHeight: 1.8 }}>
                 امکانات جدید: کسب درآمد، دامنه اختصاصی، UTM، بدون ریدایرکت
-                اجباری و آمار جغرافیایی.
+                اجباری، بیو لینک و  آمار جغرافیایی.
               </Typography>
             </Grid>
 
@@ -379,10 +389,27 @@ const HomeClient: React.FC = () => {
                   label="کسب درآمد"
                   clickable
                   component={Link}
-                  href="/monetize"
+                  href="#"
                   sx={{
                     color: "#fff",
                     background: "linear-gradient(90deg, #a855f7, #d946ef)",
+                    fontWeight: 700,
+                    "&:hover": {
+                      background: "linear-gradient(90deg, #d946ef, #a855f7)",
+                      transform: "translateY(-2px)",
+                    },
+                    transition: "all 0.3s ease",
+                  }}
+                />
+                  <Chip
+                  icon={<BusinessCenter />}
+                  label="لینک بیو"
+                  clickable
+                  component={Link}
+                  href="#"
+                  sx={{
+                    color: "#fff",
+                    background: "linear-gradient(90deg, #4f05ff, #d94600)",
                     fontWeight: 700,
                     "&:hover": {
                       background: "linear-gradient(90deg, #d946ef, #a855f7)",
@@ -396,7 +423,7 @@ const HomeClient: React.FC = () => {
                   label="دامنه اختصاصی"
                   clickable
                   component={Link}
-                  href="/domains"
+                  href="#"
                   sx={{
                     color: "#fff",
                     background: "linear-gradient(90deg, #06b6d4, #3b82f6)",
@@ -413,7 +440,7 @@ const HomeClient: React.FC = () => {
                   label="بدون ریدایرکت (No-Ads Flow)"
                   clickable
                   component={Link}
-                  href="/no-ads"
+                  href="#"
                   sx={{
                     color: "#fff",
                     background: "linear-gradient(90deg, #f97316, #f59e0b)",
@@ -430,7 +457,7 @@ const HomeClient: React.FC = () => {
                   label="آمار پیشرفته (شهر/کشور/Referrer)"
                   clickable
                   component={Link}
-                  href="/analytics"
+                  href="#"
                   sx={{
                     color: "#fff",
                     background: "linear-gradient(90deg, #10b981, #14b8a6)",
@@ -447,7 +474,7 @@ const HomeClient: React.FC = () => {
                   label="امنیت و حریم خصوصی"
                   clickable
                   component={Link}
-                  href="/security"
+                  href="#"
                   sx={{
                     color: "#fff",
                     background: "linear-gradient(90deg, #64748b, #475569)",

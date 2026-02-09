@@ -45,7 +45,12 @@ const ShortUrlGeneratorPage: React.FC = () => {
           }),
         }}
       />
-
+{/* Breadcrumb */}
+      <Box mb={4}>
+        <Typography variant="h6" color="textSecondary">
+          <a href="https://a.l1s.ir/home" style={{ textDecoration: "none" }}>خانه</a> &gt; <a href="https://a.l1s.ir/short-url-generator" style={{ textDecoration: "none" }}>تولید کننده لینک کوتاه</a>
+        </Typography>
+      </Box>
          <Box mb={4} display="flex" justifyContent="center">
         <Image
           src="/images/url-shortener-seo.webp"

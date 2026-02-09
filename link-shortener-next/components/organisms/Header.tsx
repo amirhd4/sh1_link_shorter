@@ -50,11 +50,13 @@ export function Header({ onMenuClick }: HeaderProps) {
   };
 
   const handleLogout = async () => {
+    const { setUser, setQuota, setIsLoading } = useUserStore.getState();
+    setUser(null);
+
+    document.cookie = "access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+
     await apiClient.post("/auth/logout");
 
-    const { setUser, setQuota, setIsLoading } = useUserStore.getState();
-
-    setUser(null);
     setQuota(null);
     setIsLoading(false);
 
@@ -78,7 +80,7 @@ export function Header({ onMenuClick }: HeaderProps) {
           داشبورد مدیریت لینک
         </Typography>
 
-        {user && (
+        {user ? (
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <Tooltip title="اعلان‌ها (به زودی)">
               <IconButton color="inherit">
@@ -189,6 +191,9 @@ export function Header({ onMenuClick }: HeaderProps) {
               </MenuItem>
             </Menu>
           </Box>
+         ) : (
+          // If the user is not logged in, show logout button
+          <button onClick={handleLogout}>خروج</button>
         )}
       </Toolbar>
     </AppBar>
