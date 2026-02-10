@@ -67,7 +67,11 @@ async def lifespan(app: FastAPI):
     print("🔌 Redis connection closed.")
 
 
-app = FastAPI(lifespan=lifespan)
+if not settings.DEBUG:
+    app = FastAPI(lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None)
+else:
+    app = FastAPI(lifespan=lifespan)
+
 app.state.limiter = limiter
 from slowapi import _rate_limit_exceeded_handler
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
