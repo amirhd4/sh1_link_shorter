@@ -13,7 +13,8 @@ from .. import schemas
 from ..rate_limiter import limiter
 from ..database import get_db
 from ..models import BioPage, BioLink, BioLinkClick, BioPageVisit, User
-from ..schemas import BioPageCreate, BioPageResponse, BioLinkCreate, BioLinkResponse, BioPageUpdate, ToggleLinkActive
+from ..schemas import BioPageCreate, BioPageResponse, BioLinkCreate, BioLinkResponse, BioPageUpdate, ToggleLinkActive, \
+    BioLinkUpdate
 from ..services.security import get_current_user
 
 router = APIRouter(prefix="/bio-pages", tags=["Bio Pages"])
@@ -274,12 +275,12 @@ async def delete_bio_page(
 # ----------------------------
 # Update Bio Link
 # ----------------------------
-@router.put("/links/{link_id}", response_model=BioLinkResponse)
+@router.patch("/links/{link_id}", response_model=BioLinkResponse)
 @limiter.limit("60/minute")
 async def update_link(
     link_id: int,
     request: Request,
-    payload: BioLinkCreate,
+    payload: BioLinkUpdate,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
@@ -291,14 +292,11 @@ async def update_link(
     if not link:
         raise HTTPException(404, "Link not found")
 
-    # آپدیت فیلدها
-    link.title = payload.title
-    link.value = payload.value
-    link.link_type = payload.link_type
-    link.icon = payload.icon
-    link.position = payload.position
+    # فقط فیلدهایی که ارسال شدن
+    for field, value in payload.dict(exclude_unset=True).items():
+        setattr(link, field, value)
 
-    db.add(link)
+    # db.add(link)
     await db.commit()
     await db.refresh(link)
     return link

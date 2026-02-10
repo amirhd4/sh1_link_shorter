@@ -279,6 +279,14 @@ export interface BioLinkBase {
   position?: number | null;
 }
 
+export interface BioLinkUpdate {
+    title?: string | null;
+    value?: string | null;
+    link_type: LinkType | null;
+    icon?: string | null;
+    position?: number | null;
+}
+
 export interface BioLinkCreate extends BioLinkBase {}
 
 export interface BioLinkResponse extends BioLinkBase {

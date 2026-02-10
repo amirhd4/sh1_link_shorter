@@ -18,6 +18,7 @@ import { CSS } from "@dnd-kit/utilities";
 import {Button} from "@mui/material";
 import { useRouter } from 'next/navigation';
 import AvatarEditor from "@/components/bio/AvatarEditorComponent";
+import {iconOptions} from "@/types/iconList";
 
 export default function ManageBioLinks() {
   const { id } = useParams<{ id: string }>();
@@ -32,6 +33,7 @@ export default function ManageBioLinks() {
   const [newTitle, setNewTitle] = useState("");
   const [newValue, setNewValue] = useState("");
   const [newType, setNewType] = useState<"url" | "email" | "phone">("url");
+  const [newIcon, setNewIcon] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchPage() {
@@ -51,6 +53,7 @@ export default function ManageBioLinks() {
   function SortableItem({ link }: { link: BioLinkResponse }) {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id: link.id });
+  const [icon, setIcon] = useState<string | null>(link.icon ?? null);
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -74,7 +77,16 @@ export default function ManageBioLinks() {
       <div className="flex items-start justify-between gap-4">
         {!editing ? (
           <div className="flex-1">
-            <p className="font-semibold text-gray-800">{link.title}</p>
+
+            <div className="flex items-center gap-2">
+  {link.icon && (
+    <span className="text-gray-500">
+      {iconOptions.find(i => i.value === link.icon)?.component}
+    </span>
+  )}
+  <p className="font-semibold text-gray-800">{link.title}</p>
+</div>
+
             <p className="text-xs text-gray-400 mt-1">
               {link.link_type} · {link.value}
             </p>
@@ -96,12 +108,30 @@ export default function ManageBioLinks() {
               onChange={(e) => setType(e.target.value)}
               className="w-full rounded-lg border px-3 py-2 text-sm"
             >
-              <option value="url">URL</option>
-              <option value="email">Email</option>
-              <option value="phone">Phone</option>
-              <option value="payment">Payment</option>
-              <option value="text">Text</option>
+              <option value="url">نشانی اینترنتی</option>
+              <option value="email">پست الکترونیکی</option>
+              <option value="phone">شماره</option>
+              <option value="payment">پرداخت</option>
+              <option value="text">متن</option>
             </select>
+              <div className="flex flex-wrap gap-2">
+  {iconOptions.map((opt: any) => (
+    <button
+      key={opt.value}
+      type="button"
+      onClick={() => setIcon(opt.value)}
+      className={`p-2 rounded-lg border transition ${
+        icon === opt.value
+          ? "bg-black text-white border-black"
+          : "bg-white text-gray-600 hover:border-black"
+      }`}
+      title={opt.name}
+    >
+      {opt.component}
+    </button>
+  ))}
+</div>
+
           </div>
         )}
 
@@ -134,12 +164,16 @@ export default function ManageBioLinks() {
               <button
                 disabled={saving}
                 onClick={async () => {
+                    const payload: any = {};
+
+if (title !== link.title) payload.title = title;
+if (value !== link.value) payload.value = value;
+if (type !== link.link_type) payload.link_type = type;
+if (icon !== link.icon) payload.icon = icon;
+
                   setSaving(true);
-                  const updated = await bioPageService.updateBioLink(link.id, {
-                    title,
-                    value,
-                    link_type: type,
-                  });
+                  const updated = await bioPageService.updateBioLink(link.id, payload,
+                  );
                   setLinks((prev) =>
                     prev.map((l) => (l.id === updated.id ? updated : l))
                   );
@@ -148,46 +182,60 @@ export default function ManageBioLinks() {
                 }}
                 className="px-4 py-1.5 text-sm rounded-lg bg-black text-white hover:opacity-90"
               >
-                {saving ? "Saving…" : "Save"}
+                {saving ? "…در حال ذخیره کردن" : "ذخیره"}
               </button>
               <button
                 onClick={() => setEditing(false)}
                 className="px-4 py-1.5 text-sm rounded-lg bg-gray-200"
               >
-                Cancel
+                لغو
               </button>
             </>
           ) : (
             <>
-              <button
-                onClick={() => setEditing(true)}
-                className="px-4 py-1.5 text-sm rounded-lg bg-blue-600 text-white"
-              >
-                ویرایش
-              </button>
-              <button
-                onClick={async () => {
-                  const toggled = await bioPageService.toggleLinkActive(
-                    link.id,
-                    !link.is_active
-                  );
-                  setLinks((prev) =>
-                    prev.map((l) => (l.id === toggled.id ? toggled : l))
-                  );
-                }}
-                className="px-4 py-1.5 text-sm rounded-lg bg-yellow-100 text-yellow-700"
-              >
-                {link.is_active ? "غیرفعال" : "فعال"}
-              </button>
-              <button
-                onClick={async () => {
-                  await bioPageService.deleteBioLink(link.id);
-                  setLinks((prev) => prev.filter((l) => l.id !== link.id));
-                }}
-                className="px-4 py-1.5 text-sm rounded-lg bg-red-100 text-red-600"
-              >
-                پاک کردن
-              </button>
+              <div className="flex items-center gap-2">
+  <button
+    onClick={() => setEditing(true)}
+    className="flex items-center gap-1 px-3 py-2 rounded-xl text-sm bg-blue-600 text-white hover:bg-blue-700 transition"
+  >
+    ✏️
+    <span className="hidden sm:inline">ویرایش</span>
+  </button>
+
+  <button
+    onClick={async () => {
+      const toggled = await bioPageService.toggleLinkActive(
+        link.id,
+        !link.is_active
+      );
+      setLinks((prev) =>
+        prev.map((l) => (l.id === toggled.id ? toggled : l))
+      );
+    }}
+    className={`flex items-center gap-1 px-3 py-2 rounded-xl text-sm transition ${
+      link.is_active
+        ? "bg-yellow-100 text-yellow-700 hover:bg-yellow-200"
+        : "bg-green-100 text-green-700 hover:bg-green-200"
+    }`}
+  >
+    {link.is_active ? "⏸️" : "▶️"}
+    <span className="hidden sm:inline">
+      {link.is_active ? "غیرفعال" : "فعال"}
+    </span>
+  </button>
+
+  <button
+    onClick={async () => {
+      await bioPageService.deleteBioLink(link.id);
+      setLinks((prev) => prev.filter((l) => l.id !== link.id));
+    }}
+    className="flex items-center gap-1 px-3 py-2 rounded-xl text-sm bg-red-100 text-red-600 hover:bg-red-200 transition"
+  >
+    🗑️
+    <span className="hidden sm:inline">حذف</span>
+  </button>
+</div>
+
             </>
           )}
         </div>
@@ -221,6 +269,7 @@ export default function ManageBioLinks() {
       title: newTitle,
       value: newValue,
       link_type: newType,
+      icon: newIcon,
     });
     setLinks((prev) => [...prev, newLink]);
     setNewTitle("");
@@ -298,6 +347,25 @@ export default function ManageBioLinks() {
         ))}
       </div>
     </div>
+      <p className="text-xs text-gray-500 mb-2">آیکون</p>
+                  <div className="flex flex-wrap gap-2">
+  {iconOptions.map((opt: any) => (
+    <button
+      key={opt.value}
+      type="button"
+      onClick={() => setNewIcon(opt.value)}
+      className={`p-2 rounded-lg border transition ${
+        newIcon === opt.value
+          ? "bg-black text-white border-black"
+          : "bg-white text-gray-600 hover:border-black"
+      }`}
+      title={opt.name}
+    >
+      {opt.component}
+    </button>
+  ))}
+</div>
+
 
     {/* Submit */}
     <button

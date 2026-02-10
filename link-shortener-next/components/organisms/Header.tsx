@@ -50,18 +50,20 @@ export function Header({ onMenuClick }: HeaderProps) {
   };
 
   const handleLogout = async () => {
-    const { setUser, setQuota, setIsLoading } = useUserStore.getState();
-    setUser(null);
+    try {
+        await apiClient.post("/auth/logout");
 
-    document.cookie = "access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+        // پاک کردن وضعیت سمت کلاینت
+        const { setUser, setQuota, setIsLoading } = useUserStore.getState();
+        setUser(null);
+        setQuota(null);
+        setIsLoading(false);
 
-    await apiClient.post("/auth/logout");
-
-    setQuota(null);
-    setIsLoading(false);
-
-    router.push("/login");
-    handleClose();
+        router.push("/login");
+        handleClose();
+      } catch (error) {
+        console.error("Logout failed:", error);
+      }
   };
 
   return (

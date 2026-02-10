@@ -1,11 +1,11 @@
 // services/bioPageService.ts
 import apiClient from "../lib/axios";
-import type {
+import {
     BioPageResponse,
     BioPageCreate,
     BioLinkResponse,
     BioLinkCreate,
-    SuccessResponse, ToggleLinkActive, BioPageUpdate, BioPageForm
+    SuccessResponse, ToggleLinkActive, BioPageUpdate, BioPageForm, BioLinkUpdate
 } from "@/types/api";
 
 export const bioPageService = {
@@ -52,10 +52,17 @@ createBioPage: async (formData: FormData): Promise<BioPageResponse> => {
     return response.data;
   },
 
-  updateBioLink: async (linkId: number, payload: BioLinkCreate): Promise<BioLinkResponse> => {
-    const response = await apiClient.put(`/bio-pages/links/${linkId}`, payload);
-    return response.data;
-  },
+  updateBioLink: async (
+  linkId: number,
+  payload: BioLinkUpdate
+): Promise<BioLinkResponse> => {
+  const response = await apiClient.patch(
+    `/bio-pages/links/${linkId}`,
+    payload
+  );
+  return response.data;
+},
+
 
   deleteBioLink: async (linkId: number): Promise<SuccessResponse> => {
     const response = await apiClient.delete(`/bio-pages/links/${linkId}`);

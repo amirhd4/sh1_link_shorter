@@ -408,6 +408,13 @@ class BioLinkCreate(BaseModel):
     icon: str | None = None
     position: int | None = 0
 
+class BioLinkUpdate(BaseModel):
+    title: str | None = None
+    value: str | None = None
+    link_type: LinkTypeEnum | None = None
+    icon: str | None = None
+    position: int | None = None
+
 
 class BioLinkResponse(BioLinkCreate):
     id: int
