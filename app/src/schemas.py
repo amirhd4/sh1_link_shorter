@@ -11,6 +11,17 @@ from . import models
 from .models import UserRole, TransactionStatus, LinkTypeEnum
 
 
+class PlanResponse(BaseModel):
+    id: int
+    name: str
+    price: int
+    link_limit_per_month: int
+    duration_days: int
+
+    class Config:
+        from_attributes = True
+
+
 class TransactionResponse(BaseModel):
     id: int
     plan_id: int
@@ -18,6 +29,7 @@ class TransactionResponse(BaseModel):
     authority: str
     status: TransactionStatus
     created_at: datetime
+    plan: PlanResponse
 
     class Config:
         from_attributes = True
@@ -58,7 +70,7 @@ class AdminUserSummary(BaseModel):
 
     # Meta
     created_at: datetime
-    transactions: list[TransactionResponse] = []
+    transactions: list[TransactionResponse] = Field(default_factory=list)
 
     class Config:
         from_attributes = True
@@ -160,22 +172,10 @@ class ChangePasswordRequest(BaseModel):
     new_password: str
 
 
-class PlanResponse(BaseModel):
-    id: int
-    name: str
-    price: int
-    link_limit_per_month: int
-    duration_days: int
-
-    class Config:
-        from_attributes = True
-
-
 class UserUpdate(BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     # phone_number: Optional[str] = None
-
 
 
 class UserResponse(BaseModel):

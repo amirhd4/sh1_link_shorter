@@ -1,6 +1,6 @@
 import apiClient from '../lib/axios';
-import type {UserResponse, LinkDetailsForAdmin, AdSystemStats} from '../types/api';
-import type { SystemStats } from '../types/api';
+import type {UserResponse, LinkDetailsForAdmin, AdSystemStats} from '@/types/api';
+import type { SystemStats } from '@/types/api';
 
 
 export const adminService = {

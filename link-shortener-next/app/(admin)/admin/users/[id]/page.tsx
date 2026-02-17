@@ -72,6 +72,14 @@ export default function AdminUserDetailsPage() {
     queryClient.invalidateQueries({ queryKey: ["admin-user", userId] }),
 });
 
+  const deleteMutation = useMutation({
+  mutationFn: () => adminService.deleteUser(Number(userId)),
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+    router.push("/admin/users"); // برگرد به لیست کاربران
+  },
+});
+
 
   if (isLoading)
     return (
@@ -102,6 +110,8 @@ export default function AdminUserDetailsPage() {
             user={user}
             onToggleActive={toggleActive.mutate}
             onUpdateRole={updateRole.mutate}
+            onDeleteUser={deleteMutation.mutate}
+            isDeleting={deleteMutation.isPending}
           />
           <SubscriptionCard user={user} />
         </Grid>
@@ -175,10 +185,14 @@ const AdminActionsCard = ({
   user,
   onToggleActive,
   onUpdateRole,
+  onDeleteUser,
+  isDeleting,
 }: {
   user: AdminUserSummary;
   onToggleActive: (v: boolean) => void;
   onUpdateRole: (r: "user" | "admin") => void;
+  onDeleteUser: () => void;
+  isDeleting: boolean;
 }) => (
   <Card sx={{ mt: 2 }}>
     <CardContent>
@@ -205,9 +219,20 @@ const AdminActionsCard = ({
           </Select>
         </FormControl>
 
-        <Button color="error" variant="outlined">
-          حذف کامل کاربر (Danger)
-        </Button>
+        <Button
+  color="error"
+  variant="outlined"
+  onClick={() => {
+    if (confirm("آیا مطمئنی می‌خواهی این کاربر را کامل حذف کنی؟")) {
+      onDeleteUser();
+    }
+  }}
+  disabled={isDeleting}
+>
+  {isDeleting ? "در حال حذف..." : "حذف کامل کاربر (Danger)"}
+</Button>
+
+
       </Stack>
     </CardContent>
   </Card>
@@ -220,8 +245,8 @@ const SubscriptionCard = ({ user }: { user: AdminUserSummary }) => (
       <Divider sx={{ my: 1 }} />
       <Typography>پلن: {user.plan_name ?? "Free"}</Typography>
       <Typography>قیمت: {user.plan_price != null ? user.plan_price / 10 : 0} تومان</Typography>
-      <Typography>شروع: {formatJalaliDate(user.subscription_start_date ?? "")}</Typography>
-      <Typography>پایان: {formatJalaliDate(user.subscription_end_date ?? "")}</Typography>
+      <Typography>شروع: {formatJalaliDate(user.subscription_start_date ?? "-")}</Typography>
+      <Typography>پایان: {formatJalaliDate(user.subscription_end_date ?? "-")}</Typography>
       <Chip
         sx={{ mt: 1 }}
         label={user.is_subscription_active ? "فعال" : "منقضی"}

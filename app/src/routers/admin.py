@@ -459,9 +459,9 @@ async def get_admin_user_summary(
         subscription_start_date=user.subscription_start_date,
         subscription_end_date=user.subscription_end_date,
         is_subscription_active=(
-            user.subscription_end_date and user.subscription_end_date >= date.today()
+                user.subscription_end_date is not None
+                and user.subscription_end_date >= date.today()
         ),
-
         total_links=total_links,
         total_domains=total_domains,
         total_clicks=total_clicks,
