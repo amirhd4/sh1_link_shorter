@@ -76,6 +76,10 @@ useEffect(() => {
     - اعتبار {plan.duration_days} روزه
   </Typography>
 
+  <Typography variant="body2" sx={{ mb: 1 }}>
+    {plan.name === "Free" ? "محدودیت 1 لینک در بیو"  : 'امکان ایجاد 3 لینک در بیو'}
+  </Typography>
+
   {isCurrentPlan && user?.subscription_start_date && user?.subscription_end_date && (
     <Box mt={1}>
       <Typography variant="body2" color="text.secondary">
