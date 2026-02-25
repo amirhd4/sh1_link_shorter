@@ -109,7 +109,7 @@ export default function AdminTicketPage() {
           </Typography>
 
           <Typography variant="body2" color="text.secondary">
-            نوع حساب: {data.user?.plan ? "پرو ⭐" : "رایگان"}
+            نوع حساب: {data.user?.plan == "Pro" ? "پرو ⭐" : "رایگان"}
           </Typography>
         </Box>
 

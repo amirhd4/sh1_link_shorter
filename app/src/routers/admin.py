@@ -6,6 +6,7 @@ from datetime import date, timedelta, datetime, timezone
 from typing import List
 from pydantic import BaseModel
 from sqlalchemy.orm import selectinload
+import asyncio
 
 from .. import models, schemas
 from ..database import get_db
@@ -256,13 +257,20 @@ async def get_system_stats(request: Request, db: AsyncSession = Depends(get_db))
     )
     new_users_last_7_days = [DailyStat(date=row[0], count=row[1]) for row in new_users_data.all()]
 
-    total_users = await db.scalar(select(func.count(models.User.id)))
-    total_links = await db.scalar(select(func.count(models.Link.id)))
-    total_clicks = await db.scalar(select(func.sum(models.Link.clicks)))
+    # جمع کل داده‌ها
+    total_users, total_links, total_clicks, total_tickets, total_bio_pages = await asyncio.gather(
+        db.scalar(select(func.count(models.User.id))),
+        db.scalar(select(func.count(models.Link.id))),
+        db.scalar(select(func.sum(models.Link.clicks))),
+        db.scalar(select(func.count(models.Ticket.id))),
+        db.scalar(select(func.count(models.BioPage.id))),
+    )
     return SystemStats(
         total_users=total_users or 0,
         total_links=total_links or 0,
         total_clicks=total_clicks or 0,
+        total_tickets=total_tickets or 0,
+        total_bios=total_bio_pages or 0,
         new_users_last_7_days=new_users_last_7_days
     )
 
@@ -391,7 +399,14 @@ async def get_admin_user_summary(
     request: Request, user_id: int,
     db: AsyncSession = Depends(get_db)
 ):
-    user = await db.get(models.User, user_id)
+    # user = await db.get(models.User, user_id)
+    user = await db.scalar(
+    select(models.User)
+    .options(selectinload(models.User.plan))
+    .where(models.User.id == user_id)
+    )
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
 
     total_links = await db.scalar(
         select(func.count(Link.id)).where(Link.owner_id == user_id)

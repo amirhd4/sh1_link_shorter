@@ -122,6 +122,8 @@ export interface SystemStats {
   total_users: number;
   total_links: number;
   total_clicks: number;
+  total_tickets: number;
+  total_bios: number;
   new_users_last_7_days: DailyStat[];
 }
 

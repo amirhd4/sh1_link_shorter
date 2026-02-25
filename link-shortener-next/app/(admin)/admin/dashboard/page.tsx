@@ -12,6 +12,8 @@ import MouseIcon from '@mui/icons-material/Mouse';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
+import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber'; // برای تیکت
+import WebAssetIcon from '@mui/icons-material/WebAsset'; // برای بیو لینک
 import {useEffect} from "react";
 
 
@@ -45,6 +47,11 @@ export default function AdminDashboardPage() {
         داشبورد ادمین - نمای کلی سیستم
       </Typography>
       <Grid container spacing={3}>
+
+        <Grid  size={{ xs: 12, sm: 6, md: 4 }}>
+          <StatCard title="تعداد کل تیکت ها" value={stats?.total_tickets ?? 0} icon={<ConfirmationNumberIcon fontSize="inherit" />} />
+        </Grid>
+
         <Grid  size={{ xs: 12, sm: 6, md: 4 }}>
           <StatCard title="تعداد کل کاربران" value={stats?.total_users ?? 0} icon={<PeopleIcon fontSize="inherit" />} />
         </Grid>
@@ -54,6 +61,10 @@ export default function AdminDashboardPage() {
         <Grid size={{ xs: 12, sm: 6, md:4 }}>
           <StatCard title="مجموع کل کلیک‌ها" value={stats?.total_clicks ?? 0} icon={<MouseIcon fontSize="inherit" />} />
         </Grid>
+        
+        <Grid size={{ xs: 12, sm: 6, md:4 }}>
+          <StatCard title="تعداد کل صفحات بیو" value={stats?.total_clicks ?? 0} icon={<WebAssetIcon fontSize="inherit" />} />
+        </Grid>
 
         <Grid  size={{ xs: 12, sm: 6, md: 4 }}>
           <StatCard title="بازدید کل تبلیغات" value={adStats?.total_ad_views ?? 0} icon={<VisibilityIcon fontSize="inherit" />} color="info.main" />
@@ -62,7 +73,7 @@ export default function AdminDashboardPage() {
           <StatCard title="بازدید یکتای تبلیغات" value={adStats?.total_unique_ad_views ?? 0} icon={<VerifiedUserIcon fontSize="inherit" />} color="warning.main" />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md:4 }}>
-          <StatCard title="کل امتیازات داده‌شده" value={adStats?.total_points_rewarded ?? 0} icon={<MonetizationOnIcon fontSize="inherit" />} color="success.main" />
+          <StatCard title="کل امتیازات داده‌شده" value={adStats?.total_bios ?? 0} icon={<MonetizationOnIcon fontSize="inherit" />} color="success.main" />
         </Grid>
       </Grid>
       <Paper sx={{ mt: 4, p: 2 }}>

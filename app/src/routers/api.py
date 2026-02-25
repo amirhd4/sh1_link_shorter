@@ -28,7 +28,7 @@ async def get_redis_client(request: Request) -> redis.Redis:
     return request.app.state.redis
 
 
-@limiter.limit("100/minute")
+@limiter.limit("50/minute")
 @api_router.post("/shorten", response_model=schemas.URLResponse)
 async def api_shorten_url(
     request: Request,

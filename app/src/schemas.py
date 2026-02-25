@@ -5,7 +5,7 @@ from pydantic import BaseModel, field_validator, EmailStr, HttpUrl, ValidationEr
 from typing import Optional, List
 from datetime import date, datetime
 
-from pydantic.v1 import Field
+from pydantic import Field
 
 from . import models
 from .models import UserRole, TransactionStatus, LinkTypeEnum
@@ -211,7 +211,7 @@ class URLCreate(BaseModel):
         None,
         min_length=1,
         max_length=32,
-        regex="^[a-zA-Z0-9_-]+$"
+        pattern="^[a-zA-Z0-9_-]+$"
     )
 
 
@@ -273,6 +273,8 @@ class SystemStats(BaseModel):
     total_users: int
     total_links: int
     total_clicks: int
+    total_tickets: int
+    total_bios: int
     new_users_last_7_days: List[DailyStat]
 
 
