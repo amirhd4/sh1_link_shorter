@@ -486,6 +486,10 @@ async def list_all_tickets(request: Request, db: AsyncSession = Depends(get_db))
     result = await db.execute(
         select(models.Ticket)
         .options(selectinload(models.Ticket.messages))
+        .options(
+            selectinload(models.Ticket.user)
+            .selectinload(models.User.plan)   # ✅ اینو اضافه کن
+        )
         .order_by(models.Ticket.created_at.desc())
     )
     return result.scalars().all()
@@ -531,7 +535,11 @@ async def get_ticket_details(
     result = await db.execute(
         select(models.Ticket)
         .options(selectinload(models.Ticket.messages))
-        .options(selectinload(models.Ticket.user))
+        # .options(selectinload(models.Ticket.user))
+        .options(
+            selectinload(models.Ticket.user)
+            .selectinload(models.User.plan)  # ✅ اینو اضافه کن
+        )
         .where(models.Ticket.id == ticket_id)
     )
 
