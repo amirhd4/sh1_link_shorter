@@ -62,8 +62,8 @@ export default function AdminDashboardPage() {
           <StatCard title="مجموع کل کلیک‌ها" value={stats?.total_clicks ?? 0} icon={<MouseIcon fontSize="inherit" />} />
         </Grid>
         
-        <Grid size={{ xs: 12, sm: 6, md:4 }}>
-          <StatCard title="تعداد کل صفحات بیو" value={stats?.total_clicks ?? 0} icon={<WebAssetIcon fontSize="inherit" />} />
+        <Grid size={{ xs: 12, sm: 6, md:4 }}>ل
+          <StatCard title="تعداد کل صفحات بیو" value={stats?.total_bios ?? 0} icon={<WebAssetIcon fontSize="inherit" />} />
         </Grid>
 
         <Grid  size={{ xs: 12, sm: 6, md: 4 }}>
@@ -73,7 +73,7 @@ export default function AdminDashboardPage() {
           <StatCard title="بازدید یکتای تبلیغات" value={adStats?.total_unique_ad_views ?? 0} icon={<VerifiedUserIcon fontSize="inherit" />} color="warning.main" />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md:4 }}>
-          <StatCard title="کل امتیازات داده‌شده" value={adStats?.total_bios ?? 0} icon={<MonetizationOnIcon fontSize="inherit" />} color="success.main" />
+          <StatCard title="کل امتیازات داده‌شده" value={adStats?.total_points_rewarded ?? 0} icon={<MonetizationOnIcon fontSize="inherit" />} color="success.main" />
         </Grid>
       </Grid>
       <Paper sx={{ mt: 4, p: 2 }}>
