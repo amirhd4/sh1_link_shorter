@@ -196,6 +196,7 @@ export type LinkListPage = {
 import { useMemo } from 'react';
 import { SearchIcon } from "lucide-react";
 import {InitialPasswordCard} from "@/components/client-dashboard/SecretPasswordCard";
+import SupportSection from "@/components/support/SupportSection";
 
 export default function LinksDashboard() {
     const navigate = useRouter();
@@ -424,70 +425,73 @@ const filteredLinks = useMemo(() => {
 
     return (
         <>
-            <Container maxWidth="lg" sx={{ py: 4 }}>
-                <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems="center" spacing={2} mb={4}>
+            <SupportSection />
+            <Container maxWidth="lg" sx={{py: 4}}>
+                <Stack direction={{xs: 'column', sm: 'row'}} justifyContent="space-between" alignItems="center"
+                       spacing={2} mb={4}>
                     <Stack direction="row" alignItems="center" spacing={1.5}>
-                        <LinkIcon color="primary" sx={{ fontSize: {xs: 28, sm: 32} }}/>
+                        <LinkIcon color="primary" sx={{fontSize: {xs: 28, sm: 32}}}/>
                         <Typography variant={isMobile ? 'h6' : 'h5'} component="h1" fontWeight="bold">
                             مدیریت لینک‌ها
                         </Typography>
                     </Stack>
                     <Button
                         variant="contained"
-                        startIcon={<AddIcon />}
+                        startIcon={<AddIcon/>}
                         onClick={() => setCreateModalOpen(true)}
-                        sx={{ alignSelf: { xs: 'stretch', sm: 'auto' } }}
+                        sx={{alignSelf: {xs: 'stretch', sm: 'auto'}}}
                     >
                         ایجاد لینک جدید
                     </Button>
                 </Stack>
                 <TextField
-                  fullWidth
-                  size="small"
-                  placeholder="جستجو در لینک‌ها (کد کوتاه یا آدرس)..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  slotProps={{
-                    input: {
-                        startAdornment: (
-                            <InputAdornment position="start">
-                                <SearchIcon fontSize="small" />
-                              </InputAdornment>
-                        ),
-                    },
-                  }}
-                  sx={{ mb: 2 }}
-                  />
+                    fullWidth
+                    size="small"
+                    placeholder="جستجو در لینک‌ها (کد کوتاه یا آدرس)..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    slotProps={{
+                        input: {
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                    <SearchIcon fontSize="small"/>
+                                </InputAdornment>
+                            ),
+                        },
+                    }}
+                    sx={{mb: 2}}
+                />
 
                 {user?.plan && (isExpired || isLastDay) && (
-                  <Alert
-                    severity={isExpired ? "error" : "warning"}
-                    sx={{ mb: 2 }}
-                    action={
-                      <Button
-                        color="inherit"
-                        size="small"
-                        onClick={() => navigate.push("/plans")}
-                      >
-                        مشاهده پلن‌ها
-                      </Button>
-                    }
-                  >
-                    {isExpired
-                      ? "اشتراک شما به پایان رسیده است. برای ادامه استفاده، لطفاً پلن خود را تمدید کنید."
-                      : "امروز آخرین روز اشتراک شماست. برای جلوگیری از محدود شدن امکانات، پلن خود را تمدید کنید."}
-                  </Alert>
+                    <Alert
+                        severity={isExpired ? "error" : "warning"}
+                        sx={{mb: 2}}
+                        action={
+                            <Button
+                                color="inherit"
+                                size="small"
+                                onClick={() => navigate.push("/plans")}
+                            >
+                                مشاهده پلن‌ها
+                            </Button>
+                        }
+                    >
+                        {isExpired
+                            ? "اشتراک شما به پایان رسیده است. برای ادامه استفاده، لطفاً پلن خود را تمدید کنید."
+                            : "امروز آخرین روز اشتراک شماست. برای جلوگیری از محدود شدن امکانات، پلن خود را تمدید کنید."}
+                    </Alert>
                 )}
 
-                <InitialPasswordCard />
+                <InitialPasswordCard/>
 
-                <Paper sx={{ p: { xs: 1, sm: 2 }, borderRadius: 3 }} elevation={3}>
+                <Paper sx={{p: {xs: 1, sm: 2}, borderRadius: 3}} elevation={3}>
                     {renderContent()}
                 </Paper>
             </Container>
+            <div className="yn-bnr" id="ynpos-18058"></div>
 
-            <CreateLinkForm isOpen={isCreateModalOpen} onClose={() => setCreateModalOpen(false)} />
-            <EditLinkForm isOpen={!!editTarget} onClose={() => setEditTarget(null)} link={editTarget} />
+            <CreateLinkForm isOpen={isCreateModalOpen} onClose={() => setCreateModalOpen(false)}/>
+            <EditLinkForm isOpen={!!editTarget} onClose={() => setEditTarget(null)} link={editTarget}/>
             <ConfirmationDialog
                 open={!!deleteTarget}
                 onClose={() => setDeleteTarget(null)}
@@ -497,16 +501,16 @@ const filteredLinks = useMemo(() => {
             />
             {/* <Snackbar open={!!snackbarMessage} autoHideDuration={4000} onClose={() => setSnackbarMessage(null)} message={snackbarMessage} /> */}
             <Snackbar
-  open={!!snackbarMessage}
-  autoHideDuration={4000}
-  onClose={() => setSnackbarMessage(null)}
->
-  {snackbarMessage ? (
-    <Alert severity={snackbarMessage.severity}>
-      {snackbarMessage.text}
-    </Alert>
-  ) : undefined}
-</Snackbar>
+                open={!!snackbarMessage}
+                autoHideDuration={4000}
+                onClose={() => setSnackbarMessage(null)}
+            >
+                {snackbarMessage ? (
+                    <Alert severity={snackbarMessage.severity}>
+                        {snackbarMessage.text}
+                    </Alert>
+                ) : undefined}
+            </Snackbar>
         </>
     );
 }

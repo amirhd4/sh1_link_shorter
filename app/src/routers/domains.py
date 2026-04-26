@@ -12,6 +12,7 @@ from ..database import get_db
 from ..services.security import get_user_by_api_key, get_current_user
 from ..config import settings
 from ..rate_limiter import limiter
+from dns.asyncresolver import resolve
 
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -142,6 +143,28 @@ async def check_verification(
         except Exception as e:
             logger.exception(f"Error checking domain {domain.name} with {scheme.upper()}: {e}")
             continue
+
+    # -------------------------
+    # 2) Try DNS verification
+    # -------------------------
+    txt_domain = f"_shortener_verification.{domain.name}"
+
+    try:
+        answers = await resolve(txt_domain, "TXT")
+
+        for rdata in answers:
+            txt_value = "".join(
+                [chunk.decode() if isinstance(chunk, bytes) else chunk for chunk in rdata.strings]).strip()
+
+            if txt_value == token:
+                domain.is_verified = True
+                domain.verification_token = None
+                await db.commit()
+                await db.refresh(domain)
+                return {"verified": True}
+
+    except Exception as e:
+        logger.error(f"Async DNS verification failed for {txt_domain}: {e}")
 
     logger.error(f"Verification not found on domain {domain.name}. Returning 400.")
     raise HTTPException(

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "next/navigation";
 import { Box, Button, Typography, LinearProgress, Paper, CircularProgress, Grid, Alert } from "@mui/material";
 import { motion } from "framer-motion";
@@ -8,6 +8,9 @@ import { motion } from "framer-motion";
 import { adService } from "@/services/adService";
 import type { Ad } from "@/types";
 import { Megaphone } from "lucide-react";
+import VastVideoPlayer from "@/components/video-ads/vast";
+import VideoAdPlayer from "@/components/video-ads/vast";
+import Link from "next/link";
 
 
 const normalizeDomainId = (domainId: string | undefined): number | undefined => {
@@ -135,53 +138,39 @@ export default function AdRedirectClient({ ad }: { ad: Ad }) {
               <Paper sx={{ p: { xs: 2, sm: 3, md: 4 }, borderRadius: 4, textAlign: "center", width: "100%" }}>
                 <Typography variant="h5" sx={{ mb: 2, fontWeight: "bold" }}>
 
-                  <Megaphone className="w-6 h-6 text-blue-500" />  {ad.title}
+                  <Megaphone className="w-6 h-6 text-blue-500" />
                 </Typography>
 
-                <Box sx={{ width: '100%', borderRadius: 2, overflow: 'hidden', maxHeight: '60vh', mb: 3 }}>
-                    {ad.media_type === "video" ? (
-                    <Box
-                        component="video"
-                        src={ad.media_url}
-                        autoPlay
-                        muted
-                        loop
-                        playsInline
-                        controls={false}
-                        style={{ width: "100%", height: '100%', objectFit: "cover" }}
-                    />
-                    ) : ad.media_type === "image" ? (
-  <Box
-    component="img"
-    src={ad.media_url}
-    alt={ad.title}
-    sx={{
-      width: "100%",
-      height: '100%',
-      objectFit: "cover",
-      cursor: 'pointer'  // ← نمایش cursor دست
-    }}
-    onClick={async () => {
-      if (!ad || !shortCode || isSubmitting) return;
-      setIsSubmitting(true);
-      const normalizedDomainId = normalizeDomainId(domainId);
-      try {
-        await adService.registerAdView(shortCode, normalizedDomainId);
-      } catch (e) {
-        console.error("Failed to register ad view.", e);
-        // Optional: Show a user-friendly error message
-      } finally {
-        setIsSubmitting(false); // Reset submitting state
-        if (ad.target_url) window.open(ad.target_url, "_blank");
-      }
-    }}
-  />
-) : (
-                    <Box
-                        sx={{ position: 'relative', paddingTop: '56.25%', height: 0 }} /* 16:9 Aspect Ratio */
-                        dangerouslySetInnerHTML={{ __html: ad.media_url }}
-                    />
-                    )}
+                 <Box sx={{ width: '100%', borderRadius: 2, overflow: 'hidden', maxHeight: '60vh', mb: 3 }}>
+                    {/*<div id="pos-article-display-117812"></div>*/}
+                    {/*<div className="yn-bnr" id="ynpos-18054"></div>*/}
+                    {/* <VideoAdPlayer*/}
+                    {/*    vastUrl="https://vfetch.yektanet.com/api/v1/load/f1d9af70-00d8-4988-b9d0-1b88c75c8424"*/}
+                    {/*  />*/}
+
+                     <a href="http://Ad-manage.ir" target="_blank">
+                     <img src="/banner/banner-1e.jpg" alt="banner-1e" />
+                     </a>
+                     <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold" }}>
+                    <a href="http://Ad-manage.ir" target="_blank">
+سورپرایز دریافت وام ۱۵۰ میلیونی بدون چک و ضامن با واسطه میلی گلد
+                        </a>
+                         <a
+                          href="http://Ad-manage.ir"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            backgroundColor: "darkmagenta",
+                            color: "white",
+                            padding: "10px 20px",
+                            borderRadius: "6px",
+                            display: "inline-block",
+                            margin: "5px 10px",
+                          }}
+                        >
+                          کلیک کنید
+                        </a>
+                </Typography>
                 </Box>
 
                 <LinearProgress
@@ -207,8 +196,59 @@ export default function AdRedirectClient({ ad }: { ad: Ad }) {
                   {isSubmitting ? <CircularProgress size={24} color="inherit" /> : (canSkip ? "🚀 رفتن به لینک مقصد" : `لطفاً ${remainingSeconds} ثانیه منتظر بمانید`)}
                 </Button>
               </Paper>
+
             </Grid>
+
           </Grid>
+                            {/*<div className="yn-bnr" id="ynpos-18058"></div>*/}
+
+                     <div
+      style={{
+        backgroundColor: 'white', // بک‌گراند سفید
+        padding: '20px', // کمی فاصله داخلی برای خوانایی بهتر
+        borderRadius: '8px', // گوشه‌های کمی گرد
+        boxShadow: '0 4px 8px rgba(0,0,0,0.1)', // سایه ملایم برای برجسته کردن
+        textAlign: 'center', // برای وسط چین کردن محتوا
+        width: '100%', // عرض کامل در دسترس
+        maxWidth: '600px', // حداکثر عرض برای جلوگیری از کشیدگی در صفحات بزرگ
+        margin: '20px auto', // وسط چین کردن کل بنر در صفحه
+        boxSizing: 'border-box', // اطمینان از اینکه padding و border در عرض کل لحاظ می‌شوند
+      }}
+    >
+      <a href="http://talasea.ir/onboarding?r=hQQXEWXI" target="_blank" rel="noopener noreferrer" style={{ display: 'block', marginBottom: '15px' }}>
+        {/* استفاده از Image کامپوننت Next.js برای بهینه‌سازی */}
+        <img
+          src="/banner/banner-3e.jpg"
+          alt="تبلیغ" // Alt text توصیفی‌تر
+          width={560} // سایز اصلی تصویر را اینجا تنظیم کنید، Next.js آن را ریسپانسیو می‌کند
+          height={300} // سایز اصلی تصویر را اینجا تنظیم کنید
+          // layout="responsive" // برای ریسپانسیو کردن تصویر
+          style={{ borderRadius: '4px' }} // گوشه‌های گرد برای تصویر
+        />
+      </a>
+
+      <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold', color: '#333' }}>
+        <a href="http://talasea.ir/onboarding?r=hQQXEWXI" target="_blank" rel="noopener noreferrer" style={{ color: '#d32f2f', textDecoration: 'none' }}> {/* رنگ قرمز و حذف زیرخط برای لینک */}
+          👑 طلاسی داره به همه واسه ورود ۵۰۰ هزار  وجه نقد  هدیه میده
+        </a>
+      </Typography>
+                         <a
+                          href="http://talasea.ir/onboarding?r=hQQXEWXI"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            backgroundColor: "darkmagenta",
+                            color: "white",
+                            padding: "10px 20px",
+                            borderRadius: "6px",
+                            display: "inline-block",
+                            margin: "5px 10px",
+                          }}
+                        >
+                          کلیک کنید
+                        </a>
+    </div>
+
         </motion.div>
       </Box>
     </>

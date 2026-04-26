@@ -35,3 +35,4 @@ geoip2
 user-agents
 ua-parser
 httpx
+dnspython

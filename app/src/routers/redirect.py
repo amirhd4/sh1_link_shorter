@@ -136,7 +136,7 @@ async def redirect_to_long_url(
     try:
         domainId = int(domainId)
     except Exception as e:
-        logger.info(f"domainId {domainId} failed to parse: {e}")
+        #logger.info(f"domainId {domainId} failed to parse: {e}")
         domainId = 0
     is_custom_domain = (host != DEFAULT_HOST.lower() or domainId != 0)
 

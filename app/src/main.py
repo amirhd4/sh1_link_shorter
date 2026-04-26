@@ -50,7 +50,7 @@ async def lifespan(app: FastAPI):
 
         pro_plan_result = await session.execute(select(Plan).where(Plan.name == "Pro"))
         if not pro_plan_result.scalar_one_or_none():
-            session.add(Plan(name="Pro", link_limit_per_month=1000, duration_days=30, price=500000))
+            session.add(Plan(name="Pro", link_limit_per_month=1000, duration_days=30, price=1500000))
             print("💎 'Pro' plan created.")
 
         await session.commit()

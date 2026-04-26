@@ -42,7 +42,7 @@ class UpdateUserRoleRequest(schemas.BaseModel):
 
 @limiter.limit("10/minute")
 @router.get("/users", response_model=List[schemas.UserResponse])
-async def list_users(request: Request, skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db)):
+async def list_users(request: Request, skip: int = 0, limit: int = None, db: AsyncSession = Depends(get_db)):
     """لیست تمام کاربران را به همراه اطلاعات پلن آنها برمی‌گرداند."""
     stmt = (
         select(models.User)
