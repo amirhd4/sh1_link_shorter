@@ -29,7 +29,7 @@ async def get_redis_client(request: Request) -> redis.Redis:
 
 async def increment_click_counter(
         short_code: str,
-        host: str,
+        domain_id: int,
         client_ip: str,
         is_custom_domain: bool,
         user_agent: str = "",
@@ -48,7 +48,7 @@ async def increment_click_counter(
                         select(models.Link)
                         .options(selectinload(models.Link.domain))
                         .join(models.Domain)
-                        .where(models.Domain.name == host, models.Link.short_code == short_code
+                        .where(models.Domain.id == domain_id, models.Link.short_code == short_code
                                )
                     )
                 else:
@@ -62,7 +62,7 @@ async def increment_click_counter(
 
                 link = result.scalar_one_or_none()
                 if not link:
-                    logger.warning("Link not found: %s @ %s", short_code, host)
+                    logger.warning("Link not found: %s @ %s", short_code, domain_id)
                     return
 
                 # ادامه منطق آمارگیری...
@@ -108,7 +108,11 @@ async def redirect_to_long_url(
     db: AsyncSession = Depends(get_db),
     redis_client: redis.Redis = Depends(get_redis_client)
 ):
+    scheme = request.url.scheme  # "http" یا "https"
     host = (request.headers.get("host") or "").lower()
+    full_host = f"{scheme}://{host}"
+    logger.info(f"full_host: {full_host}")
+
     cache_key = f"link:{host}:{short_code}"
 
     long_url = None
@@ -136,7 +140,7 @@ async def redirect_to_long_url(
     try:
         domainId = int(domainId)
     except Exception as e:
-        #logger.info(f"domainId {domainId} failed to parse: {e}")
+        # logger.info(f"domainId {domainId} failed to parse: {e}")
         domainId = 0
     is_custom_domain = (host != DEFAULT_HOST.lower() or domainId != 0)
 
@@ -353,7 +357,7 @@ async def skip_ad_and_redirect(
     background_tasks.add_task(
         increment_click_counter,
         short_code,
-        host,
+        domain_id,
         client_ip,
         (domain_id is not None),
         user_agent,
