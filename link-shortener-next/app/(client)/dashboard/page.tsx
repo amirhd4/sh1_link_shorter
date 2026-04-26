@@ -101,6 +101,13 @@ const EmptyState = () => (
 // =================================================================
 // Mobile Link Card
 // =================================================================
+const normalizeUrl = (domain: string) => {
+  if (domain.startsWith('http://') || domain.startsWith('https://')) {
+    return domain;
+  }
+  return `https://${domain}`;
+};
+
 const MobileLinkCard = ({ link, index, onDetailsClick, onEditClick, onDeleteClick, isDeleting }: {
     link: LinkDetails,
     index: number,
@@ -110,7 +117,7 @@ const MobileLinkCard = ({ link, index, onDetailsClick, onEditClick, onDeleteClic
     isDeleting: boolean,
 }) => {
     const theme = useTheme();
-    const shortUrl = `${config.backendBaseUrlOrigin}/${link.short_code}`;
+    const shortUrl = `${normalizeUrl(link.domain_name)}/${link.short_code}`;
 
 
     return (
@@ -302,11 +309,14 @@ const filteredLinks = useMemo(() => {
             field: 'short_code',
             headerName: 'کد کوتاه',
             width: 150,
-            renderCell: (params) => (
-                <MuiLink href={`${config.backendBaseUrlOrigin}/${params.value}`} target="_blank" rel="noopener noreferrer">
+            renderCell: (params) => {
+
+                const finalUrl = `${normalizeUrl(params.row.domain_name)}/${params.value}`;
+
+                return <MuiLink href={`${finalUrl}`} target="_blank" rel="noopener noreferrer">
                     {params.value}
                 </MuiLink>
-            ),
+            },
         },
         {
             field: 'long_url',
