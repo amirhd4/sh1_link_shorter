@@ -111,7 +111,6 @@ async def redirect_to_long_url(
     scheme = request.url.scheme  # "http" یا "https"
     host = (request.headers.get("host") or "").lower()
     full_host = f"{scheme}://{host}"
-    logger.info(f"full_host: {full_host}")
 
     cache_key = f"link:{host}:{short_code}"
 
@@ -248,7 +247,7 @@ async def redirect_to_long_url(
     background_tasks.add_task(
         increment_click_counter,
         short_code,
-        host,
+        domain_id_for_ads,
         client_ip,
         is_custom_domain,
         user_agent,

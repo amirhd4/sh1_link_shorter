@@ -205,7 +205,7 @@ async def process_ad_skip_and_reward_view(
 
     await session.execute(upsert_stmt)
 
-    logger.info(
-        "Ad skip/view processed for link %s. Unique: %s.",
-        link_id, is_unique_view
-    )
+    # logger.info(
+    #     "Ad skip/view processed for link %s. Unique: %s.",
+    #     link_id, is_unique_view
+    # )
