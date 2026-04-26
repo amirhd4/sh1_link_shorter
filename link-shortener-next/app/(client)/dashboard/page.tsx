@@ -363,7 +363,7 @@ const filteredLinks = useMemo(() => {
       <Stack spacing={2}>
         {filteredLinks.map((link, idx) => (
           <MobileLinkCard
-            key={link.short_code}
+            key={`${link.domain_id}-${link.short_code}`}
             index={idx}
             link={link}
             onDetailsClick={handleDetailsClick(link.short_code, link.domain_id || "0")}
@@ -391,7 +391,7 @@ const filteredLinks = useMemo(() => {
       <DataGrid
         rows={filteredLinks}
         columns={columns}
-        getRowId={(row) => row.short_code}
+        getRowId={(row) => `${row.domain_id}-${row.short_code}`}
         loading={deleteMutation.isPending}
         initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
         localeText={localeText}
