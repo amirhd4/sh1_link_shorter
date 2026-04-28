@@ -112,7 +112,7 @@ async def redirect_to_long_url(
     host = (request.headers.get("host") or "").lower()
     full_host = f"{scheme}://{host}"
 
-    cache_key = f"link:{host}:{short_code}"
+    cache_key = f"link:{host}:{short_code}:*"
 
     long_url = None
     show_ads = False
@@ -186,6 +186,8 @@ async def redirect_to_long_url(
         }
 
         # ذخیره در کش
+        cache_key = f"link:{urlparse(full_host).hostname}:{short_code}:{domain_id_for_ads if domain_id_for_ads else 0}"
+
         await redis_client.set(
             cache_key,
             json.dumps({
@@ -271,8 +273,12 @@ async def skip_ad_and_redirect(
     db: AsyncSession = Depends(get_db),
     redis_client: redis.Redis = Depends(get_redis_client),
 ):
+    scheme = request.url.scheme  # "http" یا "https"
     host = request.headers.get("host")
-    cache_key = f"link:{host.lower()}:{short_code}"
+    full_host = f"{scheme}://{host}"
+
+    # cache_key = f"link:{host.lower()}:{short_code}"
+    cache_key = f"link:*:{short_code}:{domain_id}"
 
     # Normalize domain_id
     if domain_id in ["0", "None", "null", "undefined", ""]:
@@ -326,6 +332,8 @@ async def skip_ad_and_redirect(
         owner_id = link.owner_id
 
         # ذخیره در کش همراه با UTMها
+        cache_key = f"link:{link.domain.name if domain_id else DEFAULT_HOST}:{short_code}:{domain_id if domain_id else 0}"
+
         await redis_client.set(cache_key, json.dumps({
             "long_url": long_url,
             "show_ads": show_ads,

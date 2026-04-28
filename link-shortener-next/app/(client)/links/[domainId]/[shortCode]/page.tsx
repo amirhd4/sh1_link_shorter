@@ -39,6 +39,7 @@ import config from '@/config';
 import type { AdvancedLinkStats } from '@/types/api';
 import {adService} from "@/services/adService";
 import Head from "next/head";
+import {normalizeUrl} from "@/lib/utils";
 
 /**
  * نمودار کلیک ۷ روزه
@@ -138,7 +139,7 @@ export default function LinkDetailsPage() {
             <Box>
               <Typography variant="h6" gutterBottom>لینک کوتاه شما</Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 2, bgcolor: 'action.hover', borderRadius: 1 }}>
-                <MuiLink href={fullShortUrl} target="_blank" rel="noopener noreferrer" sx={{ flexGrow: 1, direction: 'ltr', textAlign: 'left', fontWeight: 'bold' }}>
+                <MuiLink href={normalizeUrl(fullShortUrl)} target="_blank" rel="noopener noreferrer" sx={{ flexGrow: 1, direction: 'ltr', textAlign: 'left', fontWeight: 'bold' }}>
                   {fullShortUrl.replace(/^https?:\/\//, '')}
                 </MuiLink>
                 <Tooltip title="کپی کردن لینک">

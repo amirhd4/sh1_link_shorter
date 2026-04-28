@@ -9,11 +9,11 @@ from fastapi.responses import StreamingResponse
 
 from sqlalchemy.exc import IntegrityError
 from datetime import datetime, timezone, timedelta, date
-from sqlalchemy import func
+from sqlalchemy import func, update, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 import redis.asyncio as redis
-from typing import List
+from typing import List, Optional
 import qrcode
 from sqlalchemy import text
 from sqlalchemy import text
@@ -43,9 +43,9 @@ async def get_redis_client(request: Request) -> redis.Redis:
     return request.app.state.redis
 
 
-def make_cache_key(domain_name: str, short_code: str) -> str:
+def make_cache_key(domain_name: str, short_code: str, domain_id: Optional[int]) -> str:
     host = urlparse(domain_name).netloc or domain_name
-    return f"link:{host}:{short_code}"
+    return f"link:{host}:{short_code}:{domain_id if domain_id else 0}"
     # return f"link:{domain_name}:{short_code}"
 
 
@@ -100,10 +100,14 @@ async def create_short_url(
         if url_data.domain_id != 0:
             domain = await db.scalar(
                 select(models.Domain).where(
-                    models.Domain.id == url_data.domain_id,
+                or_(
                     models.Domain.user_id == current_user.id,
-                    models.Domain.is_verified == True
-                )
+                    models.Domain.user_id == None,
+                    ),
+                    models.Domain.is_verified == True,
+            models.Domain.id == url_data.domain_id,
+
+            )
             )
             if not domain:
                 raise HTTPException(status_code=403, detail="دامنه معتبر نیست یا تایید نشده")
@@ -171,7 +175,7 @@ async def create_short_url(
 
             # Optionally warm the cache:
             await redis_client.set(
-                make_cache_key(domain_name, db_link.short_code),
+                make_cache_key(domain_name, db_link.short_code, db_link.domain_id),
                 json.dumps({
                     "long_url": db_link.long_url,
                     "show_ads": db_link.show_ads,
@@ -284,9 +288,9 @@ async def delete_link(
 
     # حذف کش برای دامنهٔ مرتبط یا برای هر دامنه‌ای که کلید مشابه دارد
     if db_link.domain and db_link.domain.name:
-        await redis_client.delete(make_cache_key(db_link.domain.name, db_link.short_code))
+        await redis_client.delete(make_cache_key(db_link.domain.name, db_link.short_code, db_link.domain_id))
     else:
-        async for key in redis_client.scan_iter(match=f"link:*:{short_code}"):
+        async for key in redis_client.scan_iter(match=f"link:*:{short_code}:{domain_id if domain_id else 0}"):
             await redis_client.delete(key)
 
     return None
@@ -340,7 +344,7 @@ async def update_link(
 
     # domain_name = db_link.domain.name if db_link.domain else settings.origin_backend_url
 
-    cache_key = make_cache_key(domain_name_for_cache, db_link.short_code)
+    cache_key = make_cache_key(domain_name_for_cache, db_link.short_code, db_link.domain_id)
     await redis_client.delete(cache_key)
 
     await redis_client.set(

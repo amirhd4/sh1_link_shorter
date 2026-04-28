@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.exc import IntegrityError
 from datetime import datetime, timezone
-from sqlalchemy import func
+from sqlalchemy import func, update, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 import redis.asyncio as redis
@@ -72,9 +72,13 @@ async def api_shorten_url(
     if url_data.domain_id:
         domain = await db.scalar(
             select(models.Domain).where(
-                models.Domain.id == url_data.domain_id,
-                models.Domain.user_id == user.id,
+                or_(
+                    models.Domain.user_id == current_user.id,
+                    models.Domain.user_id == None,
+                ),
                 models.Domain.is_verified == True,
+                models.Domain.id == url_data.domain_id,
+
             )
         )
         if not domain:
@@ -144,7 +148,7 @@ async def api_shorten_url(
             await db.refresh(new_link)
 
             # ✅ ذخیره در Redis (بدون رمز واقعی)
-            cache_key = f"link:{link_domain_name.lower()}:{new_link.short_code}"
+            cache_key = f"link:{link_domain_name.lower()}:{new_link.short_code}:{new_link.domain_id if new_link.domain_id else 0}"
             await redis_client.set(
                 cache_key,
                 json.dumps({

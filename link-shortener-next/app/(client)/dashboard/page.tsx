@@ -17,6 +17,7 @@ import { EditLinkForm } from '@/components/client-dashboard/EditLinkForm';
 import { ConfirmationDialog } from '@/components/molecules/ConfirmationDialog';
 import type { LinkDetails } from '@/types/api';
 import { useRouter } from 'next/navigation';
+import { normalizeUrl } from "@/lib/utils";
 
 // Icons
 import AddIcon from '@mui/icons-material/Add';
@@ -101,12 +102,7 @@ const EmptyState = () => (
 // =================================================================
 // Mobile Link Card
 // =================================================================
-const normalizeUrl = (domain: string) => {
-  if (domain.startsWith('http://') || domain.startsWith('https://')) {
-    return domain;
-  }
-  return `https://${domain}`;
-};
+
 
 const MobileLinkCard = ({ link, index, onDetailsClick, onEditClick, onDeleteClick, isDeleting }: {
     link: LinkDetails,

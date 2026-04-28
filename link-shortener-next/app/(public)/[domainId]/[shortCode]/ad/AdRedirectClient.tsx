@@ -143,34 +143,34 @@ export default function AdRedirectClient({ ad }: { ad: Ad }) {
 
                  <Box sx={{ width: '100%', borderRadius: 2, overflow: 'hidden', maxHeight: '60vh', mb: 3 }}>
                     {/*<div id="pos-article-display-117812"></div>*/}
-                    {/*<div className="yn-bnr" id="ynpos-18054"></div>*/}
+                    <div className="yn-bnr" id="ynpos-18054"></div>
                     {/* <VideoAdPlayer*/}
                     {/*    vastUrl="https://vfetch.yektanet.com/api/v1/load/f1d9af70-00d8-4988-b9d0-1b88c75c8424"*/}
                     {/*  />*/}
 
-                     <a href="http://Ad-manage.ir" target="_blank">
-                     <img src="/banner/banner-1e.jpg" alt="banner-1e" />
-                     </a>
-                     <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold" }}>
-                    <a href="http://Ad-manage.ir" target="_blank">
-سورپرایز دریافت وام ۱۵۰ میلیونی بدون چک و ضامن با واسطه میلی گلد
-                        </a>
-                         <a
-                          href="http://Ad-manage.ir"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={{
-                            backgroundColor: "darkmagenta",
-                            color: "white",
-                            padding: "10px 20px",
-                            borderRadius: "6px",
-                            display: "inline-block",
-                            margin: "5px 10px",
-                          }}
-                        >
-                          کلیک کنید
-                        </a>
-                </Typography>
+{/*                     <a href="http://Ad-manage.ir" target="_blank">*/}
+{/*                     <img src="/banner/banner-1e.jpg" alt="banner-1e" />*/}
+{/*                     </a>*/}
+{/*                     <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold" }}>*/}
+{/*                    <a href="http://Ad-manage.ir" target="_blank">*/}
+{/*سورپرایز دریافت وام ۱۵۰ میلیونی بدون چک و ضامن با واسطه میلی گلد*/}
+{/*                        </a>*/}
+{/*                         <a*/}
+{/*                          href="http://Ad-manage.ir"*/}
+{/*                          target="_blank"*/}
+{/*                          rel="noopener noreferrer"*/}
+{/*                          style={{*/}
+{/*                            backgroundColor: "darkmagenta",*/}
+{/*                            color: "white",*/}
+{/*                            padding: "10px 20px",*/}
+{/*                            borderRadius: "6px",*/}
+{/*                            display: "inline-block",*/}
+{/*                            margin: "5px 10px",*/}
+{/*                          }}*/}
+{/*                        >*/}
+{/*                          کلیک کنید*/}
+{/*                        </a>*/}
+{/*                </Typography>*/}
                 </Box>
 
                 <LinearProgress
@@ -202,52 +202,52 @@ export default function AdRedirectClient({ ad }: { ad: Ad }) {
           </Grid>
                             {/*<div className="yn-bnr" id="ynpos-18058"></div>*/}
 
-                     <div
-      style={{
-        backgroundColor: 'white', // بک‌گراند سفید
-        padding: '20px', // کمی فاصله داخلی برای خوانایی بهتر
-        borderRadius: '8px', // گوشه‌های کمی گرد
-        boxShadow: '0 4px 8px rgba(0,0,0,0.1)', // سایه ملایم برای برجسته کردن
-        textAlign: 'center', // برای وسط چین کردن محتوا
-        width: '100%', // عرض کامل در دسترس
-        maxWidth: '600px', // حداکثر عرض برای جلوگیری از کشیدگی در صفحات بزرگ
-        margin: '20px auto', // وسط چین کردن کل بنر در صفحه
-        boxSizing: 'border-box', // اطمینان از اینکه padding و border در عرض کل لحاظ می‌شوند
-      }}
-    >
-      <a href="http://talasea.ir/onboarding?r=hQQXEWXI" target="_blank" rel="noopener noreferrer" style={{ display: 'block', marginBottom: '15px' }}>
-        {/* استفاده از Image کامپوننت Next.js برای بهینه‌سازی */}
-        <img
-          src="/banner/banner-3e.jpg"
-          alt="تبلیغ" // Alt text توصیفی‌تر
-          width={560} // سایز اصلی تصویر را اینجا تنظیم کنید، Next.js آن را ریسپانسیو می‌کند
-          height={300} // سایز اصلی تصویر را اینجا تنظیم کنید
-          // layout="responsive" // برای ریسپانسیو کردن تصویر
-          style={{ borderRadius: '4px' }} // گوشه‌های گرد برای تصویر
-        />
-      </a>
+    {/*                 <div*/}
+    {/*  style={{*/}
+    {/*    backgroundColor: 'white', // بک‌گراند سفید*/}
+    {/*    padding: '20px', // کمی فاصله داخلی برای خوانایی بهتر*/}
+    {/*    borderRadius: '8px', // گوشه‌های کمی گرد*/}
+    {/*    boxShadow: '0 4px 8px rgba(0,0,0,0.1)', // سایه ملایم برای برجسته کردن*/}
+    {/*    textAlign: 'center', // برای وسط چین کردن محتوا*/}
+    {/*    width: '100%', // عرض کامل در دسترس*/}
+    {/*    maxWidth: '600px', // حداکثر عرض برای جلوگیری از کشیدگی در صفحات بزرگ*/}
+    {/*    margin: '20px auto', // وسط چین کردن کل بنر در صفحه*/}
+    {/*    boxSizing: 'border-box', // اطمینان از اینکه padding و border در عرض کل لحاظ می‌شوند*/}
+    {/*  }}*/}
+    {/*>*/}
+    {/*  <a href="http://talasea.ir/onboarding?r=hQQXEWXI" target="_blank" rel="noopener noreferrer" style={{ display: 'block', marginBottom: '15px' }}>*/}
+    {/*    /!* استفاده از Image کامپوننت Next.js برای بهینه‌سازی *!/*/}
+    {/*    <img*/}
+    {/*      src="/banner/banner-3e.jpg"*/}
+    {/*      alt="تبلیغ" // Alt text توصیفی‌تر*/}
+    {/*      width={560} // سایز اصلی تصویر را اینجا تنظیم کنید، Next.js آن را ریسپانسیو می‌کند*/}
+    {/*      height={300} // سایز اصلی تصویر را اینجا تنظیم کنید*/}
+    {/*      // layout="responsive" // برای ریسپانسیو کردن تصویر*/}
+    {/*      style={{ borderRadius: '4px' }} // گوشه‌های گرد برای تصویر*/}
+    {/*    />*/}
+    {/*  </a>*/}
 
-      <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold', color: '#333' }}>
-        <a href="http://talasea.ir/onboarding?r=hQQXEWXI" target="_blank" rel="noopener noreferrer" style={{ color: '#d32f2f', textDecoration: 'none' }}> {/* رنگ قرمز و حذف زیرخط برای لینک */}
-          👑 طلاسی داره به همه واسه ورود ۵۰۰ هزار  وجه نقد  هدیه میده
-        </a>
-      </Typography>
-                         <a
-                          href="http://talasea.ir/onboarding?r=hQQXEWXI"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={{
-                            backgroundColor: "darkmagenta",
-                            color: "white",
-                            padding: "10px 20px",
-                            borderRadius: "6px",
-                            display: "inline-block",
-                            margin: "5px 10px",
-                          }}
-                        >
-                          کلیک کنید
-                        </a>
-    </div>
+    {/*  <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold', color: '#333' }}>*/}
+    {/*    <a href="http://talasea.ir/onboarding?r=hQQXEWXI" target="_blank" rel="noopener noreferrer" style={{ color: '#d32f2f', textDecoration: 'none' }}> /!* رنگ قرمز و حذف زیرخط برای لینک *!/*/}
+    {/*      👑 طلاسی داره به همه واسه ورود ۵۰۰ هزار  وجه نقد  هدیه میده*/}
+    {/*    </a>*/}
+    {/*  </Typography>*/}
+    {/*                     <a*/}
+    {/*                      href="http://talasea.ir/onboarding?r=hQQXEWXI"*/}
+    {/*                      target="_blank"*/}
+    {/*                      rel="noopener noreferrer"*/}
+    {/*                      style={{*/}
+    {/*                        backgroundColor: "darkmagenta",*/}
+    {/*                        color: "white",*/}
+    {/*                        padding: "10px 20px",*/}
+    {/*                        borderRadius: "6px",*/}
+    {/*                        display: "inline-block",*/}
+    {/*                        margin: "5px 10px",*/}
+    {/*                      }}*/}
+    {/*                    >*/}
+    {/*                      کلیک کنید*/}
+    {/*                    </a>*/}
+    {/*</div>*/}
 
         </motion.div>
       </Box>

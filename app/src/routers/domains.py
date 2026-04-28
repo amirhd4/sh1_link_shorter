@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy import update
+from sqlalchemy import update, or_
 from sqlalchemy.exc import IntegrityError
 import secrets
 import httpx
@@ -61,7 +61,7 @@ async def list_domains(
     user: models.User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    result = await db.execute(select(models.Domain).where(models.Domain.user_id == user.id).order_by(models.Domain.created_at.desc()))
+    result = await db.execute(select(models.Domain).where(or_(models.Domain.user_id == user.id, models.Domain.user_id==None)).order_by(models.Domain.created_at.desc()))
     return result.scalars().all()
 
 

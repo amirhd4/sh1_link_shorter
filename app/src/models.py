@@ -186,7 +186,9 @@ class Domain(Base):
     name = Column(String, unique=True, index=True, nullable=False)
 
     # user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    # user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=True)
+
 
     is_verified = Column(Boolean, default=False)
     is_primary = Column(Boolean, default=False)  # NEW
@@ -198,7 +200,7 @@ class Domain(Base):
     # ad_analytics = relationship("AdAnalytics", back_populates="domain", lazy="noload")
 
     __table_args__ = (
-        UniqueConstraint("user_id", "is_primary", name="uq_user_primary_domain"),
+        # UniqueConstraint("user_id", "is_primary", name="uq_user_primary_domain"),
 
         # CheckConstraint("is_primary IN (0, 1)", name="chk_is_primary_boolean"),
     )
