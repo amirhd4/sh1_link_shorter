@@ -200,7 +200,7 @@ export default function AdRedirectClient({ ad }: { ad: Ad }) {
             </Grid>
 
           </Grid>
-                            {/*<div className="yn-bnr" id="ynpos-18058"></div>*/}
+                            <div className="yn-bnr" id="ynpos-18058"></div>
 
     {/*                 <div*/}
     {/*  style={{*/}
