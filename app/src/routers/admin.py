@@ -42,7 +42,7 @@ class UpdateUserRoleRequest(schemas.BaseModel):
 
 @limiter.limit("10/minute")
 @router.get("/users", response_model=List[schemas.UserResponse])
-async def list_users(request: Request, skip: int = 0, limit: int = None, db: AsyncSession = Depends(get_db)):
+async def list_users(request: Request, skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db)):
     """لیست تمام کاربران را به همراه اطلاعات پلن آنها برمی‌گرداند."""
     stmt = (
         select(models.User)
@@ -227,7 +227,7 @@ async def delete_link_by_admin(
 ):
     # result = await db.execute(select(models.Link).where(models.Link.short_code == short_code))
     result = await db.execute(
-        select(models.Link).where(
+        select(models.Link).options(selectinload(models.Link.domain)).where(
             models.Link.short_code == short_code,
             models.Link.domain_id == domain_id if domain_id else models.Link.domain_id.is_(None)
         )
@@ -238,7 +238,7 @@ async def delete_link_by_admin(
         raise HTTPException(status_code=404, detail="Link not found")
 
     host = link.domain.name if link.domain else settings.origin_backend_url
-    await redis_client.delete(f"link:{host}:{link.short_code}")
+    await redis_client.delete(f"link:{host}:{link.short_code}:{link.domain_id if link.domain_id else 0}")
 
     await db.delete(link)
     await db.commit()

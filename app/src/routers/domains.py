@@ -35,12 +35,12 @@ async def add_domain(
         raise HTTPException(status_code=400, detail="این دامنه قبلا ثبت شده")
 
     # اگر کاربر خواست دامنهٔ primary تعریف کند، قبلی‌ها را unset کن
-    if domain_data.is_primary:
-        await db.execute(
-            update(models.Domain)
-            .where(models.Domain.user_id == user.id, models.Domain.is_primary == True)
-            .values(is_primary=False)
-        )
+    # if domain_data.is_primary:
+    #     await db.execute(
+    #         update(models.Domain)
+    #         .where(models.Domain.user_id == user.id, models.Domain.is_primary == True)
+    #         .values(is_primary=False)
+    #     )
 
     verification_token = secrets.token_urlsafe(24)
     new_domain = models.Domain(name=name, user_id=user.id, is_primary=domain_data.is_primary, verification_token=verification_token)
@@ -76,6 +76,10 @@ async def start_verification(
     domain = await db.scalar(select(models.Domain).where(models.Domain.id == domain_id, models.Domain.user_id == user.id))
     if not domain:
         raise HTTPException(status_code=404, detail="Domain not found")
+
+    if domain.user_id is None:
+        raise HTTPException(status_code=403, detail="Cannot verify a public domain")
+
     if domain.is_verified:
         return {"detail": "already verified"}
 
@@ -112,6 +116,8 @@ async def check_verification(
     if not domain:
         raise HTTPException(status_code=404, detail="Domain not found")
 
+    if domain.user_id is None:
+        raise HTTPException(status_code=403, detail="Cannot verify a public domain")
 
     if domain.is_verified:
         return {"verified": True}
@@ -171,3 +177,56 @@ async def check_verification(
         status_code=400,
         detail="Verification not found on domain. Please follow instructions and try again."
     )
+
+
+@router.post("/{domain_id}/toggle-primary")
+@limiter.limit("15/hour")
+async def toggle_primary(
+    request: Request,
+    domain_id: int,
+    user: models.User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    domain = await db.scalar(select(models.Domain).where(models.Domain.id == domain_id))
+
+    if not domain:
+        raise HTTPException(status_code=404, detail="Domain not found")
+
+    # جلوگیری از تغییر دامنه عمومی
+    if domain.user_id is None:
+        raise HTTPException(status_code=403, detail="Cannot edit public domain")
+
+    if domain.user_id != user.id:
+        raise HTTPException(status_code=403, detail="You cannot edit this domain")
+
+    domain.is_primary = not domain.is_primary
+    await db.commit()
+    await db.refresh(domain)
+
+    return {"id": domain.id, "is_primary": domain.is_primary}
+
+
+@router.delete("/{domain_id}")
+@limiter.limit("15/hour")
+async def delete_domain(
+    request: Request,
+    domain_id: int,
+    user: models.User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    domain = await db.scalar(select(models.Domain).where(models.Domain.id == domain_id))
+
+    if not domain:
+        raise HTTPException(status_code=404, detail="Domain not found")
+
+    # دامنه عمومی قابل حذف نیست
+    if domain.user_id is None:
+        raise HTTPException(status_code=403, detail="Cannot delete public domain")
+
+    if domain.user_id != user.id:
+        raise HTTPException(status_code=403, detail="You cannot delete this domain")
+
+    await db.delete(domain)
+    await db.commit()
+
+    return {"detail": "Domain deleted"}

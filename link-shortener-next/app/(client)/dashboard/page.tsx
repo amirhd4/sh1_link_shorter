@@ -135,8 +135,9 @@ const MobileLinkCard = ({ link, index, onDetailsClick, onEditClick, onDeleteClic
                     <Box>
                         <Typography variant="caption" color="text.secondary">لینک کوتاه شما</Typography>
                         <Stack direction="row" alignItems="center" justifyContent="space-between">
+
                             <MuiLink href={shortUrl} target="_blank" rel="noopener noreferrer" sx={{ fontWeight: 'bold', fontSize: '1rem' }}>
-                                {link.short_code}
+                                {link.domain_name}/{link.short_code}
                             </MuiLink>
                             <CopyButton textToCopy={shortUrl} />
                         </Stack>
@@ -302,13 +303,23 @@ const filteredLinks = useMemo(() => {
 
     const columns: GridColDef<LinkDetails>[] = [
         {
+            field: 'domain_name',
+            headerName: 'دامنه',
+            width: 150,
+            renderCell: (params) => {
+
+                // const finalUrl = `${normalizeUrl(params.row.domain_name)}/${params.value}`;
+                return params.value
+
+            },
+        },
+        {
             field: 'short_code',
             headerName: 'کد کوتاه',
             width: 150,
             renderCell: (params) => {
 
                 const finalUrl = `${normalizeUrl(params.row.domain_name)}/${params.value}`;
-
                 return <MuiLink href={`${finalUrl}`} target="_blank" rel="noopener noreferrer">
                     {params.value}
                 </MuiLink>

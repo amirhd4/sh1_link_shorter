@@ -84,6 +84,14 @@ class UserSummary(BaseModel):
         from_attributes = True
 
 
+class DomainSummary(BaseModel):
+    id: int
+    name: str
+
+    class Config:
+        from_attributes = True
+
+
 class LinkDetailsForAdmin(BaseModel):
     long_url: HttpUrl
     short_code: str
@@ -91,6 +99,7 @@ class LinkDetailsForAdmin(BaseModel):
     created_at: datetime
     owner: UserSummary
     domain_id: Optional[int] = None
+    domain: Optional[DomainSummary] = None
 
     class Config:
         from_attributes = True
@@ -324,6 +333,7 @@ class DomainCreate(BaseModel):
 class DomainResponse(BaseModel):
     id: int
     name: str
+    user_id: Optional[int] = None
     is_verified: bool   # حتما bool باشد
     is_primary: bool
     created_at: datetime

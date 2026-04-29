@@ -110,7 +110,10 @@ export interface LinkDetailsForAdmin {
   short_code: string;
   clicks: number;
   created_at: string;
-  domain_id: number | null;
+    domain: {
+    id: number;
+    name: string;
+  } | null;
   owner: {
     id: number;
     // email?: string | null;
@@ -179,6 +182,7 @@ export interface AdvancedLinkStats {
 export interface DomainResponse {
   id: number;
   name: string;
+  user_id: number | null;
   is_verified: boolean;
   is_primary: boolean;
   created_at: string;

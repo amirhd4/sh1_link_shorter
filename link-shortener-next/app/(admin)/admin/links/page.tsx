@@ -48,7 +48,7 @@ export default function LinkManagementPage() {
     //   deleteMutation.mutate({ shortCode: deleteTarget!, domainId: myDomainId });
     // }
       if (deleteTarget) {
-        deleteMutation.mutate({ shortCode: deleteTarget.short_code, domainId: deleteTarget.domain_id ?? null });
+        deleteMutation.mutate({ shortCode: deleteTarget.short_code, domainId: deleteTarget.domain?.id ?? null });
       }
 
   };
@@ -56,6 +56,12 @@ export default function LinkManagementPage() {
     document.title = "مدیریت لینک ها";
   }, []);
   const columns: GridColDef[] = [
+    {
+      field: 'domain',
+      headerName: 'دامنه',
+      width: 180,
+      valueGetter: (value, row) => row.domain ? `${row.domain.name} (${row.domain.id})`  : '---',
+    },
     { field: 'short_code', headerName: 'کد کوتاه', width: 150 },
     {
       field: 'owner',

@@ -20,6 +20,7 @@ const modalStyle = {
   bgcolor: 'background.paper',
   border: '2px solid #000',
   boxShadow: 24,
+  borderRadius: 2,
   p: 4,
 };
 
@@ -61,27 +62,27 @@ export function EditLinkForm({ isOpen, onClose, link }: EditLinkFormProps) {
   useEffect(() => {
         if (link) {
             reset({
-                longUrl: link.long_url,
-                utmSource: link.utm_source,
-                utmMedium: link.utm_medium,
-                utmCampaign: link.utm_campaign,
-                utmTerm: link.utm_term,
-                utmContent: link.utm_content,
-                showAds: link.show_ads ?? true,
-                isProtected: link.is_protected ?? false,
-                password: "",
+              longUrl: link.long_url,
+              utmSource: link.utm_source ?? "",
+              utmMedium: link.utm_medium ?? "",
+              utmCampaign: link.utm_campaign ?? "",
+              utmTerm: link.utm_term ?? "",
+              utmContent: link.utm_content ?? "",
+              showAds: link.show_ads ?? true,
+              isProtected: link.is_protected ?? false,
+              password: "",
             });
         } else {
         reset({
-            longUrl: '',
-            utmSource: null,
-            utmMedium: null,
-            utmCampaign: null,
-            utmTerm: null,
-            utmContent: null,
-            showAds: true,
-            isProtected: false,
-            password: "",
+          longUrl: '',
+          utmSource: "",
+          utmMedium: "",
+          utmCampaign: "",
+          utmTerm: "",
+          utmContent: "",
+          showAds: true,
+          isProtected: false,
+          password: "",
         });
     }
     }, [link, reset]);
@@ -122,7 +123,7 @@ const handleClose = () => {
   };
   return (
     <Modal open={isOpen} onClose={onClose} aria-labelledby="edit-link-modal-title">
-          <Box sx={{ ...modalStyle, width: { xs: '90%', sm: 600 } }}> {/* افزایش عرض برای فیلدهای UTM */}
+          <Box sx={{ ...modalStyle, width: { xs: '90%', sm: 600 }, maxHeight: '90vh', overflowY: 'auto'}}> {/* افزایش عرض برای فیلدهای UTM */}
               <IconButton
   onClick={handleClose}
   sx={{
@@ -134,7 +135,7 @@ const handleClose = () => {
 >
   <CloseIcon />
 </IconButton>
-            <Typography id="edit-link-modal-title" variant="h6" component="h2">
+            <Typography id="edit-link-modal-title" variant="h6" component="h2" sx={{ fontWeight: 'bold' }} noWrap>
               ویرایش لینک
             </Typography>
 

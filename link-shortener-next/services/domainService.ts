@@ -21,5 +21,15 @@ export const domainService = {
   checkVerification: async (domainId: number) => {
     const res = await apiClient.post(`/domains/${domainId}/verification/check`);
     return res.data; // { verified: true } on success
-  }
+  },
+
+  togglePrimary: async (id: number) => {
+    const res = await apiClient.post(`/domains/${id}/toggle-primary`);
+    return res.data;
+  },
+  deleteDomain: async (id: number) => {
+    const res = await apiClient.delete(`/domains/${id}`);
+    return res.data;
+  },
+
 };

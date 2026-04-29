@@ -62,6 +62,7 @@ interface CreateLinkFormProps {
 const DEFAULT_DOMAIN_OBJECT: DomainResponse = {
   id: 0,
   name: "(دامنه پیش‌فرض)",
+  user_id: null,
   is_verified: true,
   is_primary: false,
   created_at: new Date().toISOString(),
@@ -163,8 +164,12 @@ export function CreateLinkForm({ isOpen, onClose }: CreateLinkFormProps) {
 
   const availableDomains = [
     DEFAULT_DOMAIN_OBJECT,
-    ...(domains || []).filter((d) => d.is_verified),
-  ];
+    ...(domains || []).filter((d) => d.is_verified && d.is_primary)
+      .map((d) => ({
+      ...d,
+      name: d.name + " " + `(${d.id})`,
+    })),
+];
 
   // لینک پیش‌نمایش (preview)
   const previewDomain =
