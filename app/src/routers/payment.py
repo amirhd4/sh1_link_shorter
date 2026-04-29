@@ -10,6 +10,7 @@ from datetime import date, timedelta, datetime
 from sqlalchemy.orm import selectinload
 from apscheduler.triggers.date import DateTrigger
 
+from .redirect import logger
 from ..scheduler import scheduler
 from .. import models, schemas
 from ..database import get_db
@@ -54,10 +55,13 @@ async def create_payment(
         raise HTTPException(status_code=404, detail="Plan not found")
 
     today = date.today()
-    is_active = (
-            current_user.subscription_end_date
-            and current_user.subscription_end_date >= today
-    )
+    # is_active = (
+    #         current_user.subscription_end_date
+    #         and current_user.subscription_end_date >= today
+    # )
+    is_active = False
+    # logger.info(current_user.subscription_end_date)
+    # logger.info(today)
 
     # ❌ Free اصلاً قابل خرید نیست
     if plan.name == "Free":
@@ -68,6 +72,7 @@ async def create_payment(
 
     # ❌ اگر اشتراک فعاله و همون پلنه
     if is_active and current_user.plan_id == plan.id:
+        # logger.info(f"Plan {plan.name} {is_active} already active")
         raise HTTPException(
             status_code=400,
             detail="Your subscription is already active."
