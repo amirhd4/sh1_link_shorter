@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Request, BackgroundTasks, Depends, HTTPException
+from fastapi.responses import PlainTextResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import update, or_
@@ -10,6 +11,7 @@ from sqlalchemy.orm import selectinload
 from starlette.responses import RedirectResponse
 import json
 from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
+from datetime import date
 
 from ..database import async_session_factory, get_db
 from ..services import security
@@ -199,6 +201,37 @@ async def redirect_to_long_url(
                 "hashed_password": hashed_password,
             }),
             ex=3600
+        )
+
+    # --- گرفتن لینک ---
+    if domain_id_for_ads:
+        result = select(models.Link).options(
+            selectinload(models.Link.domain),
+            selectinload(models.Link.owner)
+        ).join(models.Domain).where(
+            or_(
+                # models.Domain.name == host,
+                models.Domain.id == domain_id_for_ads
+            ),
+            models.Link.short_code == short_code
+        )
+    else:
+        result = select(models.Link).options(selectinload(models.Link.owner)).where(
+            models.Link.domain_id == None,
+            models.Link.short_code == short_code
+        )
+
+    result = await db.execute(result)
+
+    link = result.scalar_one_or_none()
+    if not link:
+        raise HTTPException(status_code=404, detail="URL not found")
+
+    # بررسی پایان اشتراک
+    if link.owner.subscription_end_date and link.owner.subscription_end_date < date.today():
+        return PlainTextResponse(
+            "اشتراک کاربر این لینک به پایان رسیده است. برای فعال شدن لینک، از سایت اشتراک تهیه کنید.",
+            status_code=403
         )
 
     # --- ۳. بررسی رمز عبور اگر لینک رمزدار است ---
