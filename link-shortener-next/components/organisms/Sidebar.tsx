@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import {
-  Drawer, List, ListItem, ListItemButton, ListItemIcon,
-  ListItemText, Toolbar, Divider, Box, Typography
+    Drawer, List, ListItem, ListItemButton, ListItemIcon,
+    ListItemText, Toolbar, Divider, Box, Typography, IconButton
 } from '@mui/material';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
@@ -14,6 +14,7 @@ import ApiIcon from '@mui/icons-material/Api';
 import { useUserStore } from "@/store/userStore";
 import Ticket from "@mui/icons-material/AirplaneTicket";
 import BioLink from "@mui/icons-material/Pages";
+import Image from "next/image";
 
 const drawerWidth = 260;
 
@@ -115,7 +116,21 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           {/*  support@l1s.ir*/}
           {/*</Typography>*/}
           <Typography sx={{ display: 'block', fontSize: 13, color: '#6b21a8' }}>
-            09960074607
+             <IconButton
+    component={Link}
+    href="https://eitaa.com/amirhd4"
+    target="_blank"
+    rel="noopener noreferrer"
+    aria-label="ایتا"
+    sx={{ p: 1 }}
+  >
+    <Image
+      src="/social/eitaa.png"
+      alt="ایتا"
+      width={28}
+      height={28}
+    />
+  </IconButton>
           </Typography>
         </Box>
       </Box>

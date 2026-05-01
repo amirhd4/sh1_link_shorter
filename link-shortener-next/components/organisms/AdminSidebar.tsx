@@ -9,6 +9,7 @@ import CampaignIcon from '@mui/icons-material/Campaign';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import Ticket from '@mui/icons-material/AirplaneTicket';
 import Dashboard from "@mui/icons-material/Dashboard";
+import BioLink from "@mui/icons-material/Pages";
 
 
 const drawerWidth = 240;
@@ -25,6 +26,7 @@ const navItems = [
     { text: 'مدیریت تبلیغات', icon: <CampaignIcon />, path: '/admin/ads' },
     { text: 'آمار تبلیغات', icon: <BarChartIcon />, path: '/admin/stats' },
     { text: 'تیکت ها', icon: <Ticket />, path: '/admin/tickets' },
+    { text: 'لینک های بیو', icon: <BioLink />, path: '/admin/links_bio' },
     { text: 'پنل کاربری', icon: <Dashboard />, path: '/dashboard', roles: ['user'] },
 ];
 
@@ -41,8 +43,13 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
       <List>
         {navItems.map((item) => (
           <ListItem key={item.text} disablePadding>
-            <ListItemButton component={Link} href={item.path}>
-              <ListItemIcon>{item.icon}</ListItemIcon>
+            <ListItemButton component={Link} href={item.path} sx={{
+                      borderRadius: 2,
+                      mx: 1,
+                      mb: 0.5,
+                      '&:hover': { bgcolor: '#f3e8ff', color: '#6b21a8' },
+                    }}>
+                <ListItemIcon sx={{ color: '#6b21a8' }}>{item.icon}</ListItemIcon>
               <ListItemText primary={item.text} />
             </ListItemButton>
           </ListItem>

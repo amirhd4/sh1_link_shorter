@@ -60,7 +60,10 @@ export default function CreateBioPage() {
 
       router.push(`/bio-pages/${page.id}`);
     } catch (err: any) {
-      setError(err?.response?.data?.detail || "خطا در ساخت لینک بیو");
+        if (err?.response?.status === 400)
+            setError("این اسلاگ قبلا انتخاب شده است؛ اسلاگ دیگری انتخاب کنید.")
+        else
+            setError(err?.response?.data?.detail || "خطا در ساخت لینک بیو");
     } finally {
       setLoading(false);
     }

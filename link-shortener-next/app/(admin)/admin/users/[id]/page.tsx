@@ -39,8 +39,9 @@ import {
 
 import { adminUserService } from "@/services/admin";
 import { adminService } from "@/services/adminService";
-import { AdminUserSummary, TransactionResponse } from "@/types/api";
+import {AdminBioPageSummary, AdminUserSummary, TransactionResponse} from "@/types/api";
 import {formatJalaliDate} from "@/utils/jalali_date";
+import config from "@/config";
 
 // =====================================================
 // 🧠 Main Page
@@ -123,6 +124,7 @@ export default function AdminUserDetailsPage() {
           <TransactionsTable transactions={user.transactions} />
           <AdsOverview user={user} />
           <SystemMeta user={user} />
+          <BioPagesSection user={user} /> {/* ✅ اضافه‌شده جدید */}
         </Grid>
       </Grid>
     </Box>
@@ -320,3 +322,119 @@ const Stat = ({ title, value }: { title: string; value: any }) => (
     </Card>
   </Grid>
 );
+
+
+// داخل همان فایل AdminUserDetailsPage اضافه کن در پایین دیگر کامپوننت‌ها:
+
+const BioPagesSection = ({ user }: { user: AdminUserSummary }) => {
+  const router = useRouter();
+
+  if (!user.bio_pages || user.bio_pages.length === 0)
+    return (
+      <Card sx={{ mt: 3 }}>
+        <CardContent>
+          <Typography variant="h6">🌐 بیو‌پیج‌ها</Typography>
+          <Divider sx={{ my: 1 }} />
+          <Typography color="text.secondary">
+            کاربر هیچ بیو‌پیجی ندارد.
+          </Typography>
+        </CardContent>
+      </Card>
+    );
+
+  return (
+    <Card sx={{ mt: 3 }}>
+      <CardContent>
+        <Typography variant="h6">🌐 بیو‌پیج‌های کاربر</Typography>
+        <Divider sx={{ my: 1 }} />
+
+        <Grid container spacing={2}>
+          {user.bio_pages.map((bp: AdminBioPageSummary) => (
+            <Grid size={{ xs: 12, sm: 6 }} key={bp.id}>
+              <Card variant="outlined" sx={{ height: "100%" }}>
+                <CardContent>
+                  <Stack spacing={1}>
+                    {/* Avatar */}
+                    {bp.avatar_url && (
+                      <Box
+                        component="img"
+                        src={`${config.backendBaseUrl}/${bp.avatar_url}`}
+                        alt={bp.title ?? bp.slug}
+                        sx={{
+                          width: 56,
+                          height: 56,
+                          borderRadius: "50%",
+                          objectFit: "cover",
+                        }}
+                      />
+                    )}
+
+                    <Typography variant="subtitle1">
+                      {bp.title || bp.slug}
+                    </Typography>
+
+                    {bp.description && (
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ lineHeight: 1.5 }}
+                      >
+                        {bp.description.substring(0, 120)}
+                        {bp.description.length > 120 && "…"}
+                      </Typography>
+                    )}
+
+                    <Stack direction="row" spacing={1} flexWrap="wrap">
+                      <Chip
+                        size="small"
+                        label={bp.is_active ? "فعال" : "غیرفعال"}
+                        color={bp.is_active ? "success" : "default"}
+                      />
+                      <Chip
+                        size="small"
+                        label={bp.is_public ? "عمومی" : "خصوصی"}
+                        color={bp.is_public ? "info" : "warning"}
+                      />
+                      <Chip
+                        size="small"
+                        label={`لینک‌ها: ${bp.links_count}`}
+                        color="primary"
+                      />
+                    </Stack>
+
+                    <Typography variant="caption">
+                      ایجاد: {new Date(bp.created_at).toLocaleString("fa-IR")}
+                    </Typography>
+
+                    <Stack direction="row" spacing={1} mt={1}>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        onClick={() => router.push(`/admin/links_bio/${bp.id}`)}
+                      >
+                        مشاهده جزئیات
+                      </Button>
+
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        onClick={() => {
+                          window.open(
+                            `/bio-link/${bp.slug}`,
+                            "_blank"
+                          );
+                        }}
+                      >
+                        مشاهده صفحه عمومی
+                      </Button>
+                    </Stack>
+                  </Stack>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      </CardContent>
+    </Card>
+  );
+};

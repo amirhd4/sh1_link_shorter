@@ -58,3 +58,7 @@ export const iconOptions: IconOption[] = [
   { name: "Download", component: <Download />, value: "download" },
   { name: "Profile", component: <Person />, value: "person" },
 ];
+
+export const iconMap = Object.fromEntries(
+  iconOptions.map((i) => [i.value, i.component])
+);

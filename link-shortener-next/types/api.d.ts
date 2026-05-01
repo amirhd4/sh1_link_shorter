@@ -50,7 +50,27 @@ export interface AdminUserSummary {
 
   created_at: string;
   transactions: TransactionResponse[] | [];
+  bio_pages: AdminBioPageSummary[];
+
 }
+
+export interface AdminBioPageSummary {
+  id: number;
+  slug: string;
+
+  title?: string | null;
+  description?: string | null;
+  avatar_url?: string | null;
+
+  is_active: boolean;
+  is_public: boolean;
+
+  created_at: string;
+  updated_at?: string | null;
+
+  links_count: number;
+}
+
 
 export interface UserResponse {
   id: number;

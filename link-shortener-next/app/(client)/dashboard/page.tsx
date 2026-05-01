@@ -442,7 +442,6 @@ const filteredLinks = useMemo(() => {
 
     return (
         <>
-            <SupportSection />
             <Container maxWidth="lg" sx={{py: 4}}>
                 <Stack direction={{xs: 'column', sm: 'row'}} justifyContent="space-between" alignItems="center"
                        spacing={2} mb={4}>
@@ -528,6 +527,8 @@ const filteredLinks = useMemo(() => {
                     </Alert>
                 ) : undefined}
             </Snackbar>
+            <SupportSection />
+
         </>
     );
 }

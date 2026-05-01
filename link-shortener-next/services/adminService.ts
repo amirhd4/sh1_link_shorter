@@ -1,8 +1,10 @@
 import apiClient from '../lib/axios';
 import type {UserResponse, LinkDetailsForAdmin, AdSystemStats} from '@/types/api';
 import type { SystemStats } from '@/types/api';
+import {BioPage} from "@/types/bio";
 
-
+const extractData = <T>(promise: Promise<{ data: T }>): Promise<T> =>
+  promise.then(res => res.data);
 export const adminService = {
   /**
    * لیست تمام کاربران سیستم را از سرور دریافت می‌کند.
@@ -69,5 +71,26 @@ export const adminService = {
   );
   return response.data;
 },
+
+
+  // لیست همه BioPage ها
+  getAllBioPages: (): Promise<BioPage[]> => {
+    return extractData(apiClient.get("/admin/bio-pages"));
+  },
+
+  // جزئیات یک BioPage
+  getBioPage: (id: number): Promise<BioPage> => {
+    return extractData(apiClient.get(`/admin/bio-pages/${id}`));
+  },
+
+  // حذف BioPage
+  deleteBioPage: (id: number): Promise<void> => {
+    return extractData(apiClient.delete(`/admin/bio-pages/${id}`));
+  },
+
+  // حذف لینک داخل Bio
+  deleteBioLink: (id: number): Promise<void> => {
+    return extractData(apiClient.delete(`/admin/bio-links/${id}`));
+  },
 
 };

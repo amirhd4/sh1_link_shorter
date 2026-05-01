@@ -208,7 +208,7 @@ export function LoginForm() {
                     {...field}
                     fullWidth
                     label="شماره موبایل"
-                    placeholder="نمونه: 09960074607"
+                    placeholder="نمونه: 099xxxxxxx1"
                     autoComplete="tel"
                     type="tel"
                     autoFocus

@@ -4,22 +4,20 @@ const SupportSection = () => {
   const paymentLink = "https://pa.l1s.ir/link/767642";
 
   return (
-    <div style={{
-      position: "fixed",
-      bottom: "15px",
-      right: "15px",
-      zIndex: 9999,
-      display: "flex",
-      alignItems: "center",
-      gap: "8px",
-      background: "white",
-      padding: "6px 12px",
-      borderRadius: "30px",
-      boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-      fontFamily: "inherit",
-      cursor: "pointer",
-      transition: "all .25s ease"
-    }}
+    <div
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: "8px",
+        background: "white",
+        padding: "6px 12px",
+        borderRadius: "30px",
+        boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+        fontFamily: "inherit",
+        cursor: "pointer",
+        transition: "all .25s ease"
+      }}
+
     onMouseOver={e => e.currentTarget.style.transform = "translateY(-3px)"}
     onMouseOut={e => e.currentTarget.style.transform = "translateY(0)"}
     >

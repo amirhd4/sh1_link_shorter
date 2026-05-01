@@ -72,6 +72,9 @@ class AdminUserSummary(BaseModel):
     created_at: datetime
     transactions: list[TransactionResponse] = Field(default_factory=list)
 
+    # ✅ جدید: خلاصه BioPageها
+    bio_pages: List["AdminBioPageSummary"] = []
+
     class Config:
         from_attributes = True
 
@@ -467,3 +470,56 @@ class BioPageUpdate(BaseModel):
 
 class ToggleLinkActive(BaseModel):
     is_active: bool
+
+
+class BioLinkBase(BaseModel):
+    id: int
+    title: str
+    value: str
+    link_type: LinkTypeEnum
+    icon: Optional[str] = None
+    position: int
+    is_active: bool
+    click_count: int
+    created_at: datetime
+
+    class Config:
+        from_attribute = True
+
+
+class UserSimpleInfoBioPage(BaseModel):
+    phone_number: str
+    first_name: str
+    last_name: str
+
+    class Config:
+        from_attribute = True
+
+class BioPageBase(BaseModel):
+    id: int
+    slug: str
+    title: Optional[str] = None
+    description: Optional[str] = None
+    avatar_url: Optional[str] = None
+    is_active: bool
+    is_public: bool
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+    user: Optional[UserSimpleInfoBioPage] | None
+
+    class Config:
+        from_attribute = True
+
+
+class BioPageWithLinks(BioPageBase):
+    links: List[BioLinkBase] = []
+
+
+class BioPageListItem(BioPageBase):
+    user_id: int
+    # اگر دوست داری اطلاعاتی از خود یوزر هم اضافه کنی، می‌تونی فیلدهای بیشتر هم بذاری
+
+
+# اگر خواستی BioPageها را داخل AdminUserSummary هم ببینی:
+class AdminBioPageSummary(BioPageBase):
+    links_count: int

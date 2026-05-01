@@ -147,7 +147,7 @@ export function RegisterWithOtpForm() {
               <TextField
                 fullWidth
                 label="شماره موبایل"
-                placeholder="نمونه: 09960074607"
+                placeholder="نمونه: 09920004501"
                 type="tel"
                 autoComplete="tel"
                 value={phone}

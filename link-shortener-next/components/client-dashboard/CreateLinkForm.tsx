@@ -113,14 +113,13 @@ export function CreateLinkForm({ isOpen, onClose }: CreateLinkFormProps) {
     handleClose();
   },
   onError: (error: any) => {
-    // اگر سرور پیام خاصی فرستاده بود، اون رو نشون بده
-    const detail = error.response?.data?.detail;
-    if (detail?.field === "custom_alias" || detail === "این نام قبلاً استفاده شده است.") {
-      setErrorAlias("این کد قبلاً استفاده شده است. لطفاً مورد دیگری انتخاب کنید.");
-    } else {
-      setGlobalError(detail?.message || detail || "خطایی رخ داد در ایجاد لینک.");
-    }
-  },
+      const detail = error.response?.data?.detail;
+      if (detail?.field === "custom_alias" || detail === "این نام قبلاً استفاده شده است.") {
+        setErrorAlias("این کد قبلاً استفاده شده است. لطفاً مورد دیگری انتخاب کنید.");
+      } else {
+        setGlobalError(detail?.message || detail || "خطایی رخ داد در ایجاد لینک.");
+      }
+    },
 });
 
 
@@ -217,13 +216,14 @@ export function CreateLinkForm({ isOpen, onClose }: CreateLinkFormProps) {
 
         <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
           {createLinkMutation.isError && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {/* @ts-ignore */}
-              {createLinkMutation.error.response?.data?.detail ||
-                createLinkMutation.error.message ||
-                'خطا در ایجاد لینک.'}
-            </Alert>
-          )}
+  <Alert severity="error" sx={{ mb: 2 }}>
+    {typeof createLinkMutation.error.response?.data?.detail === 'string'
+      ? createLinkMutation.error.response.data.detail
+      : createLinkMutation.error.response?.data?.detail?.message ||
+        createLinkMutation.error.message ||
+        'خطا در ایجاد لینک.'}
+  </Alert>
+)}
 
           <Grid container spacing={2}>
             {/* Long URL */}

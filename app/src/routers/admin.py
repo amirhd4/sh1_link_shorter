@@ -10,7 +10,7 @@ import asyncio
 
 from .. import models, schemas
 from ..database import get_db
-from ..models import TicketStatus, Transaction, Domain, Link, UserAdReward, TransactionStatus
+from ..models import TicketStatus, Transaction, Domain, Link, UserAdReward, TransactionStatus, BioPage, BioLink
 from ..schemas import DailyStat, SystemStats, TicketResponse, TicketMessageResponse, TicketMessageCreate, \
     AdminUserSummary, TransactionResponse
 from ..services import security, ads as ads_service, stats as stats_service
@@ -18,6 +18,8 @@ from ..config import settings
 from fastapi import Request
 import redis.asyncio as redis
 from ..rate_limiter import limiter
+from ..schemas import BioPageWithLinks, BioPageListItem  # حتما ایمپورت کن
+from ..schemas import AdminBioPageSummary  # اگر ساختی
 
 
 router = APIRouter(
@@ -54,6 +56,7 @@ async def list_users(request: Request, skip: int = 0, limit: int = None, db: Asy
     result = await db.execute(stmt)
     users = result.scalars().all()
     return users
+
 
 @limiter.limit("10/minute")
 @router.get("/links", response_model=List[schemas.LinkDetailsForAdmin])
@@ -457,7 +460,33 @@ async def get_admin_user_summary(
     transactions_list = transactions.scalars().all()
 
     # تبدیل به Pydantic
-    transactions_response = [TransactionResponse.from_orm(tx) for tx in transactions_list]
+    transactions_response = [TransactionResponse.model_validate(tx) for tx in transactions_list]
+
+    # ✅ جدید: BioPageها
+    bio_pages_result = await db.execute(
+        select(BioPage)
+        .options(selectinload(BioPage.links))
+        .where(BioPage.user_id == user_id)
+        .order_by(BioPage.created_at.desc())
+    )
+    bio_pages = bio_pages_result.scalars().all()
+
+    bio_pages_summary = [
+        AdminBioPageSummary(
+            id=bp.id,
+            slug=bp.slug,
+            title=bp.title,
+            description=bp.description,
+            avatar_url=bp.avatar_url,
+            is_active=bp.is_active,
+            is_public=bp.is_public,
+            created_at=bp.created_at,
+            updated_at=bp.updated_at,
+            links_count=len(bp.links) if hasattr(bp, "links") and bp.links is not None else 0,
+            user= None
+        )
+        for bp in bio_pages
+    ]
 
     return AdminUserSummary(
         id=user.id,
@@ -489,8 +518,8 @@ async def get_admin_user_summary(
         total_unique_ad_views=unique_views,
 
         created_at=user.created_at,
-        transactions=transactions_response  # ✅ اینجا
-
+        transactions=transactions_response,
+        bio_pages = bio_pages_summary,  # ✅ اینجا
     )
 
 
@@ -594,3 +623,83 @@ async def close_ticket(
     await db.refresh(ticket)
 
     return ticket
+
+
+@limiter.limit("15/minute")
+@router.get("/bio-pages", response_model=List[BioPageListItem])
+async def list_all_bio_pages(
+    request: Request,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    لیست همه‌ی بیو پیج‌ها (بدون لینک‌ها) برای ادمین.
+    """
+    result = await db.execute(
+        select(BioPage)
+        .options(selectinload(BioPage.user))
+        .order_by(BioPage.created_at.desc())
+    )
+    bio_pages = result.scalars().all()
+
+    return bio_pages
+
+
+@limiter.limit("15/minute")
+@router.get("/bio-pages/{bio_page_id}", response_model=BioPageWithLinks)
+async def get_bio_page_details(
+    request: Request,
+    bio_page_id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    دریافت جزئیات یک بیو پیج به همراه لینک‌هایش.
+    """
+    result = await db.execute(
+        select(BioPage)
+        .options(selectinload(BioPage.links))
+        .options(selectinload(BioPage.user))
+        .where(BioPage.id == bio_page_id)
+    )
+    bio_page = result.scalar_one_or_none()
+    if not bio_page:
+        raise HTTPException(status_code=404, detail="Bio page not found")
+
+    return bio_page
+
+
+@limiter.limit("5/minute")
+@router.delete("/bio-pages/{bio_page_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_bio_page_by_admin(
+    request: Request,
+    bio_page_id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    حذف کامل یک بیو پیج به همراه تمام لینک‌هایش.
+    """
+    bio_page = await db.get(BioPage, bio_page_id)
+    if not bio_page:
+        raise HTTPException(status_code=404, detail="Bio page not found")
+
+    await db.delete(bio_page)
+    await db.commit()
+    return None
+
+
+@limiter.limit("10/minute")
+@router.delete("/bio-links/{bio_link_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_bio_link_by_admin(
+    request: Request,
+    bio_link_id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    حذف یک لینک از داخل بیو پیج (بدون حذف خود بیو پیج).
+    """
+    bio_link = await db.get(BioLink, bio_link_id)
+    if not bio_link:
+        raise HTTPException(status_code=404, detail="Bio link not found")
+
+    await db.delete(bio_link)
+    await db.commit()
+    return None
