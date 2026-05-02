@@ -1,6 +1,6 @@
 "use client";
 import { Box, Typography } from '@mui/material';
-import LinkOffIcon from '@mui/icons-material/LinkOff';
+import NoAccounts from '@mui/icons-material/NoAccounts';
 
 export function CustomNoRowsOverlay() {
   return (
@@ -13,13 +13,13 @@ export function CustomNoRowsOverlay() {
         height: '100%',
       }}
     >
-      <LinkOffIcon sx={{ fontSize: 60, opacity: 0.4 }} />
+      <NoAccounts sx={{ fontSize: 60, opacity: 0.4 }} />
       <Typography sx={{ mt: 2 }} variant="h6">
-        هنوز لینکی نساخته‌اید!
+        داده ای موجود نیست!
       </Typography>
-      <Typography color="text.secondary">
-        برای شروع، روی دکمه "ایجاد لینک جدید" کلیک کنید.
-      </Typography>
+      {/*<Typography color="text.secondary">*/}
+      {/*  برای شروع، روی دکمه "ایجاد لینک جدید" کلیک کنید.*/}
+      {/*</Typography>*/}
     </Box>
   );
 }

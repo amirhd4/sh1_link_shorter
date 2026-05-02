@@ -88,6 +88,9 @@ const navLinks = [
         <meta property="og:type" content="website" />
         <meta property="og:url" content="a.l1s.ir" />
         <meta property="og:image" content="https://a.l1s.ir/images/l1s_preview.png" />
+        <meta name="twitter:title" content="کوتاه‌کننده لینک لِس (L1s)" />
+        <meta name="twitter:description" content="سرویس کوتاه‌کننده لینک سریع و امن" />
+        <meta name="twitter:image" content="https://a.l1s.ir/images/l1s_preview.png" />
         <meta name="twitter:card" content="summary_large_image" />
         <link rel="canonical" href="https://l1s.ir" />
       </Head>

@@ -119,7 +119,7 @@ async def create_short_url(
         raise HTTPException(status_code=401, detail="Default domain not found")
 
 
-    MAX_RETRIES = 5
+    MAX_RETRIES = 500
     for _ in range(MAX_RETRIES):
         if url_data.custom_alias:
             if len(url_data.custom_alias) > 50:
@@ -142,7 +142,7 @@ async def create_short_url(
 
             short_code = url_data.custom_alias
         else:
-            short_code = await generate_unique_short_key(redis_client)
+            short_code = await generate_unique_short_key(redis_client=redis_client, domain_id=domain_id)
 
         db_link = models.Link(
             long_url=str(url_data.long_url),

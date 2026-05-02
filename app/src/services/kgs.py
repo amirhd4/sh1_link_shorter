@@ -1,8 +1,6 @@
 import redis.asyncio as redis
 
 BASE62_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_"
-COUNTER_KEY = "kgs:unique_counter"
-
 
 def to_base62(num: int) -> str:
     if num == 0:
@@ -15,9 +13,14 @@ def to_base62(num: int) -> str:
     return encoded
 
 
-async def generate_unique_short_key(redis_client: redis.Redis) -> str:
-    """
-    Increments a global counter and encodes it to a Base62 string.
-    """
-    unique_id = await redis_client.incr(COUNTER_KEY)
+def make_counter_key(domain_id: int | None) -> str:
+    return f"kgs:counter:{domain_id or 'default'}"
+
+
+async def generate_unique_short_key(
+    redis_client,
+    domain_id: int | None
+) -> str:
+    counter_key = make_counter_key(domain_id)
+    unique_id = await redis_client.incr(counter_key)
     return to_base62(unique_id)

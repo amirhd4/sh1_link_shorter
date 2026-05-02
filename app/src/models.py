@@ -81,7 +81,7 @@ class Link(Base):
     owner_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     owner = relationship("User", back_populates="links")
 
-    domain_id = Column(Integer, ForeignKey("domains.id"), nullable=True)
+    domain_id = Column(Integer, ForeignKey("domains.id", ondelete="CASCADE"), nullable=True)
     domain = relationship("Domain", back_populates="links")
 
     click_events = relationship("ClickEvent", back_populates="link", cascade="all, delete-orphan")
@@ -278,7 +278,7 @@ class AdViewEvent(Base):
     id = Column(BigInteger, primary_key=True)
     link_id = Column(BigInteger, ForeignKey("links.id", ondelete="CASCADE"), nullable=False, index=True)
 
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)  # Can be anonymous
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=True, index=True)  # Can be anonymous
     ip_hash = Column(String(128), nullable=False, index=True)
     user_agent_hash = Column(String(128), nullable=False, index=True)
     timestamp = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
@@ -338,7 +338,7 @@ class TicketMessage(Base):
     id = Column(Integer, primary_key=True)
     ticket_id = Column(Integer, ForeignKey("tickets.id", ondelete="CASCADE"), nullable=False)
 
-    sender_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    sender_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=False)
     sender = relationship("User")
 
     message = Column(Text, nullable=False)

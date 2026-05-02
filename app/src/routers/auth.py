@@ -37,6 +37,8 @@ from ..schemas import ResetPasswordRequest, ChangePasswordRequest
 from fastapi.responses import JSONResponse
 from urllib.parse import urlparse
 
+from ..services.utils import normalize_phone
+
 url = settings.origin_backend_url
 parsed = urlparse(url).hostname
 
@@ -549,16 +551,20 @@ async def send_otp_for_register(payload: PhoneRequestCaptcha, request: Request, 
     """
     phone = payload.phone
 
-    try:
-        pn = phonenumbers.parse(phone, "IR")
-        if not phonenumbers.is_valid_number(pn):
-            raise ValueError()
-    except Exception:
-        raise HTTPException(status_code=400, detail="شماره موبایل نامعتبر")
+    # try:
+    #     pn = phonenumbers.parse(phone, "IR")
+    #     if not phonenumbers.is_valid_number(pn):
+    #         raise ValueError()
+    # except Exception:
+    #     raise HTTPException(status_code=400, detail="شماره موبایل نامعتبر")
 
-    existing_user = await db.scalar(select(models.User).where(models.User.phone_number == phone))
-    if existing_user:
-        raise HTTPException(status_code=400, detail="این شماره قبلاً ثبت شده است. لطفاً وارد شوید.")
+    phone = normalize_phone(phone)
+    if not phone:
+        raise HTTPException(status_code=400, detail="شماره موبایل وارد شده نامعتبر است.")
+
+    # existing_user = await db.scalar(select(models.User).where(models.User.phone_number == phone))
+    # if existing_user:
+    #     raise HTTPException(status_code=400, detail="این شماره قبلاً ثبت شده است. لطفاً وارد شوید.")
 
 
     if settings.CAPTCHA:
@@ -618,7 +624,10 @@ async def register_with_otp(request: Request, payload: RegisterOtpRequestCaptcha
     if settings.CAPTCHA:
         await verify_turnstile(request, payload.captcha_token)
 
-    phone = payload.phone
+    phone = normalize_phone(payload.phone)
+    if not phone:
+        raise HTTPException(status_code=400, detail="شماره موبایل وارد شده نامعتبر است.")
+
     code = payload.code
 
     if not await verify_otp_from_store(phone, code, request):
@@ -626,7 +635,7 @@ async def register_with_otp(request: Request, payload: RegisterOtpRequestCaptcha
 
     existing_user = await db.scalar(select(models.User).where(models.User.phone_number == phone))
     if existing_user:
-        raise HTTPException(status_code=400, detail="این شماره قبلاً ثبت شده است. لطفاً وارد شوید.")
+        raise HTTPException(status_code=400, detail="این شماره قبلاً ثبت شده است.")
 
     free_plan = await db.scalar(select(models.Plan).where(models.Plan.name == "Free"))
     if not free_plan:

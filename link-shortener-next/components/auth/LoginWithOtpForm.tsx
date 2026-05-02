@@ -141,7 +141,7 @@ export function LoginWithOtpForm() {
               <TextField
                 fullWidth
                 label={t("otp.phoneLabel") || "شماره موبایل"}
-                placeholder="نمونه: 0994xxxxx12"
+                placeholder="0994xxxxx12"
                 autoComplete="tel"
                 type="tel"
                 value={phone}
