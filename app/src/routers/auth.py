@@ -37,7 +37,7 @@ from ..schemas import ResetPasswordRequest, ChangePasswordRequest
 from fastapi.responses import JSONResponse
 from urllib.parse import urlparse
 
-from ..services.utils import normalize_phone
+from ..services.utils import normalize_phone, normalize_phone_variants
 
 url = settings.origin_backend_url
 parsed = urlparse(url).hostname
@@ -205,12 +205,24 @@ async def login_for_access_token(request: Request, form_data: OAuth2PasswordRequ
         await verify_turnstile(request, captcha_token)
 
     # result = await db.execute(select(models.User).where(models.User.email == form_data.username))
-    result = await db.execute(
-    select(models.User).where(
-        models.User.phone_number == form_data.username,
+
+    phone_e164, phone_local = normalize_phone_variants(form_data.username)
+    if not phone_e164:
+        raise HTTPException(status_code=400, detail="شماره موبایل نامعتبر")
+
+    # result = await db.execute(
+    # select(models.User).where(
+    #     models.User.phone_number == form_data.username,
+    #     )
+    # )
+
+    execution_result = await db.execute(
+        select(models.User).where(
+            models.User.phone_number.in_([phone_e164, phone_local])
         )
-    )   
-    user = result.scalar_one_or_none()
+    )
+
+    user = execution_result.scalar_one_or_none()
 
     if not user or not security.verify_password(form_data.password, user.hashed_password):
         raise HTTPException(
@@ -522,22 +534,30 @@ async def send_otp_for_login(payload: PhoneRequestCaptcha, request: Request, db:
     if settings.CAPTCHA:
         await verify_turnstile(request, payload.captcha_token)
 
-    phone = payload.phone
-    try:
-        pn = phonenumbers.parse(phone, "IR")
-        if not phonenumbers.is_valid_number(pn):
-            raise ValueError()
-    except Exception:
+    # phone = payload.phone
+    phone_e164, phone_local = normalize_phone_variants(payload.phone)
+    if not phone_e164:
         raise HTTPException(status_code=400, detail="شماره موبایل نامعتبر")
 
-    user = await db.scalar(select(models.User).where(models.User.phone_number == phone))
+    # try:
+    #     pn = phonenumbers.parse(phone, "IR")
+    #     if not phonenumbers.is_valid_number(pn):
+    #         raise ValueError()
+    # except Exception:
+    #     raise HTTPException(status_code=400, detail="شماره موبایل نامعتبر")
+
+    user = await db.scalar(
+        select(models.User).where(
+            models.User.phone_number.in_([phone_e164, phone_local])
+        )
+    )
     if not user:
         raise HTTPException(status_code=404, detail="این شماره در سیستم موجود نیست. ابتدا ثبت‌نام کنید.")
 
     code = str(random.randint(100000, 999999))
     # logger.info(f"OTP for {phone}: {code}")
-    await store_otp(phone, code, request)
-    send_otp(phone, code)
+    await store_otp(phone_e164, code, request)
+    send_otp(phone_e164, code)
 
     return {"message": "کد تایید به شماره شما ارسال شد."}
 
@@ -591,18 +611,28 @@ async def verify_otp_login(request: Request, payload: VerifyOtpRequestCaptcha, d
     if settings.CAPTCHA:
         await verify_turnstile(request, payload.captcha_token)
 
-    phone = payload.phone
+    # phone = payload.phone
     code = payload.code
 
-    if not await verify_otp_from_store(phone, code, request):
+    phone_e164, phone_local = normalize_phone_variants(payload.phone)
+    if not phone_e164:
+        raise HTTPException(status_code=400, detail="شماره موبایل نامعتبر")
+
+    if not await verify_otp_from_store(phone_e164, code, request):
         raise HTTPException(status_code=400, detail="کد اشتباه یا منقضی شده است.")
 
-    user = await db.scalar(select(models.User).where(models.User.phone_number == phone))
+    user = await db.scalar(
+        select(models.User).where(
+            models.User.phone_number.in_([phone_e164, phone_local])
+        )
+    )
+
+    # user = await db.scalar(select(models.User).where(models.User.phone_number == phone))
     if not user:
         raise HTTPException(status_code=404, detail="کاربری با این شماره یافت نشد.")
 
     # حذف OTP پس از استفاده
-    await request.app.state.redis.delete(f"otp:{phone}")
+    await request.app.state.redis.delete(f"otp:{phone_e164}")
 
     access_token = security.create_access_token(data={"sub": user.phone_number})
 
