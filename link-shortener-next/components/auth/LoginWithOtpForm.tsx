@@ -196,7 +196,41 @@ export function LoginWithOtpForm() {
 
           {/* --- مرحله وارد کردن کد تایید --- */}
           {step === "verify" && (
-            <>
+              <>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    mb: 1,
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    bgcolor: "#f3f4f6",
+                    p: 1.1,
+                    borderRadius: 2,
+                    fontSize: "0.9rem",
+                    color: "#374151",
+                  }}
+                >
+                  <span>
+                    شماره وارد شده:{" "}
+                    <strong style={{ direction: "ltr", unicodeBidi: "plaintext" }}>
+                      {phone}
+                    </strong>
+                  </span>
+
+                  <Button
+                    variant="text"
+                    size="small"
+                    sx={{ fontSize: "0.8rem", minWidth: "unset" }}
+                    onClick={() => {
+                      setStep("phone");
+                      setCode("");
+                    }}
+                  >
+                    تغییر شماره
+                  </Button>
+                </Typography>
+
               <TextField
                 fullWidth
                 label={t("verify.codeLabel") || "کد تایید"}
@@ -249,7 +283,7 @@ export function LoginWithOtpForm() {
                 <Button
                   variant="text"
                   size="small"
-                  disabled={!canResend || !captchaToken}
+                  disabled={!canResend || (!captchaToken && config.captcha)}
                   onClick={() => {
                     if (!captchaToken && config.captcha) {
                       setSnackbar({ message: "لطفاً کپچا را کامل کنید 🛡️", severity: "error" });

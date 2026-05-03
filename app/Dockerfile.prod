@@ -4,9 +4,10 @@ FROM python:3.11
 # Set working directory
 WORKDIR /app
 
-RUN pip config --user set global.index https://mirror-pypi.runflare.com/simple
-RUN pip config --user set global.index-url https://mirror-pypi.runflare.com/simple
-RUN pip config --user set global.trusted-host mirror-pypi.runflare.com
+# RUN pip config --user set global.index https://mirror-pypi.runflare.com/simple
+# RUN pip config --user set global.index-url https://mirror-pypi.runflare.com/simple
+# RUN pip config --user set global.trusted-host mirror-pypi.runflare.com
+RUN export PIP_INDEX_URL=https://package-mirror.liara.ir/repository/pypi/simple
 
 # نصب وابستگی‌ها
 # COPY ./alembic.ini /app/alembic.ini

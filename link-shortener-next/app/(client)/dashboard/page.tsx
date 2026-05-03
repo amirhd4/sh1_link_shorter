@@ -201,6 +201,7 @@ import { useMemo } from 'react';
 import { SearchIcon } from "lucide-react";
 import {InitialPasswordCard} from "@/components/client-dashboard/SecretPasswordCard";
 import SupportSection from "@/components/support/SupportSection";
+import FloatingSupportButton from "@/components/support/FloatingSupportButton";
 
 export default function LinksDashboard() {
     const navigate = useRouter();
@@ -528,7 +529,7 @@ const filteredLinks = useMemo(() => {
                 ) : undefined}
             </Snackbar>
             <SupportSection />
-
+            <FloatingSupportButton />
         </>
     );
 }

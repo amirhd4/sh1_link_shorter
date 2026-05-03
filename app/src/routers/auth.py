@@ -569,7 +569,7 @@ async def send_otp_for_register(payload: PhoneRequestCaptcha, request: Request, 
     ارسال OTP برای ثبت‌نام.
     شماره نباید قبلاً ثبت شده باشد.
     """
-    phone = payload.phone
+    # phone = payload.phone
 
     # try:
     #     pn = phonenumbers.parse(phone, "IR")
@@ -578,22 +578,33 @@ async def send_otp_for_register(payload: PhoneRequestCaptcha, request: Request, 
     # except Exception:
     #     raise HTTPException(status_code=400, detail="شماره موبایل نامعتبر")
 
-    phone = normalize_phone(phone)
-    if not phone:
-        raise HTTPException(status_code=400, detail="شماره موبایل وارد شده نامعتبر است.")
+    # phone = normalize_phone(phone)
+    # if not phone:
+    #     raise HTTPException(status_code=400, detail="شماره موبایل وارد شده نامعتبر است.")
+
+    phone_e164, phone_local = normalize_phone_variants(payload.phone)
+    if not phone_e164:
+        raise HTTPException(status_code=400, detail="شماره موبایل نامعتبر")
 
     # existing_user = await db.scalar(select(models.User).where(models.User.phone_number == phone))
     # if existing_user:
     #     raise HTTPException(status_code=400, detail="این شماره قبلاً ثبت شده است. لطفاً وارد شوید.")
 
+    existing_user = await db.scalar(
+        select(models.User).where(
+            models.User.phone_number.in_([phone_e164, phone_local])
+        )
+    )
+    if existing_user:
+        raise HTTPException(status_code=400, detail="این شماره قبلاً ثبت شده است. لطفاً وارد شوید.")
 
     if settings.CAPTCHA:
         await verify_turnstile(request, payload.captcha_token)
 
     code = str(random.randint(100000, 999999))
     # logger.info(f"OTP for registration {phone}: {code}")
-    await store_otp(phone, code, request)
-    send_otp(phone, code)
+    await store_otp(phone_e164, code, request)
+    send_otp(phone_e164, code)
 
     return {"message": "کد تایید به شماره شما ارسال شد."}
 
@@ -654,16 +665,25 @@ async def register_with_otp(request: Request, payload: RegisterOtpRequestCaptcha
     if settings.CAPTCHA:
         await verify_turnstile(request, payload.captcha_token)
 
-    phone = normalize_phone(payload.phone)
-    if not phone:
-        raise HTTPException(status_code=400, detail="شماره موبایل وارد شده نامعتبر است.")
+    # phone = normalize_phone(payload.phone)
+    # if not phone:
+    #     raise HTTPException(status_code=400, detail="شماره موبایل وارد شده نامعتبر است.")
+
+    phone_e164, phone_local = normalize_phone_variants(payload.phone)
+    if not phone_e164:
+        raise HTTPException(status_code=400, detail="شماره موبایل نامعتبر")
 
     code = payload.code
 
-    if not await verify_otp_from_store(phone, code, request):
+    if not await verify_otp_from_store(phone_e164, code, request):
         raise HTTPException(status_code=400, detail="کد اشتباه یا منقضی شده است.")
 
-    existing_user = await db.scalar(select(models.User).where(models.User.phone_number == phone))
+    existing_user = await db.scalar(
+        select(models.User).where(
+            models.User.phone_number.in_([phone_e164, phone_local])
+        )
+    )
+    # existing_user = await db.scalar(select(models.User).where(models.User.phone_number == phone))
     if existing_user:
         raise HTTPException(status_code=400, detail="این شماره قبلاً ثبت شده است.")
 
@@ -675,7 +695,7 @@ async def register_with_otp(request: Request, payload: RegisterOtpRequestCaptcha
 
     new_user = models.User(
         # email=None,
-        phone_number=phone,
+        phone_number=phone_e164,
         hashed_password=security.get_password_hash(generated_password),
         first_name=payload.first_name,
         last_name=payload.last_name,
@@ -699,7 +719,7 @@ async def register_with_otp(request: Request, payload: RegisterOtpRequestCaptcha
     await db.refresh(new_user)
 
     # حذف OTP پس از استفاده
-    await request.app.state.redis.delete(f"otp:{phone}")
+    await request.app.state.redis.delete(f"otp:{phone_e164}")
 
     access_token = security.create_access_token(data={"sub": new_user.phone_number})
 

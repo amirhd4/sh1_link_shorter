@@ -15,8 +15,10 @@ import { getOtpErrorMessage } from "@/utils/otpErrorHandler";
 import { Turnstile } from "@marsidev/react-turnstile";
 import Link from "next/link";
 import config from "@/config";
+import { Checkbox, FormControlLabel } from "@mui/material";
 
 export function RegisterWithOtpForm() {
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const navigate = useRouter();
   const { setUser } = useUserStore();
 
@@ -49,9 +51,12 @@ export function RegisterWithOtpForm() {
       setCaptchaTokenSend(null);
     },
     onError: (error) => {
-      (error as any).customMessage = getOtpErrorMessage(error, "phone");
-      setSnackbar({ message: (error as any).customMessage, severity: "error" });
-    }
+        (error as any).customMessage = getOtpErrorMessage(error, "phone");
+        setSnackbar({ message: (error as any).customMessage, severity: "error" });
+        // If there's an error sending OTP, allow resending immediately (or after a short delay if needed)
+        setCanResend(true); // Allow resend on error
+        setResendTimer(0);   // Reset timer
+      },
   });
 
   // --- تایید OTP و ثبت‌نام ---
@@ -162,7 +167,7 @@ export function RegisterWithOtpForm() {
                       inputMode: "numeric",      // کیبورد عددی موبایل
                       inputProps: {
                           pattern: "[0-9]*",
-                          maxLength: 11,             // اختیاری (برای موبایل ایران)
+                          maxLength: 12,             // اختیاری (برای موبایل ایران)
                       },
                       startAdornment: (
                         <InputAdornment position="start">📱</InputAdornment>
@@ -170,24 +175,65 @@ export function RegisterWithOtpForm() {
                     },
                   }}
               />
+              <FormControlLabel
+                  sx={{
+                    alignItems: "flex-start",
+                    m: 0,
+                    "& .MuiFormControlLabel-label": {
+                      fontSize: { xs: "0.8rem", sm: "0.9rem" },
+                      lineHeight: 1.9,
+                      color: "text.secondary",
+                    },
+                  }}
+                  control={
+                    <Checkbox
+                      checked={acceptedTerms}
+                      onChange={(e) => setAcceptedTerms(e.target.checked)}
+                      sx={{ mt: 0.3 }}
+                    />
+                  }
+                  label={
+                    <Typography
+                        fontSize={"smaller"}
+
+                        component="span">
+                      با ثبت‌نام در سامانه،{" "}
+                      <MuiLink
+                        component={Link}
+                        href="/terms"
+                        sx={{ fontWeight: 700}}
+                      >
+                        قوانین و مقررات
+                      </MuiLink>{" "}
+                      را مطالعه کرده‌ام و با آن‌ها موافقم.
+                    </Typography>
+                  }
+                />
 
               <Button
-                fullWidth
-                variant="contained"
-                color="primary"
-                size="large"
-                onClick={() => {
-                  if (!captchaTokenSend && config.captcha) {
-                    setSnackbar({ message: "لطفاً کپچا را کامل کنید 🛡️", severity: "error" });
-                    return;
-                  }
-                  sendOtpMutation.mutate({ phone, captcha_token: captchaTokenSend });
-                }}
-                disabled={!phone || sendOtpMutation.isPending}
-                startIcon={sendOtpMutation.isPending ? <CircularProgress size={20} /> : null}
-              >
-                {sendOtpMutation.isPending ? "در حال ارسال..." : "ارسال کد تایید"}
-              </Button>
+                  fullWidth
+                  variant="contained"
+                  color="primary"
+                  size="large"
+                  onClick={() => {
+                    if (!acceptedTerms) {
+                      setSnackbar({ message: "برای ادامه باید با قوانین و مقررات موافقت کنید.", severity: "error" });
+                      return;
+                    }
+
+                    if (!captchaTokenSend && config.captcha) {
+                      setSnackbar({ message: "لطفاً کپچا را کامل کنید 🛡️", severity: "error" });
+                      return;
+                    }
+
+                    sendOtpMutation.mutate({ phone, captcha_token: captchaTokenSend });
+                  }}
+                  disabled={!phone || !acceptedTerms || sendOtpMutation.isPending}
+                  startIcon={sendOtpMutation.isPending ? <CircularProgress size={20} /> : null}
+                >
+                  {sendOtpMutation.isPending ? "در حال ارسال..." : "ارسال کد تایید"}
+                </Button>
+
             </>
           )}
 
@@ -200,7 +246,41 @@ export function RegisterWithOtpForm() {
 
           {/* --- مرحله تایید کد --- */}
           {step === "verify" && (
-            <>
+  <>
+    <Typography
+      variant="body2"
+      sx={{
+        mb: 1,
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        bgcolor: "#f3f4f6",
+        p: 1.2,
+        borderRadius: 2,
+        fontSize: "0.9rem",
+        color: "#374151",
+      }}
+    >
+      <span>
+        شماره وارد شده:{" "}
+        <strong style={{ direction: "ltr", unicodeBidi: "plaintext" }}>
+          {phone}
+        </strong>
+      </span>
+
+      <Button
+        variant="text"
+        size="small"
+        sx={{ fontSize: "0.8rem", minWidth: "unset" }}
+        onClick={() => {
+          setStep("phone");
+          setCode("");
+        }}
+      >
+        تغییر شماره
+      </Button>
+    </Typography>
+
               <TextField
                 fullWidth
                 label="نام"
@@ -276,17 +356,23 @@ export function RegisterWithOtpForm() {
                   تغییر شماره موبایل
                 </Button>
                 <Button
-                  variant="text"
-                  size="small"
-                  disabled={!canResend}
-                  onClick={() => {
-                    turnstileRef.current?.reset();
-                    setCaptchaTokenVerify(null);
-                    // کاربر باید کپچای جدید رو بگیره
-                  }}
-                >
-                  {canResend ? "ارسال دوباره کد" : `ارسال دوباره در ${resendTimer} ثانیه`}
-                </Button>
+      variant="text"
+      size="small"
+      disabled={!canResend} // This should now be controlled by the timer logic
+      onClick={() => {
+        // Reset captcha for the resend attempt
+        turnstileRef.current?.reset();
+        setCaptchaTokenVerify(null); // Assuming this is for the verification step
+
+        // Re-trigger the OTP sending mutation
+        sendOtpMutation.mutate({ phone: phone, captcha_token: null }); // Pass null for captcha initially, user will solve it
+
+        // Reset the timer
+        startResendTimer();
+      }}
+    >
+      {canResend ? "ارسال دوباره کد" : `ارسال دوباره در ${resendTimer} ثانیه`}
+    </Button>
               </Stack>
             </>
           )}
