@@ -1,6 +1,5 @@
 import apiClient from '../lib/axios';
-import type {UserResponse, LinkDetailsForAdmin, AdSystemStats} from '@/types/api';
-import type { SystemStats } from '@/types/api';
+import type {UserResponse, LinkDetailsForAdmin, AdSystemStats, SystemStats, AdminSMS} from '@/types/api';
 import {BioPage} from "@/types/bio";
 
 const extractData = <T>(promise: Promise<{ data: T }>): Promise<T> =>
@@ -92,5 +91,23 @@ export const adminService = {
   deleteBioLink: (id: number): Promise<void> => {
     return extractData(apiClient.delete(`/admin/bio-links/${id}`));
   },
+syncSms: async (): Promise<{ new_count: number }> => {
+  const response = await apiClient.post('/admin_sms/sync');
+  return { new_count: response.data.saved }; // فرض می‌کنیم تعداد پیامک‌های جدیدی که ذخیره شده ارجاع داده می‌شود
+},
 
+
+  async getAllSMS(): Promise<AdminSMS[]> {
+    const res = await apiClient.get("/admin_sms/list");
+    return res.data;
+  },
+    getSMSDetail: async (id: number) => {
+  const res = await apiClient.get(`/admin_sms/messages/${id}`);
+  return res.data;
+},
+
+markSMSProcessed: async (id: number) => {
+  const res = await apiClient.patch(`/admin_sms/messages/${id}/processed`);
+  return res.data;
+},
 };

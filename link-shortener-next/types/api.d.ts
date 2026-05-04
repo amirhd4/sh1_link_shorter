@@ -362,3 +362,16 @@ export interface BioPageUpdate {
 export interface ToggleLinkActive {
   is_active: boolean;
 }
+
+export interface AdminSMS {
+  id: number;
+  receive_return_id: number;
+  message_text: string;
+  sender_mobile: string;
+  receiver_number: string;
+  received_at: string;
+  is_known_user: boolean;
+  user_id?: number | null;
+  user_fullname?: string | null;
+  is_processed: boolean;
+}

@@ -13,7 +13,7 @@ import ssl
 from starlette.staticfiles import StaticFiles
 
 from .database import engine, Base, async_session_factory
-from .routers import auth, links, admin, payment, stats, plans, redirect, api, domains, ads, tickets, bio_link
+from .routers import auth, links, admin, admin_sms, payment, stats, plans, redirect, api, domains, ads, tickets, bio_link
 from .rate_limiter import limiter
 from .models import Plan
 from .config import settings
@@ -50,7 +50,7 @@ async def lifespan(app: FastAPI):
 
         pro_plan_result = await session.execute(select(Plan).where(Plan.name == "Pro"))
         if not pro_plan_result.scalar_one_or_none():
-            session.add(Plan(name="Pro", link_limit_per_month=1000, duration_days=30, price=1500000))
+            session.add(Plan(name="Pro", link_limit_per_month=1000, duration_days=30, price=500000))
             print("💎 'Pro' plan created.")
 
         await session.commit()
@@ -93,6 +93,7 @@ app.add_middleware(
 app.include_router(auth.router, prefix="/api")
 app.include_router(links.router, prefix="/api")
 app.include_router(admin.router, prefix="/api")
+app.include_router(admin_sms.router, prefix="/api")
 app.include_router(payment.router, prefix="/api")
 app.include_router(stats.router, prefix="/api")
 app.include_router(plans.router, prefix="/api")

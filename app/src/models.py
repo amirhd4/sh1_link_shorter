@@ -62,6 +62,11 @@ class User(Base):
     domains = relationship("Domain", back_populates="owner", cascade="all, delete-orphan")
 
     ad_rewards = relationship("UserAdReward", back_populates="user", cascade="all, delete-orphan")
+    tickets = relationship(
+        "Ticket",
+        back_populates="user",
+        passive_deletes=True,
+    )
 
     def generate_api_key(self):
         self.api_key = "sk_" + token_urlsafe(32)
@@ -321,7 +326,7 @@ class Ticket(Base):
     )
 
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    user = relationship("User", backref="tickets")
+    user = relationship("User", back_populates="tickets")
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
@@ -338,7 +343,7 @@ class TicketMessage(Base):
     id = Column(Integer, primary_key=True)
     ticket_id = Column(Integer, ForeignKey("tickets.id", ondelete="CASCADE"), nullable=False)
 
-    sender_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=False)
+    sender_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     sender = relationship("User")
 
     message = Column(Text, nullable=False)
@@ -456,3 +461,25 @@ class BioLinkClick(Base):
     user_agent = Column(Text, nullable=True)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class IncomingSMS(Base):
+    __tablename__ = "incoming_sms"
+
+    id = Column(Integer, primary_key=True)
+
+    receive_return_id = Column(BigInteger, unique=True, index=True, nullable=False)
+    message_text = Column(Text, nullable=False)
+
+    receiver_number = Column(String(20), nullable=False)  # Number
+    sender_mobile = Column(String(20), nullable=False)    # Mobile
+
+    received_at = Column(DateTime(timezone=True), nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    is_processed = Column(Boolean, default=False, nullable=False)
+    processed_at = Column(DateTime(timezone=True), nullable=True)
+
+    # درصورتی که پیامک به یک کاربر سیستم شما مرتبط باشد
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    user = relationship("User")

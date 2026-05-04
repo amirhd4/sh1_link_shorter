@@ -1,10 +1,11 @@
 "use client";
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Grid, Box, Typography, CircularProgress, Alert, Paper } from '@mui/material';
 import { adminService } from '@/services/adminService';
 import { StatCard } from '@/components/admin-dashboard/StatCard';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import MuLink from "next/link";
 
 import PeopleIcon from '@mui/icons-material/People';
 import LinkIcon from '@mui/icons-material/Link';
@@ -14,6 +15,7 @@ import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber'; // برای تیکت
 import WebAssetIcon from '@mui/icons-material/WebAsset'; // برای بیو لینک
+import MessageIcon from '@mui/icons-material/Message'; // برای بیو لینک
 import {useEffect} from "react";
 
 
@@ -22,6 +24,22 @@ export default function AdminDashboardPage() {
     queryKey: ['system-stats'],
     queryFn: adminService.getSystemStats,
   });
+
+   // دریافت پیامک های جدید
+  const { data: smsData, refetch: refetchSms } = useQuery({
+    queryKey: ['sms-stats'],
+    queryFn: adminService.syncSms,
+    enabled: false,  // غیرفعال شدن اولیه
+  });
+
+  // استفاده از useEffect برای دریافت خودکار پیامک ها
+  useEffect(() => {
+    async function fetchSms() {
+      await refetchSms();
+    }
+
+    fetchSms().then(r => null);
+  }, [refetchSms]);
 
     useEffect(() => {
     document.title = "میز کار ادمین";
@@ -47,7 +65,6 @@ export default function AdminDashboardPage() {
         داشبورد ادمین - نمای کلی سیستم
       </Typography>
       <Grid container spacing={3}>
-
         <Grid  size={{ xs: 12, sm: 6, md: 4 }}>
           <StatCard title="تعداد کل تیکت ها" value={stats?.total_tickets ?? 0} icon={<ConfirmationNumberIcon fontSize="inherit" />} />
         </Grid>
@@ -74,6 +91,16 @@ export default function AdminDashboardPage() {
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md:4 }}>
           <StatCard title="کل امتیازات داده‌شده" value={adStats?.total_points_rewarded ?? 0} icon={<MonetizationOnIcon fontSize="inherit" />} color="success.main" />
+        </Grid>
+          <Grid size={{xs: 12, sm: 6, md:4 }}>
+            <MuLink href={"/admin/sms"}>
+          <StatCard
+            title="پیامک‌های جدید"
+            value={smsData?.new_count ?? 0}
+            icon={<MessageIcon fontSize="inherit" />} color="red"// اطمینان حاصل کنید که آیکون مناسب را import کرده‌اید
+            // link="/admin/messages" // لینک به صفحه پیامک‌ها
+          />
+                </MuLink>
         </Grid>
       </Grid>
       <Paper sx={{ mt: 4, p: 2 }}>
