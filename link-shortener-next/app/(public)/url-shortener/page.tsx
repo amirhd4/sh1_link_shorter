@@ -215,7 +215,7 @@ Body:
       { href: "https://a.l1s.ir/home", title: "صفحه اصلی" },
       { href: "https://a.l1s.ir/short-url-generator", title: "تولید کننده لینک کوتاه" },
       { href: "https://a.l1s.ir/free-url-shortener", title: "کوتاه کننده لینک رایگان" },
-      { href: "https://a.l1s.ir/link-shortener", title: "کوتاه کننده لینک حرفه‌ای" },
+      { href: "https://a.l1s.ir/terms", title: "حریم خصوصی و قوانین" },
       { href: "https://a.l1s.ir/best-url-shortener", title: "بهترین کوتاه کننده لینک" },
     ].map((link, idx) => (
       <Box

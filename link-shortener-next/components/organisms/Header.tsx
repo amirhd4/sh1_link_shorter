@@ -20,6 +20,7 @@ import { getDaysRemaining } from "@/utils/dateUtils";
 import { useLinkQuota } from "@/hooks/useLinkQuota";
 import apiClient from "@/lib/axios";
 import {router} from "next/client";
+import {textAlign} from "@mui/system";
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -116,7 +117,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                 <Typography variant="subtitle1" noWrap>
                   {user.first_name || "کاربر"}
                 </Typography>
-                <Typography variant="body2" color="text.secondary" noWrap>
+                <Typography variant="body2" color="text.secondary" noWrap dir={"ltr"} textAlign={"right"}>
                   {user.phone_number}
                 </Typography>
               </Box>

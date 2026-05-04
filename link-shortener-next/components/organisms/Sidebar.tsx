@@ -15,6 +15,7 @@ import { useUserStore } from "@/store/userStore";
 import Ticket from "@mui/icons-material/AirplaneTicket";
 import BioLink from "@mui/icons-material/Pages";
 import Image from "next/image";
+import {Sms, SmsFailed } from "@mui/icons-material";
 
 const drawerWidth = 260;
 
@@ -116,6 +117,23 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           {/*  support@l1s.ir*/}
           {/*</Typography>*/}
           <Typography sx={{ display: 'block', fontSize: 13, color: '#6b21a8' }}>
+
+             <IconButton
+      component="a"
+      href="sms:+9830002108006027"
+      aria-label="ارسال پیامک به پشتیبانی"
+      sx={{
+        bgcolor: "#f3e8ff",
+        "&:hover": { bgcolor: "#e9d5ff" },
+        borderRadius: 2,
+        px: 1.5,
+      }}
+    >
+      <Typography variant="caption" sx={{ color: "#6b21a8", fontWeight: 600 }}>
+        ارسال پیامک
+      </Typography>
+    </IconButton>
+
              <IconButton
     component={Link}
     href="https://eitaa.com/amirhd4"

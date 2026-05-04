@@ -120,7 +120,7 @@ const FreeUrlShortenerPage: React.FC = () => {
   <Box display="flex" flexWrap="wrap" gap={2}>
     {[
       { href: "https://a.l1s.ir/home", title: "صفحه اصلی" },
-      { href: "https://a.l1s.ir/link-shortener", title: "کوتاه کننده لینک" },
+      { href: "https://a.l1s.ir/terms", title: "کوتاه کننده لینک" },
       { href: "https://a.l1s.ir/url-shortener", title: "کوتاه کننده لینک با API" },
       { href: "https://a.l1s.ir/short-url-generator", title: "تولید کننده لینک کوتاه" },
     ].map((link, idx) => (

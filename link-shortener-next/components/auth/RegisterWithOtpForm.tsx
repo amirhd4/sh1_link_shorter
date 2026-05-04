@@ -203,7 +203,7 @@ export function RegisterWithOtpForm() {
                         href="/terms"
                         sx={{ fontWeight: 700}}
                       >
-                        قوانین و مقررات
+                        حریم خصوصی و قوانین
                       </MuiLink>{" "}
                       را مطالعه کرده‌ام و با آن‌ها موافقم.
                     </Typography>

@@ -67,7 +67,7 @@ const navLinks = [
     { title: "بهترین کوتاه کننده لینک", href: "/best-url-shortener" },
     { title: "تولید کننده لینک کوتاه", href: "/short-url-generator" },
     { title: " کوتاه کننده رایگان", href: "/free-url-shortener" },
-    { title: "کوتاه کننده حرفه‌ای", href: "/link-shortener" },
+    { title: "حریم خصوصی و قوانین", href: "/terms" },
     { title: "API", href: "/url-shortener" },
     { title: "FAQ", href: "/faq" },
     { title: "لینک بیو", href: "/bio-link" },
@@ -114,27 +114,44 @@ const navLinks = [
 
       {/* 🧭 Header */}
       <AppBar
-        position="sticky"
-        elevation={2}
-        sx={{
-          bgcolor: "#fff",
-          color: "#0f172a",
-          borderBottom: "1px solid #e2e8f0",
-          zIndex: 1500,
-        }}
-      >
-        <Container maxWidth="lg">
-          <Toolbar sx={{ gap: 2, minHeight: 72, flexWrap: "wrap" }}>
-            {/* Logo */}
+  position="sticky"
+  elevation={0}
+  sx={{
+    bgcolor: "#fff",
+    color: "#0f172a",
+    borderBottom: "1px solid #e2e8f0",
+  }}
+>
+
+<Container
+  maxWidth="lg"
+  sx={{
+    px: { xs: 2, md: 3 },
+  }}
+>
+    <Toolbar
+  sx={{
+    gap: 2,
+    minHeight: { xs: 64, md: 80 },
+    alignItems: "center",
+    py: { xs: 0.5, md: 1 },
+  }}
+>            {/* Logo */}
             <Typography
-              variant="h6"
-              component={NextLink}
-              href="/home"
-              style={{ textDecoration: "none", color: "inherit" }}
-              sx={{ fontWeight: 800, letterSpacing: "-0.5px" }}
-            >
-              لِس (L1s)
-            </Typography>
+  variant="h6"
+  component={NextLink}
+  href="/home"
+  sx={{
+    textDecoration: "none",
+    color: "inherit",
+    fontWeight: 800,
+    letterSpacing: "-0.5px",
+    fontSize: { xs: "1.1rem", md: "1.3rem" },
+  }}
+>
+لِس
+</Typography>
+
 
             {/* Spacer */}
             <Box sx={{ flexGrow: 1 }} />
@@ -204,46 +221,100 @@ const navLinks = [
             )}
 
             {/* Mobile Menu */}
-            {isMobile && (
-              <>
-                <IconButton onClick={handleDrawerToggle} color="inherit">
-                  <MenuIcon />
-                </IconButton>
-                <Drawer anchor="right" open={mobileOpen} onClose={handleDrawerToggle}>
-                  <Box sx={{ width: 250, p: 2 }} role="presentation" onClick={handleDrawerToggle}>
-                    <List>
-                      {navLinks.map((link) => (
-                        <ListItemButton key={link.href} component={NextLink} href={link.href}>
-                          <ListItemText primary={link.title} />
-                        </ListItemButton>
-                      ))}
-                      {!user ? (
-                        <>
-                          <ListItemButton component={NextLink} href="/login">
-                            <ListItemText primary="ورود" />
-                          </ListItemButton>
-                          <ListItemButton component={NextLink} href="/register">
-                            <ListItemText primary="ثبت‌نام" />
-                          </ListItemButton>
-                        </>
-                      ) : (
-                        <>
-                          <ListItemButton
-                            component={NextLink}
-                            href={user.role === "admin" ? "/admin/dashboard" : "/dashboard"}
-                          >
-                            <ListItemText primary="داشبورد من" />
-                          </ListItemButton>
-                          <ListItemButton onClick={handleLogout}>
-                            <ListItemText primary="خروج" />
-                          </ListItemButton>
-                        </>
-                      )}
-                    </List>
-                  </Box>
-                </Drawer>
-              </>
-            )}
+        {isMobile && (
+  <>
+    <IconButton onClick={handleDrawerToggle} color="inherit">
+      <MenuIcon />
+    </IconButton>
+    <Drawer
+      anchor="right"
+      open={mobileOpen}
+      onClose={handleDrawerToggle}
+      PaperProps={{
+        sx: {
+          width: 280,
+          px: 2,
+          pt: 3,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+        },
+      }}
+    >
+      {/* ناوبری بالا */}
+      <Box sx={{ flex: 1 }}>
+        <List>
+          {navLinks.map((link) => (
+            <ListItemButton key={link.href} component={NextLink} href={link.href} sx={{ py: 1 }}>
+              <ListItemText primary={link.title} />
+            </ListItemButton>
+          ))}
+        </List>
+        {/* Divider داریم */}
+        <Box sx={{ borderTop: "1px solid #eee", my: 2 }} />
+      </Box>
+      {/* ورود/ثبت‌نام یا داشبورد/خروج پایین */}
+      <Stack direction="column" spacing={1} sx={{ mb: 2 }}>
+        {!user ? (
+          <>
+            <Button
+              component={NextLink}
+              href="/login"
+              variant="outlined"
+              sx={{
+                textTransform: "none",
+                borderColor: "#c084fc",
+                color: "#6b21a8",
+                "&:hover": { borderColor: "#a855f7", backgroundColor: "#faf5ff" },
+                width: "100%",
+              }}
+            >
+              ورود
+            </Button>
+            <Button
+              component={NextLink}
+              href="/register"
+              variant="contained"
+              sx={{
+                textTransform: "none",
+                bgcolor: "#9333ea",
+                "&:hover": { bgcolor: "#7e22ce" },
+                width: "100%",
+              }}
+            >
+              ثبت‌نام
+            </Button>
+          </>
+        ) : (
+          <>
+            <Button
+              component={NextLink}
+              href={user.role === "admin" ? "/admin/dashboard" : "/dashboard"}
+              color="inherit"
+              sx={{ textTransform: "none", width: "100%" }}
+            >
+              داشبورد من
+            </Button>
+            <Button
+              onClick={handleLogout}
+              variant="outlined"
+              sx={{
+                textTransform: "none",
+                borderColor: "#fca5a5",
+                color: "#b91c1c",
+                "&:hover": { borderColor: "#ef4444", backgroundColor: "#fee2e2" },
+                width: "100%",
+              }}
+            >
+              خروج
+            </Button>
+          </>
+        )}
+      </Stack>
+    </Drawer>
+  </>
+)}
+
           </Toolbar>
         </Container>
       </AppBar>

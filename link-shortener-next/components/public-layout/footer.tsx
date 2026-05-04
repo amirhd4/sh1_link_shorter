@@ -103,7 +103,7 @@ export default function Footer({ enamadCode }: { enamadCode: string }) {
     <Link href="/best-url-shortener">بهترین کوتاه کننده لینک</Link>
     <Link href="/short-url-generator">ساخت لینک کوتاه</Link>
     <Link href="/free-url-shortener">کوتاه کننده لینک رایگان</Link>
-    <Link href="/link-shortener">کوتاه کننده حرفه‌ای</Link>
+    <Link href="/terms">حریم خصوصی و قوانین</Link>
     <Link href="/url-shortener">API کوتاه کننده لینک</Link>
     <Link href="/bio-link">ساخت Bio Link</Link>
     <Link href="/faq">سوالات متداول</Link>
@@ -119,116 +119,99 @@ export default function Footer({ enamadCode }: { enamadCode: string }) {
   >
     ارتباط با ما
   </Typography>
-            <address style={{ fontStyle: "normal" }}>
-              <Stack direction="row" spacing={2} alignItems="center">
-
-                <IconButton
-                  component="a"
-                  href="https://t.me/l1s_link_shortener"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="تلگرام لِس"
-                  sx={{ color: "#334155" }}
-
-                >
-                  <FaTelegramPlane />
-                </IconButton>
-
-                <IconButton
-                  component="a"
-                  href="https://www.instagram.com/lis.link_shortener"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="اینستاگرام لِس"
-                  sx={{ color: "#334155" }}
-                >
-                  <FaInstagram />
-                </IconButton>
-
-                {/*<IconButton*/}
-                {/*  component="a"*/}
-                {/*  href="#"*/}
-                {/*  aria-label="فیسبوک لِس"*/}
-                {/*  sx={{ color: "#334155" }}*/}
-                {/*>*/}
-                {/*  <FaFacebookF />*/}
-                {/*</IconButton>*/}
-
-                {/*<IconButton*/}
-                {/*  component="a"*/}
-                {/*  href="#"*/}
-                {/*  aria-label="لینکدین لِس"*/}
-                {/*  sx={{ color: "#334155" }}*/}
-                {/*>*/}
-                {/*  <FaLinkedin />*/}
-                {/*</IconButton>*/}
-                  <IconButton
-    component={Link}
-    href="https://rubika.ir/poshtiiban1i"
-    target="_blank"
-    rel="noopener noreferrer"
-    aria-label="روبیکا"
-    sx={{ p: 0 }}
+<address style={{ fontStyle: "normal" }}>
+  <Stack
+    direction="row"
+    spacing={{ xs: 1, sm: 2 }}
+    alignItems="center"
+    flexWrap="wrap"
+    sx={{
+      rowGap: 1, // برای زمانی که wrap اتفاق می‌افتد
+      maxWidth: "100%",
+    }}
   >
-    <Image
-      src="/social/rubika.png"
-      alt="روبیکا"
-      width={28}
-      height={28}
-    />
-  </IconButton>
-                  <IconButton
-    component={Link}
-    href="https://eitaa.com/amirhd4"
-    target="_blank"
-    rel="noopener noreferrer"
-    aria-label="ایتا"
-    sx={{ p: 0 }}
-  >
-    <Image
-      src="/social/eitaa.png"
-      alt="ایتا"
-      width={28}
-      height={28}
-    />
-  </IconButton>
-                  <IconButton
-    component={Link}
-    href="@poshtiiban1i"
-    target="_blank"
-    rel="noopener noreferrer"
-    aria-label="بله"
-    sx={{ p: 0 }}
-  >
-    <Image
-      src="/social/bale.png"
-      alt="بله"
-      width={28}
-      height={28}
-    />
-  </IconButton>
-              </Stack>
+    <IconButton
+      component="a"
+      href="https://t.me/l1s_link_shortener"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="تلگرام لِس"
+      sx={{ color: "#334155" }}
+    >
+      <FaTelegramPlane />
+    </IconButton>
 
-              {/*<Typography variant="body2" sx={{ color: "#334155", mt: 1 }}>*/}
-              {/*  پشتیبانی:{" "}*/}
-              {/*  <a href="tel:+989960074607" style={{ color: "#6b21a8" }}>*/}
-              {/*    */}
-              {/*  </a>*/}
-              {/*</Typography>*/}
-              {/*  <Typography variant="body2" sx={{ color: "#334155", mt: 1 }}>*/}
-    {/*  پشتیبانی:{" "}*/}
-    {/*  <a href="tel:+989960074607" style={{ color: "#6b21a8" }}>*/}
-    {/*    09960074607*/}
-    {/*  </a>*/}
-    {/*</Typography>*/}
+    <IconButton
+      component="a"
+      href="https://www.instagram.com/lis.link_shortener"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="اینستاگرام لِس"
+      sx={{ color: "#334155" }}
+    >
+      <FaInstagram />
+    </IconButton>
 
-    {/*<Typography variant="body2" sx={{ color: "#334155" }}>*/}
-    {/*  ایمیل:{" "}*/}
-    {/*  <a href="mailto:support@lis.link" style={{ color: "#6b21a8" }}>*/}
-    {/*    support@lis.link*/}
-    {/*  </a>*/}
-    {/*</Typography>*/}
-            </address>
+    <Typography
+      variant="body2"
+      sx={{ color: "#334155", minWidth: "max-content" }}
+    >
+      پشتیبانی:
+    </Typography>
+
+    <IconButton
+      component="a"
+      href="sms:+9830002108006027"
+      aria-label="ارسال پیامک به پشتیبانی"
+      sx={{
+        bgcolor: "#f3e8ff",
+        "&:hover": { bgcolor: "#e9d5ff" },
+        borderRadius: 2,
+        px: 1.5,
+      }}
+    >
+      <Typography
+        variant="caption"
+        sx={{ color: "#6b21a8", fontWeight: 600 }}
+      >
+        ارسال پیامک
+      </Typography>
+    </IconButton>
+
+    <IconButton
+      component={Link}
+      href="https://rubika.ir/poshtiiban1i"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="روبیکا"
+      sx={{ p: 0 }}
+    >
+      <Image src="/social/rubika.png" alt="روبیکا" width={28} height={28} />
+    </IconButton>
+
+    <IconButton
+      component={Link}
+      href="https://eitaa.com/amirhd4"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="ایتا"
+      sx={{ p: 0 }}
+    >
+      <Image src="/social/eitaa.png" alt="ایتا" width={28} height={28} />
+    </IconButton>
+
+    <IconButton
+      component={Link}
+      href="@poshtiiban1i"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="بله"
+      sx={{ p: 0 }}
+    >
+      <Image src="/social/bale.png" alt="بله" width={28} height={28} />
+    </IconButton>
+  </Stack>
+</address>
           </Stack>
 
           {/* ✅ Copyright */}

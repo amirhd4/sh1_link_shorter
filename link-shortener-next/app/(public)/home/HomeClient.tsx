@@ -293,8 +293,8 @@ const HomeClient: React.FC = () => {
     <li>بدون تبلیغات اجباری و تجربه کاربری عالی —
       <a href="/free-url-shortener" style={{ color: "#a855f7" }}>بیشتر بخوانید</a>
     </li>
-    <li>امنیت و حفاظت لینک با رمز عبور —
-      <a href="/link-shortener" style={{ color: "#a855f7" }}>اطلاعات امنیتی</a>
+    <li>قوانین، مقررات و حریم خصوصی —
+      <a href="/terms" style={{ color: "#a855f7" }}>حریم خصوصی و قوانین</a>
     </li>
   </ul>
 
@@ -314,7 +314,7 @@ const HomeClient: React.FC = () => {
     برای دسترسی به امکانات بیشتر و یادگیری نکات حرفه‌ای، صفحات زیر را مشاهده کنید:
   </p>
   <ul style={{ marginBottom: "1.5rem", paddingInlineStart: "1.25rem", fontSize: "1.125rem" }}>
-    <li><a href="/link-shortener" style={{ color: "#a855f7" }}>کوتاه‌کننده لینک حرفه‌ای</a></li>
+    <li><a href="/terms" style={{ color: "#a855f7" }}>حریم خصوصی و قوانین</a></li>
     <li><a href="/free-url-shortener" style={{ color: "#a855f7" }}>کوتاه‌کننده لینک رایگان</a></li>
     <li><a href="/best-url-shortener" style={{ color: "#a855f7" }}>بهترین روش‌های کوتاه کردن لینک</a></li>
     <li><a href="/url-shortener" style={{ color: "#a855f7" }}>API کوتاه‌کننده لینک برای توسعه‌دهندگان</a></li>
