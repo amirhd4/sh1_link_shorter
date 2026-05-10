@@ -6,8 +6,7 @@ from sqlalchemy import Column, Integer, String, BigInteger, ForeignKey, Date, En
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from sqlalchemy.ext.declarative import declarative_base
 import enum
-from datetime import datetime
-
+from datetime import datetime, timezone
 
 Base = declarative_base()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -119,13 +118,19 @@ class Link(Base):
         unique=True
     )
 
+    # Disabling link
+    is_active = Column(Boolean, default=True, nullable=False, index=True)
+    deactivated_by_admin = Column(Boolean, default=False, nullable=False)
+    deactivated_at = Column(DateTime(timezone=True), nullable=True)
+    deactivation_reason = Column(Text, nullable=True)
+
     def set_password(self, password: str | None) -> None:
         """ Optionally set password(hashed) """
         if password:
             self.is_protected = True
             self.hashed_password = pwd_context.hash(password)
         else:
-            sef.is_protected = False
+            self.is_protected = False
             self.hashed_password = None
 
     def verify_password(self, password: str) -> bool:
@@ -134,6 +139,18 @@ class Link(Base):
             return True
         else:
             return pwd_context.verify(password, self.hashed_password)
+
+    def deactivate(self, by_admin: bool = False, reason: str | None = None) -> None:
+        self.is_active = False
+        self.deactivated_by_admin = by_admin
+        self.deactivated_at = datetime.now(timezone.utc)
+        self.deactivation_reason = reason
+
+    def activate(self) -> None:
+        self.is_active = True
+        self.deactivated_by_admin = False
+        self.deactivated_at = None
+        self.deactivation_reason = None
 
 
 class TransactionStatus(str, enum.Enum):
@@ -170,14 +187,14 @@ class ClickEvent(Base):
     ip_hash = Column(String(128), nullable=True, index=True)
 
     user_agent = Column(Text, nullable=True)
-    accept_language = Column(String(128), nullable=True)
+    accept_language = Column(Text, nullable=True)
     referer = Column(String(2048), nullable=True)
 
     country = Column(String(64), nullable=True, index=True)
     region = Column(String(128), nullable=True, index=True)
     city = Column(String(128), nullable=True, index=True)
     is_bot = Column(Boolean, default=False, nullable=True, index=True)
-    fingerprint = Column(String(128), nullable=True, index=True)
+    fingerprint = Column(Text, nullable=True, index=True)
 
     device_type = Column(String(64), nullable=True)
     browser = Column(String(64), nullable=True)

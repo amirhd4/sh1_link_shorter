@@ -66,4 +66,20 @@ export const linkService = {
     const response = await apiClient.get(`/links/${shortCode}/${domainIdNum}/stats`);
     return response.data;
   },
+    toggleLinkStatus: async (
+      shortCode: string,
+      domainId: string,
+      isActive: boolean
+    ): Promise<LinkDetails> => {
+
+      const domainIdNum = parseInt(domainId, 10);
+
+      const endpoint = isActive
+        ? `/links/${shortCode}/${domainIdNum}/disable`
+        : `/links/${shortCode}/${domainIdNum}/enable`;
+
+      const response = await apiClient.patch(endpoint);
+
+      return response.data;
+    },
 };

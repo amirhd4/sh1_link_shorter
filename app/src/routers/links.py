@@ -8,20 +8,18 @@ from fastapi.responses import RedirectResponse, JSONResponse
 from fastapi.responses import StreamingResponse
 
 from sqlalchemy.exc import IntegrityError
-from datetime import datetime, timezone, timedelta, date
-from sqlalchemy import func, update, or_
+from datetime import datetime, timezone
+from sqlalchemy import func,  or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 import redis.asyncio as redis
-from typing import List, Optional
+from typing import  Optional
 import qrcode
-from sqlalchemy import text
 from sqlalchemy import text
 from datetime import date, timedelta
 
 from sqlalchemy.orm import selectinload
 
-from .auth import logger
 from .. import models, schemas
 from ..config import settings
 from ..database import get_db
@@ -247,6 +245,10 @@ async def get_user_links(
                 domain_id=link.domain_id,
                 domain_name=domain_name,
                 is_protected=link.is_protected,
+                is_active=link.is_active,
+                deactivated_by_admin=link.deactivated_by_admin,
+                deactivation_reason=link.deactivation_reason,
+                deactivated_at=link.deactivated_at,
             )
         )
     # logger.info(response)
@@ -282,6 +284,9 @@ async def delete_link(
 
     if db_link is None:
         raise HTTPException(status_code=404, detail="Link not found")
+
+    if db_link.deactivated_by_admin and current_user.role != models.UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Link is disabled by admin and cannot be deleted")
 
     await db.delete(db_link)
     await db.commit()
@@ -319,6 +324,9 @@ async def update_link(
 
     if db_link is None:
         raise HTTPException(status_code=404, detail="Link not found or no permission")
+
+    if db_link.deactivated_by_admin and current_user.role != models.UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Link is disabled by admin and cannot be updated")
 
     # 2. به‌روزرسانی آدرس اصلی
     if link_update.long_url:
@@ -379,6 +387,10 @@ async def update_link(
         utm_term=db_link.utm_term,
         utm_content=db_link.utm_content,
         is_protected=db_link.is_protected,
+        is_active=db_link.is_active,
+        deactivated_by_admin=db_link.deactivated_by_admin,
+        deactivation_reason=db_link.deactivation_reason,
+        deactivated_at=db_link.deactivated_at,
     )
     # return schemas.LinkDetails.model_validate(db_link)
 
@@ -535,6 +547,10 @@ async def get_link_details(
         domain_id=link.domain_id,
         domain_name=domain_name,
         is_protected=link.is_protected,
+        is_active=link.is_active,
+        deactivated_by_admin=link.deactivated_by_admin,
+        deactivation_reason=link.deactivation_reason,
+        deactivated_at=link.deactivated_at,
     )
 
 
@@ -561,3 +577,109 @@ async def get_qr_code(request: Request, short_code: str, domain_id: int, db: Asy
     img.save(buf, "PNG")
     buf.seek(0)
     return StreamingResponse(buf, media_type="image/png")
+
+
+@router.patch("/{short_code}/{domain_id}/disable", response_model=schemas.LinkDetails)
+@limiter.limit("30/minute")
+async def deactivate_link(
+    request: Request,
+    short_code: str,
+    domain_id: int,
+    reason: Optional[str] = None,
+    db: AsyncSession = Depends(get_db),
+    current_user: models.User = Depends(security.get_current_user),
+):
+    """
+    غیرفعال کردن لینک توسط کاربر یا ادمین
+    """
+    # لینک مربوط به کاربر فعلی را پیدا کن (یا از طریق domain_id)
+    result = await db.execute(
+        select(models.Link)
+        .options(selectinload(models.Link.domain))
+        .where(
+            models.Link.short_code == short_code,
+            (models.Link.domain_id == None if domain_id == 0 else models.Link.domain_id == domain_id)
+        )
+    )
+    db_link = result.scalar_one_or_none()
+
+    if not db_link:
+        raise HTTPException(status_code=404, detail="Link not found")
+
+    # ادمین می‌تواند هر لینک را غیرفعال کند — کاربر فقط مال خودش را
+    if db_link.owner_id != current_user.id and current_user.role != models.UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Permission denied")
+
+    db_link.deactivate(
+        by_admin=(current_user.role == models.UserRole.ADMIN),
+        reason=reason or ("deactivated by admin" if current_user.role == models.UserRole.ADMIN else "disabled by user"),
+    )
+
+    await db.commit()
+    await db.refresh(db_link)
+
+    return schemas.LinkDetails(
+        long_url=db_link.long_url,
+        short_code=db_link.short_code,
+        clicks=db_link.clicks,
+        created_at=db_link.created_at,
+        domain_id=db_link.domain_id,
+        domain_name=db_link.domain.name if db_link.domain else settings.origin_backend_url,
+        is_protected=db_link.is_protected,
+        is_active=db_link.is_active,
+        deactivated_by_admin=db_link.deactivated_by_admin,
+        deactivation_reason=db_link.deactivation_reason,
+        deactivated_at=db_link.deactivated_at,
+    )
+
+
+@router.patch("/{short_code}/{domain_id}/enable", response_model=schemas.LinkDetails)
+@limiter.limit("30/minute")
+async def activate_link(
+    request: Request,
+    short_code: str,
+    domain_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: models.User = Depends(security.get_current_user)
+):
+    """
+    فعال کردن دوباره لینک
+    """
+    result = await db.execute(
+        select(models.Link)
+        .options(selectinload(models.Link.domain))
+        .where(
+            models.Link.short_code == short_code,
+            (models.Link.domain_id == None if domain_id == 0 else models.Link.domain_id == domain_id)
+        )
+    )
+    db_link = result.scalar_one_or_none()
+
+    if not db_link:
+        raise HTTPException(status_code=404, detail="Link not found")
+
+    # فقط ادمین می‌تواند لینک غیرفعال‌شده توسط خودش را فعال کند
+    if db_link.deactivated_by_admin and current_user.role != models.UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Only admins can re-enable admin-disabled links")
+
+    # کاربر فقط لینک خودش را می‌تواند فعال کند
+    if db_link.owner_id != current_user.id and current_user.role != models.UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Permission denied")
+
+    db_link.activate()
+    await db.commit()
+    await db.refresh(db_link)
+
+    return schemas.LinkDetails(
+        long_url=db_link.long_url,
+        short_code=db_link.short_code,
+        clicks=db_link.clicks,
+        created_at=db_link.created_at,
+        domain_id=db_link.domain_id,
+        domain_name=db_link.domain.name if db_link.domain else settings.origin_backend_url,
+        is_protected=db_link.is_protected,
+        is_active=db_link.is_active,
+        deactivated_by_admin=db_link.deactivated_by_admin,
+        deactivation_reason=db_link.deactivation_reason,
+        deactivated_at=db_link.deactivated_at,
+    )

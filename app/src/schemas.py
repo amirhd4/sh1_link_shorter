@@ -1,6 +1,6 @@
 import re
 
-from pydantic import BaseModel, field_validator, EmailStr, HttpUrl, ValidationError, AnyUrl
+from pydantic import BaseModel, field_validator, HttpUrl, ValidationError, AnyUrl
 
 from typing import Optional, List
 from datetime import date, datetime
@@ -96,13 +96,26 @@ class DomainSummary(BaseModel):
 
 
 class LinkDetailsForAdmin(BaseModel):
+    id: int
     long_url: HttpUrl
     short_code: str
     clicks: int
     created_at: datetime
+    updated_at: Optional[datetime] = None
     owner: UserSummary
     domain_id: Optional[int] = None
     domain: Optional[DomainSummary] = None
+    show_ads: bool = False
+    utm_source: Optional[str] = None
+    utm_medium: Optional[str] = None
+    utm_campaign: Optional[str] = None
+    utm_term: Optional[str] = None
+    utm_content: Optional[str] = None
+    is_protected: bool = False
+    is_active: bool = False
+    deactivated_by_admin: bool = False
+    deactivation_reason: Optional[str] = None
+    deactivated_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True
@@ -259,6 +272,10 @@ class LinkDetails(BaseModel):
     utm_term: Optional[str] = None
     utm_content: Optional[str] = None
     is_protected: bool = False
+    is_active: bool = False
+    deactivated_by_admin: bool = False
+    deactivation_reason: Optional[str] = None
+    deactivated_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True

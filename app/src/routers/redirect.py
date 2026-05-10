@@ -234,6 +234,11 @@ async def redirect_to_long_url(
             status_code=403
         )
 
+    if not link.is_active:
+        if link.deactivated_by_admin:
+            raise HTTPException(status_code=453, detail="Link disabled by admin")
+        raise HTTPException(status_code=453, detail="Link disabled by user")
+
     # --- ۳. بررسی رمز عبور اگر لینک رمزدار است ---
     if is_protected:
         e_domain_id = domain_id_for_ads if domain_id_for_ads is not None else "0"
@@ -376,6 +381,30 @@ async def skip_ad_and_redirect(
             "utm_params": {k: v for k, v in utm_params.items() if v}
         }), ex=3600)
 
+    # --- گرفتن لینک ---
+    if domain_id:
+        result = select(models.Link).options(
+            selectinload(models.Link.domain),
+            selectinload(models.Link.owner),
+        ).join(models.Domain).where(
+            models.Domain.id == domain_id,
+            models.Link.short_code == short_code
+        )
+    else:
+        result = select(models.Link).options(selectinload(models.Link.owner)).where(
+            models.Link.domain_id == None,
+            models.Link.short_code == short_code
+        )
+
+    result = await db.execute(result)
+
+    link = result.scalar_one_or_none()
+
+    if not link.is_active:
+        if link.deactivated_by_admin:
+            raise HTTPException(status_code=453, detail="Link disabled by admin")
+        raise HTTPException(status_code=453, detail="Link disabled by user")
+
     # اعمال UTMها روی URL حتی اگر از کش خونده شده
     active_utm_params = {k: v for k, v in utm_params.items() if v}
     if active_utm_params:
@@ -406,27 +435,5 @@ async def skip_ad_and_redirect(
         fingerprint,
         redis_client,
     )
-
-    # try:
-    #     if link_id and owner_id:
-    #         await redis_client.xadd("ad_skip_events_stream", {
-    #             "link_id": str(link_id),  # <-- ارسال ID لینک
-    #             "owner_id": str(owner_id),  # <-- ارسال ID مالک
-    #             "ip": client_ip,
-    #             "user_agent": user_agent,
-    #             "timestamp": datetime.now(timezone.utc).isoformat()
-    #         })
-    #         logger.info("Ad skip event sent to stream for link_id %s", link_id)
-    #     else:
-    #         logger.warning("Falling back to old stream message for %s", short_code)
-    #         await redis_client.xadd("ad_skip_events_stream", {
-    #             "short_code": short_code,
-    #             "domain_id": str(domain_id) if domain_id is not None else "default",
-    #             "ip": client_ip,
-    #             "user_agent": user_agent,
-    #             "timestamp": datetime.now(timezone.utc).isoformat()
-    #         })
-    # except Exception as e:
-    #     logger.exception("Failed to push ad skip event: %s", e)
 
     return RedirectResponse(url=long_url, status_code=307)

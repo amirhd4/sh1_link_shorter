@@ -28,7 +28,8 @@ def parse_received_time(ts):
 
 
 @router.post("/sync")
-async def sync_sms(db: AsyncSession = Depends(get_db)):
+@limiter.limit("15/minute")
+async def sync_sms(request: Request, db: AsyncSession = Depends(get_db)):
 
     saved = 0
     headers = {
@@ -96,7 +97,8 @@ async def sync_sms(db: AsyncSession = Depends(get_db)):
 
 
 @router.get("/list")
-async def list_sms(db: AsyncSession = Depends(get_db)):
+@limiter.limit("12/minute")
+async def list_sms(request: Request, db: AsyncSession = Depends(get_db)):
     query = await db.execute(select(models.IncomingSMS).order_by(models.IncomingSMS.received_at.desc()))
     sms_list = query.scalars().all()
 

@@ -105,6 +105,11 @@ export interface LinkDetails {
 
     show_ads: boolean;
     is_protected: boolean | false;
+
+    is_active: boolean | false
+    deactivated_by_admin: boolean | false
+    deactivation_reason: string | null
+    deactivated_at: string | null
 }
 
 export interface URLResponse {
@@ -126,10 +131,12 @@ export interface ChangePasswordPayload {
 
 
 export interface LinkDetailsForAdmin {
+  id: number;
   long_url: string;
   short_code: string;
   clicks: number;
   created_at: string;
+  updated_at: string | null;
     domain: {
     id: number;
     name: string;
@@ -139,6 +146,17 @@ export interface LinkDetailsForAdmin {
     // email?: string | null;
     phone_number: string;
   };
+  show_ads: boolean | false;
+  utm_source: string | null;
+  utm_medium: string | null;
+  utm_campaign: string | null;
+  utm_term: string | null;
+  utm_content: string | null;
+  is_protected: boolean | false;
+  is_active: boolean | false;
+  deactivated_by_admin: boolean | false;
+  deactivation_reason: string | null;
+  deactivated_at: string | null;
 }
 
 export interface SystemStats {

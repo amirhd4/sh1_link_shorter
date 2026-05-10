@@ -174,7 +174,7 @@ export default function Footer({ enamadCode }: { enamadCode: string }) {
         variant="caption"
         sx={{ color: "#6b21a8", fontWeight: 600 }}
       >
-        ارسال پیامک
+        30002108006027
       </Typography>
     </IconButton>
 

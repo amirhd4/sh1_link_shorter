@@ -9,7 +9,9 @@ import {
     useMediaQuery, useTheme, Card, CardContent, CardActions, IconButton, Divider,
     Link as MuiLink, Skeleton, alpha,
     TextField,
-    InputAdornment
+    InputAdornment,
+    Chip,
+    MenuItem
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { CreateLinkForm } from '@/components/client-dashboard/CreateLinkForm';
@@ -104,17 +106,18 @@ const EmptyState = () => (
 // =================================================================
 
 
-const MobileLinkCard = ({ link, index, onDetailsClick, onEditClick, onDeleteClick, isDeleting }: {
+const MobileLinkCard = ({ link, index, onDetailsClick, onEditClick, onDeleteClick, isDeleting, onToggleMutation }: {
     link: LinkDetails,
     index: number,
     onDetailsClick: () => void,
     onEditClick: () => void,
     onDeleteClick: () => void,
+    onToggleMutation: () => void,
     isDeleting: boolean,
 }) => {
     const theme = useTheme();
     const shortUrl = `${normalizeUrl(link.domain_name)}/${link.short_code}`;
-
+    const isLocked = link.deactivated_by_admin;
 
     return (
         <Card
@@ -128,6 +131,20 @@ const MobileLinkCard = ({ link, index, onDetailsClick, onEditClick, onDeleteClic
         >
             <CardContent>
                 <Stack spacing={1.5}>
+                    <Box>
+                      {link.deactivated_by_admin ? (
+                        <Alert severity="error" sx={{ mb: 1 }}>
+                          این لینک توسط ادمین غیرفعال شده
+                          {link.deactivation_reason && (
+                            <> — {link.deactivation_reason}</>
+                          )}
+                        </Alert>
+                      ) : !link.is_active ? (
+                        <Alert severity="warning" sx={{ mb: 1 }}>
+                          این لینک غیرفعال است
+                        </Alert>
+                      ) : null}
+                    </Box>
                     {/* شماره ردیف */}
                     <Typography variant="caption" color="text.secondary">ردیف: {index + 1}</Typography>
 
@@ -136,8 +153,18 @@ const MobileLinkCard = ({ link, index, onDetailsClick, onEditClick, onDeleteClic
                         <Typography variant="caption" color="text.secondary">لینک کوتاه شما</Typography>
                         <Stack direction="row" alignItems="center" justifyContent="space-between">
 
-                            <MuiLink href={shortUrl} target="_blank" rel="noopener noreferrer" sx={{ fontWeight: 'bold', fontSize: '1rem' }}>
-                                {link.domain_name}/{link.short_code}
+                            <MuiLink
+                              href={link.is_active && !link.deactivated_by_admin ? shortUrl : undefined}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              sx={{
+                                fontWeight: 'bold',
+                                fontSize: '1rem',
+                                pointerEvents: link.is_active && !link.deactivated_by_admin ? 'auto' : 'none',
+                                opacity: link.is_active && !link.deactivated_by_admin ? 1 : 0.5
+                              }}
+                            >
+                              {link.domain_name}/{link.short_code}
                             </MuiLink>
                             <CopyButton textToCopy={shortUrl} />
                         </Stack>
@@ -170,10 +197,19 @@ const MobileLinkCard = ({ link, index, onDetailsClick, onEditClick, onDeleteClic
                         <span><IconButton onClick={onDetailsClick} disabled={isDeleting}><AnalyticsIcon /></IconButton></span>
                     </Tooltip>
                     <Tooltip title="ویرایش لینک">
-                        <span><IconButton onClick={onEditClick} disabled={isDeleting}><EditIcon /></IconButton></span>
+                        <span><IconButton onClick={onEditClick} disabled={isDeleting || isLocked}><EditIcon /></IconButton></span>
                     </Tooltip>
                     <Tooltip title="حذف لینک">
-                        <span><IconButton onClick={onDeleteClick} color="error" disabled={isDeleting}><DeleteIcon /></IconButton></span>
+                        <span><IconButton onClick={onDeleteClick} color="error" disabled={isDeleting || link.deactivated_by_admin}><DeleteIcon /></IconButton></span>
+                    </Tooltip>
+                    <Tooltip title="تغییر وضعیت">
+                        <span><IconButton
+                          onClick={onToggleMutation}
+                          // disabled={link.deactivated_by_admin}
+                        >
+                          {link.is_active ? <LinkOffIcon /> : <LinkIcon />}
+                        </IconButton>
+                        </span>
                     </Tooltip>
                 </Box>
             </CardActions>
@@ -206,8 +242,8 @@ import FloatingSupportButton from "@/components/support/FloatingSupportButton";
 export default function LinksDashboard() {
     const navigate = useRouter();
     useEffect(() => {
-    document.title = "میزکار کاربر";
-  }, []);
+        document.title = "میزکار کاربر";
+      }, []);
     const { t } = useTranslation('common');
     const queryClient = useQueryClient();
     const localeText = usePersianDataGridLocale();
@@ -215,12 +251,14 @@ export default function LinksDashboard() {
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
     const [isCreateModalOpen, setCreateModalOpen] = useState(false);
+
     const [editTarget, setEditTarget] = useState<LinkDetails | null>(null);
     const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null);
-
     // const [snackbarMessage, setSnackbarMessage] = useState<string | null>(null);
+
     const [snackbarMessage, setSnackbarMessage] = useState<{ text: string; severity: "success" | "error" } | null>(null);
 
+    const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive' | 'admin'>('all');
     const [searchTerm, setSearchTerm] = useState('');
 
     const { user } = useUserStore();
@@ -229,44 +267,63 @@ export default function LinksDashboard() {
     const isExpired = daysRemaining !== null && daysRemaining <= 0;
     const isLastDay = daysRemaining === 1;
 
-   const {
-  data,
-  isLoading,
-  isError,
-  error,
-  fetchNextPage,
-  hasNextPage,
-  isFetchingNextPage,
-} = useInfiniteQuery<
-  LinkListPage,          // TQueryFnData
-  Error,                 // TError
-  InfiniteData<LinkListPage>, // TData ← خیلی مهم
-  ['my-links'],          // TQueryKey
-  Cursor | undefined     // TPageParam
->({
-  queryKey: ['my-links'],
-  queryFn: ({ pageParam }) =>
-    linkService.getMyLinks({
-      limit: 5,
-      cursor_created_at: pageParam?.created_at,
-      cursor_id: pageParam?.id,
-    }),
-  initialPageParam: undefined,
-  getNextPageParam: (lastPage) =>
-    lastPage.has_more ? lastPage.next_cursor ?? undefined : undefined,
-});
+   const {data, isLoading, isError, error, fetchNextPage, hasNextPage, isFetchingNextPage} = useInfiniteQuery<
+      LinkListPage,          // TQueryFnData
+      Error,                 // TError
+      InfiniteData<LinkListPage>, // TData ← خیلی مهم
+      ['my-links'],          // TQueryKey
+      Cursor | undefined     // TPageParam
+    >({
+      queryKey: ['my-links'],
+      queryFn: ({ pageParam }) =>
+        linkService.getMyLinks({
+          limit: 5,
+          cursor_created_at: pageParam?.created_at,
+          cursor_id: pageParam?.id,
+        }),
+      initialPageParam: undefined,
+      getNextPageParam: (lastPage) =>
+        lastPage.has_more ? lastPage.next_cursor ?? undefined : undefined,
+    });
 
-const links = data?.pages.flatMap(page => page.items) ?? [];
-const filteredLinks = useMemo(() => {
-  if (!searchTerm.trim()) return links;
+  const links = data?.pages.flatMap(page => page.items) ?? [];
 
-  const term = searchTerm.toLowerCase();
+  const filteredLinks = useMemo(() => {
+      let result = links;
 
-  return links.filter(link =>
-    link.short_code.toLowerCase().includes(term) ||
-    link.long_url.toLowerCase().includes(term)
-  );
-}, [links, searchTerm]);
+      // فیلتر جستجو
+      if (searchTerm.trim()) {
+        const term = searchTerm.toLowerCase();
+
+        result = result.filter(link =>
+          link.short_code.toLowerCase().includes(term) ||
+          link.long_url.toLowerCase().includes(term) ||
+          link.domain_name.toLowerCase().includes(term)
+        );
+      }
+
+      // فیلتر وضعیت
+      if (statusFilter !== 'all') {
+        result = result.filter(link => {
+          if (statusFilter === 'active') {
+            return link.is_active && !link.deactivated_by_admin;
+          }
+
+          if (statusFilter === 'inactive') {
+            return !link.is_active && !link.deactivated_by_admin;
+          }
+
+          if (statusFilter === 'admin') {
+            return link.deactivated_by_admin;
+          }
+
+          return true;
+        });
+      }
+
+      return result;
+
+    }, [links, searchTerm, statusFilter]);
 
 
    useEffect(() => {
@@ -299,10 +356,65 @@ const filteredLinks = useMemo(() => {
     const handleDetailsClick = (shortCode: string, domainId: string) => () => navigate.push(`/links/${domainId}/${shortCode}/`);
     const handleDeleteClick = (shortCode: string, domainId: string) => () => setDeleteTarget({ shortCode, domainId });
     const handleConfirmDelete = () => { if(deleteTarget) deleteMutation.mutate(deleteTarget); };
-
     const handleEditClick = (link: LinkDetails) => () => setEditTarget(link);
 
+    const toggleMutation = useMutation({
+           mutationFn: (link: LinkDetails) =>
+            linkService.toggleLinkStatus(
+              link.short_code,
+              link.domain_id?.toString() || "0",
+              link.is_active
+            ),
+          onSuccess: () => {
+            queryClient.invalidateQueries({queryKey: ['my-links']}).then(r => null);
+            setSnackbarMessage({
+              text: "وضعیت لینک با موفقیت تغییر کرد.",
+              severity: "success"
+            });
+          },
+          onError: () => {
+            setSnackbarMessage({
+              text: "خطا در تغییر وضعیت لینک.",
+              severity: "error"
+            });
+          }
+        });
+
+
     const columns: GridColDef<LinkDetails>[] = [
+        {
+  field: 'copy',
+  headerName: '',
+  width: 60,
+  sortable: false,
+  renderCell: ({ row }) => {
+    const shortUrl = `${normalizeUrl(row.domain_name)}/${row.short_code}`;
+    return <CopyButton textToCopy={shortUrl} />;
+  }
+},
+        {
+          field: 'status',
+          headerName: 'وضعیت',
+          width: 60,
+          sortable: false,
+          renderCell: ({ row }) => {
+            if (row.deactivated_by_admin) {
+              return (
+                <Tooltip title={row.deactivation_reason || "این لینک توسط ادمین غیرفعال شده"}>
+                  <Chip label="غیرفعال توسط ادمین" color="error" size="small" />
+                </Tooltip>
+              );
+            }
+
+            if (!row.is_active) {
+              return (
+                <Chip label="غیرفعال" color="warning" size="small" />
+              );
+            }
+
+            return <Chip label="فعال" color="success" size="small" />;
+          },
+        },
         {
             field: 'domain_name',
             headerName: 'دامنه',
@@ -337,11 +449,11 @@ const filteredLinks = useMemo(() => {
                 </Tooltip>
             )
         },
-        { field: 'clicks', headerName: 'تعداد کلیک', type: 'number', width: 130 },
+        { field: 'clicks', headerName: 'تعداد کلیک', type: 'number', width: 90 },
         {
             field: 'created_at',
             headerName: 'تاریخ ایجاد',
-            width: 180,
+            width: 120,
             valueFormatter: (value) => new Date(value).toLocaleDateString('fa-IR'),
         },
         {
@@ -349,11 +461,44 @@ const filteredLinks = useMemo(() => {
             type: 'actions',
             headerName: 'عملیات',
             width: 150,
-            getActions: ({ row }) => [
-                <GridActionsCellItem icon={<AnalyticsIcon />} label="جزئیات" onClick={handleDetailsClick(row.short_code, row.domain_id || "0")} />,
-                <GridActionsCellItem icon={<EditIcon />} label="ویرایش" onClick={handleEditClick(row)} />,
-                <GridActionsCellItem icon={<DeleteIcon />} label="حذف" onClick={handleDeleteClick(row.short_code, row.domain_id || "0")} />,
-            ],
+            getActions: ({ row }) => {
+              const disabled = row.deactivated_by_admin;
+
+              return [
+                <GridActionsCellItem
+                  icon={<AnalyticsIcon />}
+                  label="جزئیات"
+                  // disabled={disabled}
+                  onClick={handleDetailsClick(row.short_code, row.domain_id || "0")}
+                />,
+                <GridActionsCellItem
+                  icon={<EditIcon />}
+                  label="ویرایش"
+                  disabled={disabled}
+                  onClick={handleEditClick(row)}
+                />,
+                <GridActionsCellItem
+                  icon={<DeleteIcon />}
+                  label="حذف"
+                  disabled={disabled}
+                  onClick={handleDeleteClick(row.short_code, row.domain_id || "0")}
+                />,
+                  <GridActionsCellItem
+                      icon={row.is_active ?
+                          <Tooltip title={"غیر فعال کردن لینک"}>
+                              <LinkOffIcon />
+                          </Tooltip>
+                      : <Tooltip title={"فعال کردن لینک"}>
+                              <LinkIcon />
+                          </Tooltip>
+                    }
+                      label={row.is_active ? "غیرفعال کردن" : "فعال کردن"}
+                      disabled={disabled}
+                      onClick={() => toggleMutation.mutate(row)}
+                    />
+              ];
+            }
+
         },
     ];
 
@@ -388,6 +533,7 @@ const filteredLinks = useMemo(() => {
             onEditClick={handleEditClick(link)}
             onDeleteClick={handleDeleteClick(link.short_code, link.domain_id || "0")}
             isDeleting={deleteMutation.isPending}
+            onToggleMutation={() => toggleMutation.mutate(link)}
           />
         ))}
 
@@ -501,6 +647,18 @@ const filteredLinks = useMemo(() => {
 
                 <InitialPasswordCard/>
 
+                <TextField
+                  select
+                  size="small"
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value as any)}
+                  sx={{ mb: 2, width: 200 }}
+                >
+                  <MenuItem value="all">همه لینک‌ها</MenuItem>
+                  <MenuItem value="active">فعال</MenuItem>
+                  <MenuItem value="inactive">غیرفعال</MenuItem>
+                  <MenuItem value="admin">غیرفعال توسط ادمین</MenuItem>
+                </TextField>
                 <Paper sx={{p: {xs: 1, sm: 2}, borderRadius: 3}} elevation={3}>
                     {renderContent()}
                 </Paper>

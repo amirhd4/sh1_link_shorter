@@ -106,8 +106,25 @@ syncSms: async (): Promise<{ new_count: number }> => {
   return res.data;
 },
 
-markSMSProcessed: async (id: number) => {
-  const res = await apiClient.patch(`/admin_sms/messages/${id}/processed`);
-  return res.data;
-},
+  markSMSProcessed: async (id: number) => {
+    const res = await apiClient.patch(`/admin_sms/messages/${id}/processed`);
+    return res.data;
+  },
+
+ disableLink: async (
+    link: LinkDetailsForAdmin,
+    reason: string
+  ): Promise<void> => {
+    await apiClient.patch(
+      `/links/${link.short_code}/${link.domain?.id ?? 0}/disable`,
+      null,
+      { params: { reason } }
+    );
+  },
+
+  enableLink: async (link: LinkDetailsForAdmin): Promise<void> => {
+    await apiClient.patch(
+      `/links/${link.short_code}/${link.domain?.id ?? 0}/enable`
+    );
+  },
 };

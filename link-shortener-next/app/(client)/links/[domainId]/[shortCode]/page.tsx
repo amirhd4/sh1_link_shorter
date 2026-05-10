@@ -17,7 +17,8 @@ import {
   Link as MuiLink,
   Divider,
   Button,
-  Skeleton
+  Skeleton,
+  Chip
 } from '@mui/material';
 import {
   BarChart,
@@ -40,6 +41,7 @@ import type { AdvancedLinkStats } from '@/types/api';
 import {adService} from "@/services/adService";
 import Head from "next/head";
 import {normalizeUrl} from "@/lib/utils";
+import {AdminPanelSettings, CancelOutlined, CheckCircleOutline, Event, InfoOutlined } from "@mui/icons-material";
 
 /**
  * نمودار کلیک ۷ روزه
@@ -130,6 +132,108 @@ export default function LinkDetailsPage() {
       </Head>
     <Box>
       <Typography variant="h4" gutterBottom>آمار و جزئیات لینک</Typography>
+
+      <Paper
+  sx={{
+    p: { xs: 2, sm: 3 },
+    mb: 3,
+    display: 'flex',
+    flexDirection: { xs: 'column', sm: 'row' },
+    alignItems: { xs: 'flex-start', sm: 'center' },
+    gap: 2
+  }}
+>
+  {/* آیکون وضعیت */}
+  <Box
+    sx={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      minWidth: { sm: 60 }
+    }}
+  >
+    {linkDetails.is_active && !linkDetails.deactivated_by_admin ? (
+      <CheckCircleOutline color="success" sx={{ fontSize: { xs: 32, sm: 40 } }} />
+    ) : (
+      <CancelOutlined color="error" sx={{ fontSize: { xs: 32, sm: 40 } }} />
+    )}
+  </Box>
+
+  {/* متن اصلی */}
+  <Box sx={{ flex: 1, width: '100%' }}>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: { xs: 'column', sm: 'row' },
+        alignItems: { xs: 'flex-start', sm: 'center' },
+        gap: 1
+      }}
+    >
+      <Typography variant="h6">
+        وضعیت لینک
+      </Typography>
+
+      <Chip
+        label={linkDetails.is_active && !linkDetails.deactivated_by_admin ? 'فعال' : 'غیرفعال'}
+        color={linkDetails.is_active && !linkDetails.deactivated_by_admin ? 'success' : 'error'}
+        size="small"
+      />
+    </Box>
+
+    {!linkDetails.is_active && (
+      <Typography
+        variant="body2"
+        color="text.secondary"
+        sx={{ mt: 1 }}
+      >
+        این لینک در حال حاضر غیرفعال است و کاربران نمی‌توانند به آن دسترسی داشته باشند.
+      </Typography>
+    )}
+
+    {/* جزئیات غیرفعال شدن */}
+    {!linkDetails.is_active && (
+      <Box
+        sx={{
+          mt: 2,
+          pt: 2,
+          borderTop: '1px dashed',
+          borderColor: 'divider',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 1.5
+        }}
+      >
+        {linkDetails.deactivated_by_admin && (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <AdminPanelSettings color="action" fontSize="small" />
+            <Typography variant="body2" color="text.secondary">
+              توسط ادمین غیرفعال شده است
+            </Typography>
+          </Box>
+        )}
+
+        {linkDetails.deactivation_reason && (
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+            <InfoOutlined color="action" fontSize="small" sx={{ mt: 0.2 }} />
+            <Typography variant="body2" color="text.secondary">
+              دلیل: {linkDetails.deactivation_reason}
+            </Typography>
+          </Box>
+        )}
+
+        {linkDetails.deactivated_at && (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Event color="action" fontSize="small" />
+            <Typography variant="body2" color="text.secondary">
+              تاریخ: {new Date(linkDetails.deactivated_at).toLocaleString('fa-IR')}
+            </Typography>
+          </Box>
+        )}
+      </Box>
+    )}
+  </Box>
+</Paper>
+
 
       <Grid container spacing={3}>
         {/* ستون اصلی */}
