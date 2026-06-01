@@ -1,934 +1,942 @@
 "use client";
 
 import React from "react";
-import {
-  Box,
-  Typography,
-  Button,
-  Container,
-  Grid,
-  Paper,
-  Tabs,
-  Tab,
-  IconButton,
-  Tooltip,
-  Chip,
-  GlobalStyles,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  Divider,
-  Stack,
-  Link as MuLink,
-} from "@mui/material";
-import ContentCopyOutlinedIcon from "@mui/icons-material/ContentCopyOutlined";
-import CheckIcon from "@mui/icons-material/Check";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import MonetizationOnIcon from "@mui/icons-material/MonetizationOn";
-import BusinessCenter from "@mui/icons-material/BusinessCenter";
-import DomainIcon from "@mui/icons-material/Domain";
-import SecurityIcon from "@mui/icons-material/Security";
-import ShareIcon from "@mui/icons-material/Share";
-import InsightsIcon from "@mui/icons-material/Insights";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import {
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip as ReTooltip,
-  CartesianGrid,
-} from "recharts";
-import HomeLinkShortener from "@/components/home/HomeLinkShortener";
 import Image from "next/image";
 
+import {
+    Box,
+    Container,
+    Typography,
+    Button,
+    Grid,
+    Paper,
+    Chip,
+    Stack,
+    GlobalStyles,
+    Divider,
+    AccordionSummary,
+    AccordionDetails,
+    Accordion,
+} from "@mui/material";
 
-/* ---------------- Data ---------------- */
-const chartData = [
-  { day: "دوشنبه", links: 120, clicks: 450 },
-  { day: "سه‌شنبه", links: 200, clicks: 670 },
-  { day: "چهارشنبه", links: 180, clicks: 590 },
-  { day: "پنج‌شنبه", links: 240, clicks: 720 },
-  { day: "جمعه", links: 300, clicks: 910 },
-  { day: "شنبه", links: 260, clicks: 800 },
-  { day: "یکشنبه", links: 310, clicks: 980 },
-];
+import {
+  MonetizationOn,
+  Insights,
+  Security,
+  Speed,
+  Domain,
+  RocketLaunch,
+  Public,
+  Api,
+  TrendingUp,
+  Verified,
+  ExpandMore,
+} from "@mui/icons-material";
 
-const features = [
-  { title: "داشبورد پیشرفته", desc: "آمار کامل و نمودارهای زنده برای هر لینک.", icon: "📊" },
-  { title: "API سریع و ایمن", desc: "ساخت لینک با Api-Key و پاسخ JSON استاندارد.", icon: "⚡" },
-  { title: "احراز هویت چندلایه", desc: "JWT، OTP و کپچا برای امنیت بیشتر.", icon: "🔐" },
-  { title: "پلن‌ها و پرداخت", desc: "مدیریت اشتراک و تراکنش‌ها با یک کلیک.", icon: "💳" },
-];
+import { motion } from "framer-motion";
 
-const techStack = ["FastAPI", "React", "PostgreSQL", "Redis", "Docker", "MUI", "TypeScript", "Framer Motion", "Next.js"];
-const examples = [
-  {
-    label: "cURL (لینک ساده)",
-    code: `curl -X POST "https://l1s.ir/api/v1/shorten" \\\n  -H "Api-Key: sk_your_api_key_here" \\\n  -H "Content-Type: application/json" \\\n  -d "{\\"long_url\\":\\"https://example.com\\"}"`,
-    response: `{
-  "long_url": "https://example.com",
-  "short_url": "https://l1s.ir/Ab12Xy"
-}`,
-  },
-  {
-    label: "دامنه سفارشی + پارامترهای UTM",
-    code: `curl -X POST "https://l1s.ir/api/v1/shorten" \\\n  -H "Api-Key: sk_your_api_key_here" \\\n  -H "Content-Type: application/json" \\\n  -d "{\\"long_url\\":\\"https://example.com/project\\",\\"domain_id\\":42,\\"utm_source\\":\\"twitter\\",\\"utm_medium\\":\\"social\\",\\"utm_campaign\\":\\"launch\\"}"`,
-    response: `{
-  "long_url": "https://example.com/project",
-  "short_url": "https://customdomain.com/Xy12Ab"
-}`,
-  },
-  {
-    label: "لینک محافظت‌شده با پسورد 🔒",
-    code: `curl -X POST "https://l1s.ir/api/v1/shorten" \\\n  -H "Api-Key: sk_your_api_key_here" \\\n  -H "Content-Type: application/json" \\\n  -d "{\\"long_url\\":\\"https://example.com/secret\\",\\"password\\":\\"mypassword123\\"}"`,
-    response: `{
-  "long_url": "https://example.com/secret",
-  "short_url": "https://l1s.ir/SeCrEt1"
-}`,
-  },
-];
+import HomeLinkShortener from "@/components/home/HomeLinkShortener";
 
-/* ---------------- FAQ ---------------- */
+/* ------------------------------------------------ */
+/* DATA */
+/* ------------------------------------------------ */
+
 const faqItems = [
   {
-    q: "آیا استفاده از لِس (L1s) به عنوان کوتاه‌کننده لینک رایگان است؟",
+    q: "آیا استفاده از لِس به عنوان کوتاه‌کننده لینک رایگان است؟",
     a: "بله، استفاده از L1s کاملاً رایگان است. شما می‌توانید بدون هیچ هزینه‌ای ثبت‌نام کنید و لینک‌های خود را به راحتی کوتاه کنید. در کنار پلن رایگان، پلن‌های حرفه‌ای نیز برای کاربران پرمصرف و برندها ارائه شده‌اند که امکاناتی مثل دامنه سفارشی، رمزگذاری لینک، و آمار تحلیلی پیشرفته را شامل می‌شوند.",
   },
   {
-    q: "آیا API کوتاه‌کننده لینک لِس (L1s) محدودیت دارد؟",
+    q: "آیا API کوتاه‌کننده لینک لِس محدودیت دارد؟",
     a: "بله، برای هر کاربر یک Api-Key اختصاصی صادر می‌شود که دارای محدودیت درخواست در دقیقه (Rate Limit) است تا از سوء‌استفاده جلوگیری شود. در پلن‌های بالاتر، محدودیت‌ها بیشتر شده و امکان استفاده حرفه‌ای از API برای اتوماسیون، ربات‌ها و وب‌سرویس‌ها فراهم است.",
   },
   {
-    q: "آیا لینک‌های کوتاه ساخته‌شده در لِس (L1s) تاریخ انقضا دارند؟",
+    q: "آیا لینک‌های کوتاه ساخته‌شده در لِس تاریخ انقضا دارند؟",
     a: "خیر، لینک‌های کوتاه به صورت دائمی فعال می‌مانند مگر این‌که توسط کاربر حذف یا غیرفعال شوند. همچنین می‌توانید برای هر لینک، در صورت نیاز، زمان انقضا تعیین کنید تا پس از تاریخ مشخصی دیگر فعال نباشد.",
   },
   {
     q: "آیا می‌توانم آمار دقیق کلیک‌های هر لینک را مشاهده کنم؟",
-    a: "بله، لِس (l1s) یک داشبورد تحلیلی کامل دارد که اطلاعات دقیق هر لینک را نشان می‌دهد؛ از جمله تعداد کلیک‌ها، موقعیت جغرافیایی کاربران (شهر و کشور)، دستگاه و مرورگر، Referrer، و حتی اثرانگشت (Fingerprint) کاربران. این ابزار به شما کمک می‌کند تا رفتار مخاطبان خود را بهتر تحلیل کنید.",
+    a: "بله، لِس یک داشبورد تحلیلی کامل دارد که اطلاعات دقیق هر لینک را نشان می‌دهد؛ از جمله تعداد کلیک‌ها، موقعیت جغرافیایی کاربران (شهر و کشور)، دستگاه و مرورگر، Referrer، و حتی اثرانگشت (Fingerprint) کاربران. این ابزار به شما کمک می‌کند تا رفتار مخاطبان خود را بهتر تحلیل کنید.",
   },
   {
     q: "آیا امکان ساخت لینک با رمز یا دسترسی خصوصی وجود دارد؟",
     a: "بله، شما می‌توانید هنگام ایجاد لینک، یک رمز عبور تعریف کنید تا فقط افرادی که آن را دارند بتوانند به مقصد دسترسی پیدا کنند. این قابلیت برای لینک‌های خصوصی، محتوای آموزشی پولی یا فایل‌های مهم بسیار کاربردی است.",
   },
   {
-    q: "آیا می‌توان از طریق لینک‌ها در لِس (l1s) کسب درآمد کرد؟",
-    a: "بله، سیستم لِس (l1s) قابلیت نمایش تبلیغات بین مسیر را دارد. کاربران می‌توانند هنگام ساخت لینک، گزینه «نمایش تبلیغ» را فعال کنند تا از بازدید لینک‌هایشان درآمد کسب کنند. اگر این گزینه غیرفعال باشد، لینک مستقیماً کاربر را به مقصد هدایت می‌کند.",
+    q: "آیا می‌توان از طریق لینک‌ها در لِس کسب درآمد کرد؟",
+    a: "بله، سیستم لِس قابلیت نمایش تبلیغات بین مسیر را دارد. کاربران می‌توانند هنگام ساخت لینک، گزینه «نمایش تبلیغ» را فعال کنند تا از بازدید لینک‌هایشان درآمد کسب کنند. اگر این گزینه غیرفعال باشد، لینک مستقیماً کاربر را به مقصد هدایت می‌کند.",
   },
   {
-    q: "آیا لِس (l1s) از دامنه سفارشی پشتیبانی می‌کند؟",
+    q: "آیا لِس از دامنه سفارشی پشتیبانی می‌کند؟",
     a: "بله، شما می‌توانید دامنه اختصاصی خودتان را به حساب کاربری متصل کنید تا لینک‌های کوتاه‌تان با نام برند خودتان ساخته شوند. این ویژگی برای شرکت‌ها، کسب‌وکارهای محتوامحور و برندهای شخصی بسیار مفید است.",
   },
   {
-    q: "امنیت لینک‌های کوتاه در لِس (l1s) چگونه تضمین می‌شود؟",
+    q: "امنیت لینک‌های کوتاه در لِس چگونه تضمین می‌شود؟",
     a: "تمام لینک‌ها قبل از کوتاه شدن با سیستم هوشمند بررسی می‌شوند تا از سالم بودن و غیر‌مخرب بودن آن‌ها اطمینان حاصل شود. همچنین داده‌ها با رمزگذاری امن نگهداری می‌شوند و شما می‌توانید با تنظیم رمز یا محدودیت زمانی، امنیت بیشتری برای لینک‌های خود ایجاد کنید.",
   },
-    {
-    q: "لینک در بیو یا لینک بیو در کوتاه کننده لینک لِس",
-    a: "l1s.ir برای کاربران خود قابلیت ایجاد رایگان لینک در بیو را فراهم آورده است. این یک قابلیت کلیدی است که تمام لینک ها را در یک صفحه برای خود قرار بدهید. همچنین کاربرانی که اشتراک پولی و pro خریداری میکنند میتوانند تا 3 صفحه لینک بیو ایجاد کنند.",
+  {
+    q: "ویژگی بیو لینک چیست و چگونه کار می‌کند؟",
+    a: "بیو لینک به شما این امکان را می‌دهد که تمامی لینک‌های خود را در یک صفحه واحد جمع‌آوری کنید و آنها را با دیگران به اشتراک بگذارید. این ویژگی برای افرادی که نیاز دارند چندین لینک را در یک مکان خاص ارائه دهند، بسیار مفید است. این قابلیت در لس موجود است",
   },
 ];
 
+const stats = [
+  {
+    value: "10M+",
+    title: "کلیک ثبت‌شده",
+    icon: <TrendingUp />,
+  },
+  {
+    value: "500K+",
+    title: "لینک کوتاه",
+    icon: <RocketLaunch />,
+  },
+  {
+    value: "99.99%",
+    title: "پایداری سرویس",
+    icon: <Verified />,
+  },
+  {
+    value: "24/7",
+    title: "در دسترس",
+    icon: <Public />,
+  },
+];
 
-/* ---------------- Helpers ---------------- */
-const copyToClipboard = async (txt: string, setCopied: React.Dispatch<React.SetStateAction<boolean>>) => {
-  try {
-    await navigator.clipboard.writeText(txt);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
-  } catch {
-    // ignore
-  }
+const coreFeatures = [
+  {
+    icon: <Speed fontSize="large" />,
+    title: "سرعت فوق‌العاده",
+    description: "کوتاه‌سازی لینک در کمتر از چند میلی‌ثانیه با زیرساخت بهینه و پایدار.",
+  },
+  {
+    icon: <Insights fontSize="large" />,
+    title: "تحلیل دقیق",
+    description: "نمایش کلیک‌ها، کشور، شهر، Referrer، دستگاه و مرورگر کاربران.",
+  },
+  {
+    icon: <Security fontSize="large" />,
+    title: "امنیت سازمانی",
+    description: "رمزگذاری، محدودیت زمانی، لینک رمزدار و کنترل کامل روی دسترسی.",
+  },
+  {
+    icon: <Domain fontSize="large" />,
+    title: "دامنه اختصاصی",
+    description: "لینک‌های کوتاه را با برند و دامنه شخصی خود ایجاد کنید.",
+  },
+  {
+    icon: <Api fontSize="large" />,
+    title: "API حرفه‌ای",
+    description: "مناسب توسعه‌دهندگان، اتوماسیون‌ها، ربات‌ها و سرویس‌های SaaS.",
+  },
+  {
+    icon: <MonetizationOn fontSize="large" />,
+    title: "درآمدزایی",
+    description: "کسب درآمد از بازدید لینک‌ها به‌صورت اختیاری و بدون اجبار.",
+  },
+];
+
+/* ------------------------------------------------ */
+/* MOTION */
+/* ------------------------------------------------ */
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { opacity: 1, y: 0 },
 };
 
-/* ---------------- Component ---------------- */
-const HomeClient: React.FC = () => {
-  const [tab, setTab] = React.useState(0);
-  const [copied, setCopied] = React.useState(false);
+/* ------------------------------------------------ */
+/* COMPONENT */
+/* ------------------------------------------------ */
 
+const HomeClient = () => {
   return (
     <>
       <GlobalStyles
         styles={{
-          body: { background: "#0f172a", color: "#e2e8f0", WebkitFontSmoothing: "antialiased" },
-          "::selection": { background: "#a855f7", color: "#fff" },
+          body: {
+            background: "#020617",
+            color: "#f8fafc",
+            margin: 0,
+            padding: 0,
+            boxSizing: "border-box",
+          },
         }}
       />
 
-      {/* Hero */}
-      <Box sx={{ textAlign: "center", py: { xs: 6, md: 10 }, px: 2 }}>
-          <Image
-  src="/images/hero-dashboard.webp"
-  alt="کوتاه‌کننده لینک لس - l1s با داشبورد تحلیلی و قابلیت کسب درآمد"
-  width={1200}
-  height={630}
-  priority
-/>
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-          <Typography
-            variant="h2"
-            sx={{
-              fontWeight: 900,
-              background: "linear-gradient(90deg,#f0abfc,#d946ef)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              mb: 2,
-            }}
-          >
-            کوتاه‌کننده لینک لِس، نسل بعدی — امن، قابل سفارشی و درآمدزا 🚀
-          </Typography>
-
-          <Typography sx={{ maxWidth: 800, mx: "auto", mb: 3, color: "#94a3b8" }}>
-            سریع، بدون تبلیغات اجباری، با امکان دامنه اختصاصی، تنظیم UTM، آمار دقیق (شهر/کشور/Referrer) و ابزار کسب درآمد برای سازنده‌ها.
-          </Typography>
-
-          <Stack direction="row" spacing={2} justifyContent="center" flexWrap="wrap">
-            <Button
-              component={Link}
-              href="/register"
-              variant="contained"
-              size="large"
-              sx={{ borderRadius: "50px", px: 5, background: "linear-gradient(45deg,#a855f7,#d946ef)" }}
-            >
-              شروع رایگان
-            </Button>
-            <Button
-              component={Link}
-              href="/url-shortener"
-              variant="outlined"
-              size="large"
-              sx={{ borderRadius: "50px", px: 5, color: "#cbd5e1", borderColor: "#475569" }}
-            >
-              مستندات API
-            </Button>
-            <Button
-              component={Link}
-              href="/plans"
-              variant="text"
-              size="large"
-              sx={{ color: "#cbd5e1" }}
-            >
-              پلن‌ها
-            </Button>
-          </Stack>
-        </motion.div>
-      </Box>
-
+      {/* ================================================= */}
+      {/* HERO */}
+      {/* ================================================= */}
+      <Box sx={{ position: "relative", overflow: "hidden", py: { xs: 8, md: 12 } }}>
+        {/* Background Glow */}
         <Box
-  sx={{
-    mt: 4,
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    gap: 3,
-  }}
->
-  <HomeLinkShortener />
-
-  <Image
-    src="/images/link-shortener-example.webp"
-    alt="تبدیل لینک بلند به لینک کوتاه در l1s"
-    width={900}
-    height={450}
-    loading="lazy"
-    style={{ borderRadius: 12 }}
-  />
-</Box>
-
-
-
-{/* SEO Optimized Content Section */}
-<section
-  style={{
-    marginTop: "5rem",
-    padding: "0 1rem",
-    maxWidth: "64rem",
-    marginInline: "auto",
-    color: "#e2e8f0",
-    lineHeight: "2",
-    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-  }}
->
-  <h1 style={{ fontSize: "2.25rem", fontWeight: "bold", marginBottom: "2rem", color: "#fff" }}>
-    بهترین کوتاه‌کننده لینک رایگان و حرفه‌ای
-  </h1>
-    <Image
-  src="/images/url-shortener-seo.webp"
-  alt="بهترین کوتاه‌کننده لینک رایگان با آمار دقیق"
-  width={900}
-  height={500}
-  loading="lazy"
-/>
-
-  <p style={{ marginBottom: "1.5rem", fontSize: "1.125rem" }}>
-    آیا لینک‌های شما طولانی و نامرتب هستند؟ با استفاده از کوتاه‌کننده لینک حرفه‌ای ما، می‌توانید لینک‌های بلند خود را به URLهای کوتاه، جذاب و قابل اشتراک‌گذاری تبدیل کنید. این کار باعث می‌شود لینک‌ها ظاهر حرفه‌ای داشته باشند و نرخ کلیک (CTR) شما افزایش یابد.
-  </p>
-
-  <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: "1rem" }}>
-  <Image
-    src="/images/link-benefits.webp"
-    alt="مزایای کوتاه کردن لینک و افزایش نرخ کلیک"
-    width={40}
-    height={40}
-    loading="lazy"
-  />
-  <h2 style={{ fontSize: "1.875rem", fontWeight: "bold", color: "#fff" }}>
-    چرا کوتاه کردن لینک مهم است؟
-  </h2>
-</Box>
-  <ul style={{ marginBottom: "1.5rem", paddingInlineStart: "1.25rem", fontSize: "1.125rem" }}>
-    <li>لینک‌های کوتاه و مرتب ظاهر حرفه‌ای به کسب‌وکار شما می‌دهند.</li>
-    <li>اشتراک‌گذاری آسان در شبکه‌های اجتماعی و پیام‌رسان‌ها.</li>
-    <li>امکان ردیابی دقیق کلیک‌ها و تحلیل عملکرد لینک‌ها —
-      <a href="/url-shortener" style={{ color: "#a855f7" }}>جزئیات آمار</a>
-    </li>
-    <li>کسب درآمد اختیاری از هر لینک کوتاه —
-      <a href="/best-url-shortener" style={{ color: "#a855f7" }}>آموزش درآمدزایی</a>
-    </li>
-    <li>ساخت لینک با دامنه اختصاصی —
-      <a href="/short-url-generator" style={{ color: "#a855f7" }}>اطلاعات بیشتر</a>
-    </li>
-    <li>بدون تبلیغات اجباری و تجربه کاربری عالی —
-      <a href="/free-url-shortener" style={{ color: "#a855f7" }}>بیشتر بخوانید</a>
-    </li>
-    <li>قوانین، مقررات و حریم خصوصی —
-      <a href="/terms" style={{ color: "#a855f7" }}>حریم خصوصی و قوانین</a>
-    </li>
-  </ul>
-
-  <h2 style={{ fontSize: "1.875rem", fontWeight: "bold", marginBottom: "1rem", color: "#fff" }}>
-    چگونه لینک خود را کوتاه کنیم؟
-  </h2>
-  <ol style={{ paddingInlineStart: "1.25rem", marginBottom: "1.5rem", lineHeight: "2", fontSize: "1.125rem" }}>
-    <li>لینک بلند خود را در کادر بالای صفحه وارد کنید.</li>
-    <li>بر روی دکمه «کوتاه کن» کلیک کنید.</li>
-    <li>لینک کوتاه شده را کپی کرده و در شبکه‌های اجتماعی یا وبسایت خود استفاده کنید.</li>
-  </ol>
-
-  <h2 style={{ fontSize: "1.875rem", fontWeight: "bold", marginBottom: "1rem", color: "#fff" }}>
-    صفحات مرتبط و آموزش‌ها
-  </h2>
-  <p style={{ marginBottom: "1.5rem", fontSize: "1.125rem" }}>
-    برای دسترسی به امکانات بیشتر و یادگیری نکات حرفه‌ای، صفحات زیر را مشاهده کنید:
-  </p>
-  <ul style={{ marginBottom: "1.5rem", paddingInlineStart: "1.25rem", fontSize: "1.125rem" }}>
-    <li><a href="/terms" style={{ color: "#a855f7" }}>حریم خصوصی و قوانین</a></li>
-    <li><a href="/free-url-shortener" style={{ color: "#a855f7" }}>کوتاه‌کننده لینک رایگان</a></li>
-    <li><a href="/best-url-shortener" style={{ color: "#a855f7" }}>بهترین روش‌های کوتاه کردن لینک</a></li>
-    <li><a href="/url-shortener" style={{ color: "#a855f7" }}>API کوتاه‌کننده لینک برای توسعه‌دهندگان</a></li>
-    <li><a href="/short-url-generator" style={{ color: "#a855f7" }}>تولید لینک کوتاه با دامنه اختصاصی</a></li>
-  </ul>
-<Typography variant="h4" mb={2}>ویژگی جدید: بیو لینک</Typography>
-      <Typography variant="body1" mb={4}>
-        ویژگی «بیو لینک» یا لینک در بیو لِس این امکان را به شما می‌دهد که تمامی لینک‌های شخصی خود را در یک صفحه واحد جمع‌آوری کنید. این قابلیت برای افرادی که نیاز به ارائه چندین لینک به مخاطبان خود دارند بسیار کاربردی است.
-        <br />
-        برای اطلاعات بیشتر، به مقاله اختصاصی <a href="/bio-link">بیو لینک</a> مراجعه کنید.
-      </Typography>
-  <h2 style={{ fontSize: "1.875rem", fontWeight: "bold", marginBottom: "1rem", color: "#fff" }}>
-    پرسش‌های متداول
-  </h2>
-  <p style={{ marginBottom: "1rem", fontSize: "1.125rem" }}>
-    پاسخ به سوالات بیشتر و جزئیات کامل در <a href="/faq" style={{ color: "#a855f7" }}>صفحه سوالات متداول</a> موجود است.
-  </p>
-</section>
-
-
-
-
-     {/* Key new features banner – نسخه ارتقا یافته */}
-    <Container sx={{ py: { xs: 4, md: 6 }, px: { xs: 2, md: 0 } }}>
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
-        <Paper
-          component="section"
-          aria-label="ویژگی‌های جدید"
           sx={{
-            position: "relative",
-            overflow: "hidden",
-            p: { xs: 2, md: 3 },
-            borderRadius: 3,
-            background: "rgba(255,255,255,0.05)",
-            backgroundImage:
-              "linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0) 100%)",
-            border: "1px solid rgba(255,255,255,0.1)",
+            position: "absolute",
+            width: 600,
+            height: 600,
+            borderRadius: "50%",
+            background: "radial-gradient(circle, rgba(168,85,247,.25), transparent)",
+            top: -250,
+            right: -150,
+            filter: "blur(40px)",
+            zIndex: 0,
           }}
-        >
-          <Grid container spacing={2} alignItems="center">
-            {/* توضیحات */}
-            <Grid size={{ xs: 12, md: 3 }}>
-              <Typography
-                variant="h6"
-                fontWeight={800}
-                sx={{ color: "#f1f5f9" }}
-              >
-                ویژگی‌های برجسته
-              </Typography>
-              <Typography sx={{ color: "#94a3b8", mt: 0.5, lineHeight: 1.8 }}>
-                امکانات جدید: کسب درآمد، دامنه اختصاصی، UTM، بدون ریدایرکت
-                اجباری، بیو لینک و  آمار جغرافیایی.
-              </Typography>
-            </Grid>
+        />
 
-            {/* چپ‌ها */}
-            <Grid size={{ xs: 12, md: 9 }}>
-              <Stack
-                direction={{ xs: "column", sm: "row" }}
-                spacing={1.2}
-                alignItems="center"
-                justifyContent={{ xs: "flex-start", sm: "flex-end" }}
-                flexWrap="wrap"
-                sx={{ mt: { xs: 2, md: 0 } }}
-              >
-                <Chip
-                  icon={<MonetizationOnIcon />}
-                  label="کسب درآمد"
-                  clickable
-                  component={Link}
-                  href="#"
-                  sx={{
-                    color: "#fff",
-                    background: "linear-gradient(90deg, #a855f7, #d946ef)",
-                    fontWeight: 700,
-                    "&:hover": {
-                      background: "linear-gradient(90deg, #d946ef, #a855f7)",
-                      transform: "translateY(-2px)",
-                    },
-                    transition: "all 0.3s ease",
-                  }}
-                />
-                  <Chip
-                  icon={<BusinessCenter />}
-                  label="لینک بیو"
-                  clickable
-                  component={Link}
-                  href="#"
-                  sx={{
-                    color: "#fff",
-                    background: "linear-gradient(90deg, #4f05ff, #d94600)",
-                    fontWeight: 700,
-                    "&:hover": {
-                      background: "linear-gradient(90deg, #d946ef, #a855f7)",
-                      transform: "translateY(-2px)",
-                    },
-                    transition: "all 0.3s ease",
-                  }}
-                />
-                <Chip
-                  icon={<DomainIcon />}
-                  label="دامنه اختصاصی"
-                  clickable
-                  component={Link}
-                  href="#"
-                  sx={{
-                    color: "#fff",
-                    background: "linear-gradient(90deg, #06b6d4, #3b82f6)",
-                    fontWeight: 700,
-                    "&:hover": {
-                      background: "linear-gradient(90deg, #3b82f6, #06b6d4)",
-                      transform: "translateY(-2px)",
-                    },
-                    transition: "all 0.3s ease",
-                  }}
-                />
-                <Chip
-                  icon={<ShareIcon />}
-                  label="بدون ریدایرکت (No-Ads Flow)"
-                  clickable
-                  component={Link}
-                  href="#"
-                  sx={{
-                    color: "#fff",
-                    background: "linear-gradient(90deg, #f97316, #f59e0b)",
-                    fontWeight: 700,
-                    "&:hover": {
-                      background: "linear-gradient(90deg, #f59e0b, #f97316)",
-                      transform: "translateY(-2px)",
-                    },
-                    transition: "all 0.3s ease",
-                  }}
-                />
-                <Chip
-                  icon={<InsightsIcon />}
-                  label="آمار پیشرفته (شهر/کشور/Referrer)"
-                  clickable
-                  component={Link}
-                  href="#"
-                  sx={{
-                    color: "#fff",
-                    background: "linear-gradient(90deg, #10b981, #14b8a6)",
-                    fontWeight: 700,
-                    "&:hover": {
-                      background: "linear-gradient(90deg, #14b8a6, #10b981)",
-                      transform: "translateY(-2px)",
-                    },
-                    transition: "all 0.3s ease",
-                  }}
-                />
-                <Chip
-                  icon={<SecurityIcon />}
-                  label="امنیت و حریم خصوصی"
-                  clickable
-                  component={Link}
-                  href="#"
-                  sx={{
-                    color: "#fff",
-                    background: "linear-gradient(90deg, #64748b, #475569)",
-                    fontWeight: 700,
-                    "&:hover": {
-                      background: "linear-gradient(90deg, #475569, #64748b)",
-                      transform: "translateY(-2px)",
-                    },
-                    transition: "all 0.3s ease",
-                  }}
-                />
-              </Stack>
-            </Grid>
-          </Grid>
-        </Paper>
-      </motion.div>
-    </Container>
-
-
-      {/* Features */}
-      <Container sx={{ py: { xs: 6, md: 10 } }}>
-        <Typography variant="h4" align="center" fontWeight={800} mb={6}>
-          امکانات کلیدی
-        </Typography>
-        <Grid container spacing={4}>
-          {features.map((f, i) => (
-            <Grid size={{xs: 12, sm: 6, md: 3}} key={i}>
+        <Container maxWidth="xl" sx={{ position: "relative", zIndex: 1 }}>
+          <Grid container spacing={6} alignItems="center">
+            {/* CONTENT */}
+            <Grid size={{ xs: 12, lg: 6}}>
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.08, duration: 0.5 }}
+                variants={fadeUp}
+                initial="hidden"
+                animate="visible"
+                transition={{ duration: 0.6 }}
+              >
+                <Chip
+                  label="نسل جدید کوتاه‌کننده لینک"
+                  sx={{
+                    mb: 3,
+                    fontWeight: 700,
+                    background: "linear-gradient(90deg,#9333ea,#d946ef)",
+                    color: "#fff",
+                    border: "none",
+                  }}
+                />
+
+                <Typography
+                  variant="h1"
+                  sx={{
+                    fontSize: { xs: "2.4rem", md: "4rem" },
+                    fontWeight: 900,
+                    lineHeight: 1.2,
+                    mb: 3,
+                    background: "linear-gradient(90deg,#ffffff,#c084fc)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                  }}
+                >
+                  کوتاه‌کننده لینک لِس
+                  <br />
+                  حرفه‌ای، سریع و
+                  <br />
+                  درآمدزا
+                </Typography>
+
+                <Typography
+                  sx={{
+                    color: "#94a3b8",
+                    fontSize: "1.1rem",
+                    lineHeight: 2,
+                    mb: 4,
+                    maxWidth: 700,
+                  }}
+                >
+                  ساخت لینک کوتاه با دامنه اختصاصی، آمار دقیق، UTM، API حرفه‌ای، تحلیل جغرافیایی، لینک رمزدار و قابلیت کسب درآمد.
+                </Typography>
+
+                <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+                  <Button
+                    component={Link}
+                    href="/register"
+                    size="large"
+                    variant="contained"
+                    sx={{
+                      borderRadius: 4,
+                      px: 5,
+                      py: 1.5,
+                      fontWeight: 800,
+                      color: "#fff",
+                      background: "linear-gradient(90deg,#9333ea,#d946ef)",
+                      "&:hover": {
+                        background: "linear-gradient(90deg,#7c2d12,#tcd212)",
+                        opacity: 0.9,
+                      },
+                    }}
+                  >
+                    شروع رایگان
+                  </Button>
+
+                  <Button
+                    component={Link}
+                    href="/plans"
+                    size="large"
+                    variant="outlined"
+                    sx={{
+                      borderRadius: 4,
+                      px: 5,
+                      py: 1.5,
+                      borderColor: "#475569",
+                      color: "#fff",
+                      "&:hover": {
+                        borderColor: "#94a3b8",
+                        background: "rgba(255,255,255,0.05)",
+                      },
+                    }}
+                  >
+                    مشاهده پلن‌ها
+                  </Button>
+                </Stack>
+              </motion.div>
+            </Grid>
+
+            {/* IMAGE */}
+            <Grid size={{ xs: 12, lg: 6}}>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.8 }}
               >
                 <Paper
                   sx={{
-                    p: 3,
-                    borderRadius: 3,
-                    textAlign: "center",
-                    background: "rgba(255,255,255,0.04)",
-                    color: "#fff",
-                    height: "100%",
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "space-between",
-                    "&:hover": { transform: "translateY(-6px)", transition: "0.25s" },
+                    overflow: "hidden",
+                    borderRadius: 5,
+                    background: "rgba(255,255,255,.04)",
+                    border: "1px solid rgba(255,255,255,.08)",
+                    boxShadow: "0 20px 50px rgba(0,0,0,0.3)",
                   }}
                 >
-                  <Typography fontSize={34}>{f.icon}</Typography>
-                  <Box>
-                    <Typography fontWeight={700} mt={1}>
-                      {f.title}
-                    </Typography>
-                    <Typography sx={{ color: "#94a3b8", mt: 1 }}>{f.desc}</Typography>
-                  </Box>
+                  <Image
+                    src="/images/hero-dashboard.webp"
+                    alt="داشبورد کوتاه کننده لینک l1s"
+                    width={1200}
+                    height={630}
+                    priority
+                    style={{
+                      width: "100%",
+                      height: "auto",
+                      display: "block",
+                    }}
+                  />
+                </Paper>
+              </motion.div>
+            </Grid>
+          </Grid>
+        </Container>
+      </Box>
+
+      {/* ================================================= */}
+      {/* SHORTENER */}
+      {/* ================================================= */}
+      <Container maxWidth="lg" sx={{ mb: 10 }}>
+        <Paper
+          sx={{
+            p: { xs: 2, md: 4 },
+            borderRadius: 5,
+            background: "rgba(255,255,255,.03)",
+            border: "1px solid rgba(255,255,255,.06)",
+            backdropFilter: "blur(10px)",
+          }}
+        >
+          <Typography variant="h4" align="center" fontWeight={900} mb={3} sx={{ color: "#fff" }}>
+            لینک خود را همین حالا کوتاه کنید
+          </Typography>
+          <HomeLinkShortener />
+        </Paper>
+      </Container>
+
+      {/* ================================================= */}
+      {/* TRUST STATS */}
+      {/* ================================================= */}
+      <Container maxWidth="xl" sx={{ mb: 12 }}>
+        <Grid container spacing={3}>
+          {stats.map((item) => (
+            <Grid size={{ xs: 6, md: 3}} key={item.title}>
+              <Paper
+                sx={{
+                  p: 4,
+                  borderRadius: 4,
+                  textAlign: "center",
+                  background: "rgba(255,255,255,.03)",
+                  border: "1px solid rgba(255,255,255,.06)",
+                  height: "100%",
+                }}
+              >
+                <Box sx={{ mb: 2, color: "#c084fc" }}>{item.icon}</Box>
+                <Typography variant="h4" fontWeight={900} sx={{ color: "#fff" }}>
+                  {item.value}
+                </Typography>
+                <Typography sx={{ color: "#94a3b8", mt: 1 }}>{item.title}</Typography>
+              </Paper>
+            </Grid>
+          ))}
+        </Grid>
+      </Container>
+
+      {/* ================================================= */}
+      {/* FEATURES PREVIEW */}
+      {/* ================================================= */}
+      <Container maxWidth="xl" sx={{ mb: 12 }}>
+        <Box textAlign="center" mb={6}>
+          <Typography variant="h3" fontWeight={900} mb={2} sx={{ color: "#fff" }}>
+            امکانات حرفه‌ای لِس
+          </Typography>
+          <Typography sx={{ color: "#94a3b8", maxWidth: 800, mx: "auto" }}>
+            تمام ابزارهای موردنیاز برای بازاریابان، توسعه‌دهندگان، کسب‌وکارها و تولیدکنندگان محتوا.
+          </Typography>
+        </Box>
+
+        <Grid container spacing={3}>
+          {coreFeatures.map((feature, index) => (
+            <Grid size={{ xs: 12, sm: 6}} key={index}>
+              <motion.div whileHover={{ y: -8 }}>
+                <Paper
+                  sx={{
+                    p: 4,
+                    height: "100%",
+                    borderRadius: 5,
+                    background: "rgba(255,255,255,.03)",
+                    border: "1px solid rgba(255,255,255,.06)",
+                  }}
+                >
+                  <Box sx={{ color: "#c084fc", mb: 2 }}>{feature.icon}</Box>
+                  <Typography variant="h6" fontWeight={800} mb={2} sx={{ color: "#fff" }}>
+                    {feature.title}
+                  </Typography>
+                  <Typography sx={{ color: "#94a3b8", lineHeight: 2 }}>
+                    {feature.description}
+                  </Typography>
                 </Paper>
               </motion.div>
             </Grid>
           ))}
+        </Grid>
+      </Container>
 
-          {/* New detailed feature: Monetization explanation */}
-          <Grid size={{xs: 12, md: 6}}>
-  <Paper sx={{ p: 3, borderRadius: 3, background: "rgba(255,255,255,0.03)" }}>
-    <Typography fontWeight={800} mb={1} sx={{color: "#fff"}}>
-      کسب درآمد از لینک‌ها (اختیاری)
-    </Typography>
-    <Typography sx={{ color: "#94a3b8", mb: 2 }}>
-      هر کاربر می‌تواند در پنل کاربری گزینه <strong>هدایت به صفحه تبلیغات </strong> را فعال کند تا لینک‌هایش به‌صورت اختیاری از مسیر تبلیغاتی نمایش داده شوند.
-      با هر بازدید تبلیغ، امتیاز و درآمد کسب می‌کند 💰
-      اگر این گزینه خاموش باشد، لینک بدون تبلیغ مستقیماً به مقصد می‌رود.
-    </Typography>
-    <Button component={Link} href="/monetize" variant="outlined" size="small">
-      نحوه فعال‌سازی درآمدزایی
-    </Button>
-  </Paper>
-</Grid>
+      <Divider sx={{ borderColor: "rgba(255,255,255,.06)" }} />
 
+      {/* ================================================= */}
+      {/* MONETIZATION SECTION */}
+      {/* ================================================= */}
+      <Container maxWidth="xl" sx={{ py: { xs: 10, md: 14 } }}>
+        <Grid container spacing={6} alignItems="center">
+          <Grid size={{ xs: 12, lg: 6}}>
+            <Typography variant="h3" fontWeight={900} mb={3} sx={{ color: "#fff" }}>
+              از لینک‌های خود درآمد کسب کنید
+            </Typography>
 
-          <Grid size={{xs: 12, md: 6}}>
-            <Paper sx={{ p: 3, borderRadius: 3, background: "rgba(255,255,255,0.03)" }}>
-              <Typography fontWeight={800} mb={1} sx={{color: "#fff"}}>
-                عملکرد بدون تبلیغات اجباری (No-Ads Flow)
+            <Typography sx={{ color: "#94a3b8", lineHeight: 2.2, mb: 4 }}>
+              لِس امکان درآمدزایی از لینک‌ها را به‌صورت اختیاری فراهم کرده است. می‌توانید هنگام ساخت لینک تعیین کنید که بازدیدکننده قبل از رسیدن به مقصد، صفحه تبلیغاتی را مشاهده کند.
+            </Typography>
+
+            <Stack spacing={2}>
+              {["💰 درآمد از بازدید واقعی", "📊 گزارش کامل درآمد", "🚀 فعال یا غیرفعال کردن در هر لینک"].map((text, idx) => (
+                <Paper
+                  key={idx}
+                  sx={{
+                    p: 2,
+                    background: "rgba(255,255,255,.03)",
+                    border: "1px solid rgba(255,255,255,.06)",
+                    borderRadius: 3,
+                    color: "#fff",
+                  }}
+                >
+                  {text}
+                </Paper>
+              ))}
+            </Stack>
+
+            <Button
+              component={Link}
+              href="/short-url-generator"
+              variant="contained"
+              size="large"
+              sx={{
+                mt: 4,
+                borderRadius: 4,
+                color: "#fff",
+                background: "linear-gradient(90deg,#9333ea,#d946ef)",
+              }}
+            >
+              مشاهده سیستم درآمدزایی
+            </Button>
+          </Grid>
+
+          <Grid size={{ xs: 12, lg: 6}}>
+            <Paper
+              sx={{
+                p: 5,
+                borderRadius: 5,
+                background: "linear-gradient(135deg,rgba(168,85,247,.12),rgba(217,70,239,.08))",
+                border: "1px solid rgba(255,255,255,.08)",
+              }}
+            >
+              <Typography variant="h2" fontWeight={900} align="center" mb={2}>
+                💸
               </Typography>
-              <Typography sx={{ color: "#94a3b8", mb: 2 }}>
-                می‌توانید لینک‌هایی بسازید که بدون ریدایرکت تبلیغاتی کاربر را به مقصد هدایت کنند — مناسب زمانی که می‌خواهید مخاطب حس اعتماد بیشتری داشته باشد.
+              <Typography variant="h5" align="center" fontWeight={800} sx={{ color: "#fff" }}>
+                سیستم درآمدزایی هوشمند
               </Typography>
-              <Button component={Link} href="/no-ads" variant="outlined" size="small">
-                اطلاعات بیشتر
-              </Button>
+              <Typography align="center" sx={{ mt: 2, color: "#94a3b8" }}>
+                بدون اجبار، کاملاً تحت کنترل شما
+              </Typography>
             </Paper>
           </Grid>
         </Grid>
-
-          <Box mt={4} />
-          <Grid size={{xs: 12, md: 6}}>
-  <Paper sx={{ p: 3, borderRadius: 3, background: "rgba(255,255,255,0.03)" }}>
-    <Typography fontWeight={800} mb={1} sx={{color: "#fff"}}>
-      لینک‌های محافظت‌شده با رمز 🔒
-    </Typography>
-    <Typography sx={{ color: "#94a3b8", mb: 2 }}>
-      هنگام ساخت لینک، می‌توانید گزینه <strong>password</strong> را تنظیم کنید تا فقط افرادی که رمز را دارند بتوانند به مقصد دسترسی داشته باشند.
-      این قابلیت برای لینک‌های خصوصی یا محرمانه بسیار کاربردی است.
-    </Typography>
-    <Button component={Link} href="/security" variant="outlined" size="small">
-      درباره امنیت بیشتر بخوانید
-    </Button>
-  </Paper>
-</Grid>
-
       </Container>
 
-      {/* Stats */}
-      <Box sx={{ py: { xs: 6, md: 10 }, background: "rgba(255,255,255,0.02)" }}>
-        <Container>
-          <Typography variant="h4" align="center" fontWeight={800} mb={6}>
-            آمار کلی سرویس
+      {/* ================================================= */}
+      {/* BIO LINK */}
+      {/* ================================================= */}
+      <Box sx={{ py: 12, background: "rgba(255,255,255,.02)" }}>
+        <Container maxWidth="xl">
+          <Grid container spacing={6} alignItems="center">
+            <Grid size={{ xs: 12, lg: 6}}>
+              <Image
+                src="/images/bio-link-seo.webp"
+                alt="bio link"
+                width={900}
+                height={450}
+                style={{
+                  width: "100%",
+                  height: "auto",
+                  borderRadius: 24,
+                }}
+              />
+            </Grid>
+
+            <Grid size={{ xs: 12, lg: 6}}>
+              <Typography variant="h3" fontWeight={900} mb={3} sx={{ color: "#fff" }}>
+                بیو لینک اختصاصی
+              </Typography>
+
+              <Typography sx={{ color: "#94a3b8", lineHeight: 2.2, mb: 4 }}>
+                تمام لینک‌های مهم خود را در یک صفحه حرفه‌ای جمع‌آوری کنید. مناسب اینستاگرام، تلگرام، یوتیوب، لینکدین و برند شخصی.
+              </Typography>
+
+              <Stack direction="row" flexWrap="wrap" gap={2}>
+                {["پروفایل شخصی", "چند لینک در یک صفحه", "آمار بازدید", "برندینگ"].map((label) => (
+                  <Chip
+                    key={label}
+                    label={label}
+                    sx={{
+                      background: "rgba(255,255,255,0.06)",
+                      color: "#f8fafc",
+                      border: "1px solid rgba(255,255,255,0.1)",
+                    }}
+                  />
+                ))}
+              </Stack>
+
+              <Button
+                component={Link}
+                href="/bio-link"
+                variant="outlined"
+                sx={{
+                  mt: 4,
+                  borderRadius: 4,
+                  borderColor: "rgba(255,255,255,.2)",
+                  color: "#fff",
+                  "&:hover": { borderColor: "#fff" },
+                }}
+              >
+                مشاهده بیو لینک
+              </Button>
+            </Grid>
+          </Grid>
+        </Container>
+      </Box>
+
+      {/* ================================================= */}
+      {/* GEO SEO SECTION */}
+      {/* ================================================= */}
+      <Container maxWidth="lg" sx={{ py: { xs: 10, md: 14 } }}>
+        <Typography variant="h3" fontWeight={900} align="center" mb={6} sx={{ color: "#fff" }}>
+          کوتاه‌کننده لینک برای کسب‌وکارها، مارکترها و توسعه‌دهندگان
+        </Typography>
+
+        <Typography sx={{ color: "#94a3b8", lineHeight: 2.3, fontSize: "1.05rem" }}>
+          اگر به دنبال یک کوتاه‌کننده لینک حرفه‌ای هستید که علاوه بر ساخت URL کوتاه، امکانات پیشرفته‌ای مانند تحلیل بازدیدکنندگان، دامنه اختصاصی، لینک رمزدار، ساخت پارامترهای UTM، API حرفه‌ای و گزارش‌های تحلیلی ارائه دهد، لِس یکی از کامل‌ترین گزینه‌های موجود است.
+        </Typography>
+
+        <Typography sx={{ color: "#94a3b8", lineHeight: 2.3, mt: 3 }}>
+          کاربران می‌توانند عملکرد کمپین‌های تبلیغاتی خود را بررسی کرده، منابع ورودی ترافیک را شناسایی کنند و اطلاعاتی مانند کشور، شهر، مرورگر و دستگاه کاربران را مشاهده نمایند.
+        </Typography>
+      </Container>
+
+      {/* ================================================= */}
+      {/* ANALYTICS */}
+      {/* ================================================= */}
+      <Container maxWidth="xl" sx={{ pb: 14 }}>
+        <Typography variant="h3" fontWeight={900} textAlign="center" mb={7} sx={{ color: "#fff" }}>
+          داشبورد تحلیل پیشرفته
+        </Typography>
+
+        <Grid container spacing={4}>
+          {[
+            "کشور بازدیدکنندگان",
+            "شهر بازدیدکنندگان",
+            "منابع ورودی",
+            "مرورگر کاربران",
+            "دستگاه کاربران",
+            "UTM کمپین‌ها",
+          ].map((item) => (
+            <Grid size={{ xs: 12, sm: 6, md: 4}} key={item}>
+              <Paper
+                sx={{
+                  p: 4,
+                  textAlign: "center",
+                  borderRadius: 4,
+                  background: "rgba(255,255,255,.03)",
+                  border: "1px solid rgba(255,255,255,.06)",
+                  height: "100%",
+                }}
+              >
+                <Typography variant="h6" fontWeight={800} sx={{ color: "#fff" }}>
+                  {item}
+                </Typography>
+                <Typography sx={{ mt: 2, color: "#94a3b8" }}>گزارش دقیق و لحظه‌ای</Typography>
+              </Paper>
+            </Grid>
+          ))}
+        </Grid>
+      </Container>
+
+      {/* ================================================= */}
+      {/* CUSTOM DOMAIN */}
+      {/* ================================================= */}
+      <Box sx={{ py: 12, background: "rgba(255,255,255,.02)" }}>
+        <Container maxWidth="xl">
+          <Typography variant="h3" fontWeight={900} textAlign="center" mb={4} sx={{ color: "#fff" }}>
+            دامنه اختصاصی برای برند شما
           </Typography>
-          <Paper sx={{ p: 3, borderRadius: 3, background: "#0f172a" }}>
-            <ResponsiveContainer width="100%" height={320}>
-              <LineChart data={chartData} aria-label="نمودار آمار هفته">
-                <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                <XAxis dataKey="day" stroke="#94a3b8" />
-                <YAxis stroke="#94a3b8" />
-                <ReTooltip contentStyle={{ background: "#1e293b", borderRadius: 8, border: "none" }} />
-                <Line type="monotone" dataKey="links" stroke="#a855f7" strokeWidth={3} />
-                <Line type="monotone" dataKey="clicks" stroke="#ec4899" strokeWidth={3} />
-              </LineChart>
-            </ResponsiveContainer>
 
-            <Divider sx={{ my: 3 }} />
-
-            {/* 🔹 Advanced Analytics Features Section - نسخه ارتقا یافته */}
-<Container sx={{ py: { xs: 6, md: 10 } }}>
-  <Typography
-    variant="h4"
-    fontWeight={800}
-    align="center"
-    mb={5}
-    sx={{
-      background: "linear-gradient(90deg,#a855f7,#ec4899)",
-      WebkitBackgroundClip: "text",
-      WebkitTextFillColor: "transparent",
-    }}
-  >
-    آمار و تحلیل پیشرفته
-  </Typography>
-
-  <Grid container spacing={4}>
-    {/* کارت ۱ */}
-    <Grid size={{xs: 12, md: 4}}>
-      <motion.div
-        whileHover={{ y: -6, scale: 1.02 }}
-        transition={{ type: "spring", stiffness: 200 }}
-      >
-        <Paper
-          elevation={0}
-          sx={{
-            p: 3,
-            borderRadius: 4,
-            height: "100%",
-            background:
-              "linear-gradient(135deg, rgba(168,85,247,0.08) 0%, rgba(236,72,153,0.08) 100%)",
-            border: "1px solid rgba(255,255,255,0.06)",
-            backdropFilter: "blur(10px)",
-          }}
-        >
           <Typography
-            variant="h6"
-            fontWeight={800}
-            sx={{ color: "#f1f5f9", mb: 1.5 }}
+            align="center"
+            sx={{
+              maxWidth: 900,
+              mx: "auto",
+              color: "#94a3b8",
+              lineHeight: 2.2,
+              mb: 6,
+            }}
           >
-            🌍 آمار جغرافیایی
+            لینک‌های کوتاه را با دامنه برند خود ایجاد کنید تا اعتماد کاربران افزایش یابد و هویت برند شما حفظ شود.
           </Typography>
-          <Typography sx={{ color: "#94a3b8", lineHeight: 1.7 }}>
-            نمایش شهر، استان و کشور بازدیدکنندگان به‌صورت دقیق و تفکیک‌شده برای
-            تحلیل مخاطبان هدف.
-          </Typography>
-        </Paper>
-      </motion.div>
-    </Grid>
 
-    {/* کارت ۲ */}
-    <Grid size={{xs: 12, md: 4}}>
-      <motion.div
-        whileHover={{ y: -6, scale: 1.02 }}
-        transition={{ type: "spring", stiffness: 200 }}
-      >
-        <Paper
-          elevation={0}
-          sx={{
-            p: 3,
-            borderRadius: 4,
-            height: "100%",
-            background:
-              "linear-gradient(135deg, rgba(56,189,248,0.08) 0%, rgba(59,130,246,0.08) 100%)",
-            border: "1px solid rgba(255,255,255,0.06)",
-            backdropFilter: "blur(10px)",
-          }}
-        >
-          <Typography
-            variant="h6"
-            fontWeight={800}
-            sx={{ color: "#f1f5f9", mb: 1.5 }}
+          <Paper
+            sx={{
+              p: 5,
+              borderRadius: 5,
+              textAlign: "center",
+              background: "rgba(255,255,255,.03)",
+              border: "1px solid rgba(255,255,255,.06)",
+            }}
           >
-            🔍 Referrer & Fingerprint
-          </Typography>
-          <Typography sx={{ color: "#94a3b8", lineHeight: 1.7 }}>
-            مشاهده‌ی منبع ترافیک (Referrer)، مرورگر، دستگاه، IP و fingerprint برای
-            شناسایی رفتار کاربران و تشخیص ترافیک مشکوک.
-          </Typography>
-        </Paper>
-      </motion.div>
-    </Grid>
-
-    {/* کارت ۳ */}
-    <Grid size={{xs: 12, md: 4}}>
-      <motion.div
-        whileHover={{ y: -6, scale: 1.02 }}
-        transition={{ type: "spring", stiffness: 200 }}
-      >
-        <Paper
-          elevation={0}
-          sx={{
-            p: 3,
-            borderRadius: 4,
-            height: "100%",
-            background:
-              "linear-gradient(135deg, rgba(34,197,94,0.08) 0%, rgba(16,185,129,0.08) 100%)",
-            border: "1px solid rgba(255,255,255,0.06)",
-            backdropFilter: "blur(10px)",
-          }}
-        >
-          <Typography
-            variant="h6"
-            fontWeight={800}
-            sx={{ color: "#f1f5f9", mb: 1.5 }}
-          >
-            📊 UTM & Campaigns
-          </Typography>
-          <Typography sx={{ color: "#94a3b8", lineHeight: 1.7 }}>
-            امکان ساخت و ردیابی خودکار پارامترهای UTM و فیلتر داده‌ها بر اساس
-            کمپین، منبع یا رسانه برای بررسی عملکرد بازاریابی.
-          </Typography>
-        </Paper>
-      </motion.div>
-    </Grid>
-  </Grid>
-</Container>
-
+            <Typography variant="h5" fontWeight={800} sx={{ color: "#c084fc", letterSpacing: "1px" }}>
+              yourbrand.com/abc123
+            </Typography>
           </Paper>
         </Container>
       </Box>
 
-      {/* API Examples */}
-      {/* 🔹 API Examples - نسخه ارتقایافته و ریسپانسیو‌تر */}
-<Container sx={{ py: { xs: 6, md: 10 } }}>
-  <Grid
-    container
-    spacing={6}
-    alignItems="stretch"
-    justifyContent="center"
-    direction={{ xs: "column-reverse", md: "row" }}
-  >
-    {/* 🔸 سمت راست: توضیحات و نمونه API */}
-    <Grid size={{xs: 12, md: 6}}>
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
-        <Typography
-          variant="h5"
-          fontWeight={900}
-          mb={2}
-          sx={{
-            background: "linear-gradient(90deg,#a855f7,#ec4899)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-          }}
-        >
-          API توسعه‌دهندگان
+      {/* ================================================= */}
+      {/* UTM SECTION */}
+      {/* ================================================= */}
+      <Container maxWidth="lg" sx={{ py: 14 }}>
+        <Typography variant="h3" fontWeight={900} mb={4} align="center" sx={{ color: "#fff" }}>
+          مدیریت UTM و کمپین‌ها
         </Typography>
 
-        <Typography sx={{ color: "#94a3b8", mb: 3, lineHeight: 1.8 }}>
-          با استفاده از <strong>API Key</strong> امن، لینک کوتاه بسازید.
-          پشتیبانی از دامنه سفارشی، پارامترهای UTM و گزینه‌های <strong>No-Ads</strong> یا <strong>کسب درآمد</strong>.
+        <Typography sx={{ color: "#94a3b8", lineHeight: 2.2, textAlign: "center" }}>
+          برای هر لینک می‌توانید UTM Source، UTM Medium و UTM Campaign تعریف کنید و عملکرد کمپین‌های تبلیغاتی خود را به‌صورت دقیق اندازه‌گیری نمایید.
         </Typography>
+      </Container>
 
-        <Tabs
-          value={tab}
-          onChange={(_, v) => setTab(v)}
-          sx={{
-            mb: 2,
-            "& .MuiTab-root": {
-              color: "#cbd5e1",
-              fontWeight: 700,
-              fontSize: 14,
-              transition: "0.3s",
-            },
-            "& .Mui-selected": {
-              color: "#fff !important",
-              borderBottom: "2px solid #a855f7",
-            },
-          }}
-          variant="scrollable"
-          scrollButtons="auto"
-        >
-          {examples.map((ex, i) => (
-            <Tab key={i} label={ex.label} />
-          ))}
-        </Tabs>
-
-        {/* 🔹 کد نمونه */}
+      {/* ================================================= */}
+      {/* CTA */}
+      {/* ================================================= */}
+      <Container maxWidth="md" sx={{ pb: 14 }}>
         <Paper
           sx={{
-            p: 2,
-            background: "#1e293b",
-            borderRadius: 3,
-            position: "relative",
-            overflowX: "auto",
-            direction: "ltr", // 👈 برای چپ‌به‌راست بودن کد
-          }}
-        >
-          <Box
-            component="pre"
-            sx={{
-              fontSize: 13,
-              m: 0,
-              color: "#ffffff",
-              fontFamily: "monospace",
-              whiteSpace: "pre-wrap",
-              wordBreak: "break-word",
-            }}
-          >
-            {examples[tab].code}
-          </Box>
-
-          <Tooltip title={copied ? "کپی شد!" : "کپی"}>
-            <IconButton
-              onClick={() => copyToClipboard(examples[tab].code, setCopied)}
-              sx={{
-                position: "absolute",
-                top: 8,
-                right: 8,
-                color: copied ? "#22c55e" : "#cbd5e1",
-                transition: "0.3s",
-              }}
-              aria-label="کپی کد نمونه"
-            >
-              {copied ? (
-                <CheckIcon fontSize="small" />
-              ) : (
-                <ContentCopyOutlinedIcon fontSize="small" />
-              )}
-            </IconButton>
-          </Tooltip>
-        </Paper>
-      </motion.div>
-    </Grid>
-
-    {/* 🔸 سمت چپ: نمونه خروجی JSON */}
-    <Grid size={{xs: 12, md: 6 }}>
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.1 }}
-      >
-        <Paper
-          sx={{
-            p: 3,
-            borderRadius: 3,
-            background: "rgba(255,255,255,0.05)",
-            height: "100%",
+            p: { xs: 4, md: 7 },
+            textAlign: "center",
+            borderRadius: 6,
+            background: "linear-gradient(135deg,rgba(168,85,247,.18),rgba(217,70,239,.12))",
             border: "1px solid rgba(255,255,255,0.08)",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "space-between",
           }}
         >
-          <Typography
-            fontWeight={800}
-            mb={1.5}
-            sx={{
-              color: "#cbd6e8",
-              fontSize: 15,
-            }}
-          >
-            نمونه پاسخ JSON
+          <Typography variant="h3" fontWeight={900} mb={2} sx={{ color: "#fff" }}>
+            آماده شروع هستید؟
           </Typography>
-          <Box
-            component="pre"
+
+          <Typography sx={{ color: "#cbd5e1", mb: 4 }}>
+            همین حالا ثبت‌نام کنید و اولین لینک کوتاه خود را بسازید.
+          </Typography>
+
+          <Button
+            component={Link}
+            href="/register"
+            size="large"
+            variant="contained"
             sx={{
-              fontSize: 13,
-              color: "#e2e8f0",
-              m: 0,
-              p: 1.5,
-              background: "#0f172a",
-              borderRadius: 2,
-              overflowX: "auto",
-              direction: "ltr", // 👈 برای راست به چپ نبودن کد
+              borderRadius: 4,
+              px: 6,
+              color: "#fff",
+              background: "linear-gradient(90deg,#9333ea,#d946ef)",
             }}
           >
-            {examples[tab].response}
-          </Box>
+            ثبت‌نام رایگان
+          </Button>
         </Paper>
-      </motion.div>
-    </Grid>
-  </Grid>
-</Container>
+      </Container>
 
-      {/* Tech Stack */}
-      <Box sx={{ py: { xs: 6, md: 10 }, textAlign: "center", background: "rgba(255,255,255,0.02)" }}>
-        <Typography variant="h5" fontWeight={800} mb={3}>
-          تکنولوژی‌ها
-        </Typography>
-        <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap", justifyContent: "center" }}>
-          {techStack.map((t) => (
-            <Paper key={t} sx={{ px: 2, py: 1, borderRadius: 2, color: "#cbd5e1", background: "#1e293b" }}>
-              {t}
-            </Paper>
-          ))}
-        </Box>
+      {/* ================================================= */}
+      {/* API SHOWCASE */}
+      {/* ================================================= */}
+      <Box sx={{ py: { xs: 10, md: 14 }, background: "rgba(255,255,255,.015)" }}>
+        <Container maxWidth="xl">
+          <Grid container spacing={6} alignItems="center">
+            <Grid size={{ xs: 12, lg: 6}}>
+              <Typography variant="h3" fontWeight={900} mb={3} sx={{ color: "#fff" }}>
+                API کوتاه‌کننده لینک برای توسعه‌دهندگان
+              </Typography>
+
+              <Typography sx={{ color: "#94a3b8", lineHeight: 2.2, mb: 4 }}>
+                سرویس API لِس به شما اجازه می‌دهد لینک‌های کوتاه را مستقیماً از داخل اپلیکیشن‌ها، ربات‌ها، CRM، سرویس‌های SaaS و سیستم‌های اتوماسیون ایجاد کنید.
+              </Typography>
+
+              <Stack spacing={2}>
+                {[
+                  "✓ احراز هویت Api-Key",
+                  "✓ پاسخ JSON استاندارد",
+                  "✓ پشتیبانی از دامنه اختصاصی",
+                  "✓ پشتیبانی از UTM",
+                  "✓ Rate Limiting",
+                ].map((text) => (
+                  <Paper
+                    key={text}
+                    sx={{
+                      p: 2,
+                      borderRadius: 3,
+                      background: "rgba(255,255,255,.03)",
+                      border: "1px solid rgba(255,255,255,.06)",
+                      color: "#f8fafc",
+                    }}
+                  >
+                    {text}
+                  </Paper>
+                ))}
+              </Stack>
+
+              <Button
+                component={Link}
+                href="/url-shortener"
+                variant="contained"
+                sx={{
+                  mt: 4,
+                  borderRadius: 4,
+                  color: "#fff",
+                  background: "linear-gradient(90deg,#9333ea,#d946ef)",
+                }}
+              >
+                مستندات API
+              </Button>
+            </Grid>
+
+            <Grid size={{ xs: 12, lg: 6}}>
+              <Paper
+                sx={{
+                  p: 4,
+                  borderRadius: 5,
+                  background: "#0f172a",
+                  border: "1px solid rgba(255,255,255,0.06)",
+                  overflow: "auto",
+                }}
+              >
+                <Box
+                  component="pre"
+                  sx={{
+                    m: 0,
+                    color: "#38bdf8",
+                    fontSize: 13,
+                    direction: "ltr",
+                    fontFamily: "monospace",
+                  }}
+                >
+{`curl -X POST https://l1s.ir/api/v1/shorten \\
+  -H "Api-Key: sk_xxxxxxxxx" \\
+  -H "Content-Type: application/json" \\
+  -d '{ "long_url": "https://example.com" }'`}
+                </Box>
+              </Paper>
+            </Grid>
+          </Grid>
+        </Container>
       </Box>
 
-      {/* FAQ */}
-      <Container sx={{ py: { xs: 6, md: 10 } }}>
-        <Typography variant="h4" align="center" fontWeight={800} mb={6}>
+      {/* ================================================= */}
+      {/* SEO LANDING CONTENT */}
+      {/* ================================================= */}
+      <Container maxWidth="lg" sx={{ py: { xs: 10, md: 14 } }}>
+        <Typography variant="h3" fontWeight={900} mb={5} align="center" sx={{ color: "#fff" }}>
+          بهترین کوتاه‌کننده لینک برای کسب‌وکارهای مدرن
+        </Typography>
+
+        <Typography paragraph sx={{ color: "#94a3b8", lineHeight: 2.3 }}>
+          کوتاه‌کننده لینک لِس یک سرویس حرفه‌ای برای ساخت لینک کوتاه، مدیریت لینک‌ها، تحلیل رفتار کاربران و افزایش نرخ کلیک است. کاربران می‌توانند لینک‌های طولانی را به URLهای کوتاه، زیبا و قابل اشتراک‌گذاری تبدیل کنند.
+        </Typography>
+
+        <Typography paragraph sx={{ color: "#94a3b8", lineHeight: 2.3 }}>
+          لینک‌های کوتاه در شبکه‌های اجتماعی، تبلیغات دیجیتال، کمپین‌های بازاریابی، پیامک‌های تبلیغاتی، ایمیل مارکتینگ و محتواهای آموزشی کاربرد گسترده‌ای دارند.
+        </Typography>
+
+        <Typography paragraph sx={{ color: "#94a3b8", lineHeight: 2.3 }}>
+          با استفاده از لِس می‌توانید لینک‌های برندشده، لینک‌های رمزدار، لینک‌های دارای زمان انقضا و لینک‌های دارای آمار تحلیلی ایجاد کنید.
+        </Typography>
+      </Container>
+
+      {/* ================================================= */}
+      {/* INTERNAL LINKING CLUSTER */}
+      {/* ================================================= */}
+      <Container maxWidth="xl">
+        <Typography variant="h4" fontWeight={900} align="center" mb={5} sx={{ color: "#fff" }}>
+          صفحات کاربردی
+        </Typography>
+
+        <Grid container spacing={3}>
+          {[
+            { title: "کوتاه کننده لینک", href: "/short-url-generator" },
+            { title: "مستندات API", href: "/url-shortener" },
+            { title: "بیو لینک", href: "/bio-link" },
+            { title: "کسب درآمد", href: "/short-url-generator" },
+            { title: "آموزش استفاده", href: "/tutorial" },
+            { title: "پلن‌ها", href: "/plans" },
+          ].map((item, index) => (
+            <Grid size={{ xs: 12, lg: 6, sm: 6, md: 4}} key={`${item.href}-${index}`}>
+              <Paper
+                sx={{
+                  p: 4,
+                  borderRadius: 4,
+                  height: "100%",
+                  background: "rgba(255,255,255,.03)",
+                  border: "1px solid rgba(255,255,255,.06)",
+                  transition: ".3s",
+                  "&:hover": {
+                    transform: "translateY(-4px)",
+                    borderColor: "rgba(255,255,255,.15)",
+                  },
+                }}
+              >
+                <Typography variant="h6" fontWeight={800} mb={2} sx={{ color: "#fff" }}>
+                  {item.title}
+                </Typography>
+
+                <Typography sx={{ color: "#94a3b8", mb: 3 }}>
+                  مشاهده اطلاعات بیشتر درباره {item.title}
+                </Typography>
+
+                <Button component={Link} href={item.href} sx={{ color: "#c084fc", fontWeight: 700, p: 0 }}>
+                  مشاهده ←
+                </Button>
+              </Paper>
+            </Grid>
+          ))}
+        </Grid>
+      </Container>
+
+      {/* ================================================= */}
+      {/* GEO CONTENT */}
+      {/* ================================================= */}
+      <Container maxWidth="lg" sx={{ py: { xs: 10, md: 14 } }}>
+        <Typography variant="h3" fontWeight={900} mb={4} sx={{ color: "#fff" }}>
+          تحلیل جغرافیایی بازدیدکنندگان
+        </Typography>
+
+        <Typography sx={{ color: "#94a3b8", lineHeight: 2.3 }}>
+          سیستم تحلیل جغرافیایی لِس اطلاعات دقیقی از کشور، استان و شهر بازدیدکنندگان لینک را نمایش می‌دهد. این قابلیت به مدیران کمپین‌های تبلیغاتی کمک می‌کند مخاطبان واقعی خود را بهتر بشناسند.
+        </Typography>
+
+        <Typography sx={{ color: "#94a3b8", lineHeight: 2.3, mt: 3 }}>
+          گزارش‌های جغرافیایی در کنار داده‌های Referrer، مرورگر، دستگاه و پارامترهای UTM تصویری کامل از عملکرد لینک‌ها در اختیار شما قرار می‌دهد.
+        </Typography>
+      </Container>
+
+      {/* ================================================= */}
+      {/* FAQ SEO */}
+      {/* ================================================= */}
+      <Container maxWidth="lg" sx={{ pb: 12 }}>
+        <Typography variant="h3" fontWeight={900} align="center" mb={6} sx={{ color: "#fff" }}>
           سوالات متداول
         </Typography>
-        {faqItems.map((f, i) => (
-          <Accordion key={i} sx={{ background: "rgba(255,255,255,0.03)", color: "#fff", fontWeight: 900, mb: 1, borderRadius: 2 }}>
-            <AccordionSummary expandIcon={<ExpandMoreIcon sx={{ color: "#cbcbd1" }} />}>
-              <Typography fontWeight={700}>{f.q}</Typography>
+
+        {faqItems.map((item, index) => (
+          <Accordion
+            key={index}
+            sx={{
+              mb: 2,
+              borderRadius: "12px !important",
+              overflow: "hidden",
+              background: "rgba(255,255,255,.03)",
+              border: "1px solid rgba(255,255,255,.06)",
+              boxShadow: "none",
+              color: "#f8fafc",
+              "&:before": { display: "none" },
+            }}
+          >
+            <AccordionSummary expandIcon={<ExpandMore sx={{ color: "#94a3b8" }} />}>
+              <Typography fontWeight={700} sx={{ color: "#fff" }}>{item.q}</Typography>
             </AccordionSummary>
-            <AccordionDetails>
-              <Typography sx={{ color: "#d7dbe8" }}>{f.a}</Typography>
+            <AccordionDetails sx={{ borderTop: "1px solid rgba(255,255,255,.06)" }}>
+              <Typography sx={{ color: "#94a3b8", lineHeight: 2 }}>{item.a}</Typography>
             </AccordionDetails>
           </Accordion>
         ))}
       </Container>
 
-      {/* CTA */}
-      <Box sx={{ textAlign: "center", py: 8 }}>
-        <Typography variant="h5" fontWeight={800} mb={1}>
-          آماده شروع هستید؟
-        </Typography>
-        <Typography sx={{ color: "#94a3b8", mb: 3 }}>ثبت‌نام کنید و اولین لینک کوتاه خود را بسازید — حتی به‌صورت رایگان.</Typography>
-        <Button
-          component={Link}
-          href="/register"
-          variant="contained"
-          size="large"
-          sx={{ borderRadius: 3, px: 5, background: "linear-gradient(90deg,#a855f7,#d946ef)" }}
-        >
-          ثبت‌نام رایگان
-        </Button>
+      {/* ================================================= */}
+      {/* FINAL SEO CTA */}
+      {/* ================================================= */}
+      <Box
+        sx={{
+          py: 14,
+          background: "linear-gradient(180deg,rgba(168,85,247,.08),rgba(217,70,239,.03))",
+          borderTop: "1px solid rgba(255,255,255,0.04)",
+        }}
+      >
+        <Container maxWidth="md">
+          <Typography variant="h2" fontWeight={900} align="center" mb={3} sx={{ color: "#fff", fontSize: { xs: "2rem", md: "3rem" } }}>
+            ساخت لینک کوتاه در کمتر از ۵ ثانیه
+          </Typography>
+
+          <Typography align="center" sx={{ color: "#94a3b8", mb: 5, lineHeight: 2 }}>
+            همین حالا ثبت‌نام کنید و از امکانات حرفه‌ای شامل دامنه اختصاصی، API، آمار دقیق، لینک بیو و درآمدزایی استفاده کنید.
+          </Typography>
+
+          <Stack direction={{ xs: "column", sm: "row" }} spacing={2} justifyContent="center">
+            <Button
+              component={Link}
+              href="/register"
+              variant="contained"
+              size="large"
+              sx={{
+                borderRadius: 4,
+                px: 5,
+                color: "#fff",
+                background: "linear-gradient(90deg,#9333ea,#d946ef)",
+              }}
+            >
+              ثبت‌نام رایگان
+            </Button>
+
+            <Button
+              component={Link}
+              href="/plans"
+              variant="outlined"
+              size="large"
+              sx={{
+                borderRadius: 4,
+                px: 5,
+                borderColor: "rgba(255,255,255,.2)",
+                color: "#fff",
+                "&:hover": { borderColor: "#fff", background: "rgba(255,255,255,0.05)" },
+              }}
+            >
+              مشاهده پلن‌ها
+            </Button>
+          </Stack>
+        </Container>
       </Box>
     </>
   );

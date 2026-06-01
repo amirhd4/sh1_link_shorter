@@ -30,7 +30,7 @@ export function generateViewport(): Viewport {
   };
 }
 export const metadata: Metadata = {
-  title: 'لِس (l1s) | کوتاه‌کننده لینک',
+  title: 'لِس | کوتاه‌کننده لینک',
   description: 'سرویس کوتاه‌کننده لینک سریع، امن و حرفه‌ای',
   applicationName: 'l1s',
   manifest: '/manifest.json',
@@ -110,7 +110,7 @@ export default function RootLayout({
 
         {/* ========= NoScript ========= */}
         <noscript>
-          برای استفاده بهتر از سرویس کوتاه‌کننده لینک لِس (l1s)
+          برای استفاده بهتر از سرویس کوتاه‌کننده لینک لِس
           لطفاً جاوااسکریپت را فعال کنید.
         </noscript>
 

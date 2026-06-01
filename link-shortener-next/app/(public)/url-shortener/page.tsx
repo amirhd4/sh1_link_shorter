@@ -214,9 +214,9 @@ Body:
     {[
       { href: "https://a.l1s.ir/home", title: "صفحه اصلی" },
       { href: "https://a.l1s.ir/short-url-generator", title: "تولید کننده لینک کوتاه" },
-      { href: "https://a.l1s.ir/free-url-shortener", title: "کوتاه کننده لینک رایگان" },
+      { href: "https://a.l1s.ir/short-url-generator", title: "کوتاه کننده لینک رایگان" },
       { href: "https://a.l1s.ir/terms", title: "حریم خصوصی و قوانین" },
-      { href: "https://a.l1s.ir/best-url-shortener", title: "بهترین کوتاه کننده لینک" },
+      { href: "https://a.l1s.ir/tutorial", title: "آموزش کوتاه کننده لینک لِس" },
     ].map((link, idx) => (
       <Box
         key={idx}

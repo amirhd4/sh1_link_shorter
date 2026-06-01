@@ -64,9 +64,8 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
 
 const navLinks = [
     { title: "خانه", href: "/home" },
-    { title: "بهترین کوتاه کننده لینک", href: "/best-url-shortener" },
+    { title: "آموزش کوتاه کننده لینک لِس", href: "/tutorial" },
     { title: "تولید کننده لینک کوتاه", href: "/short-url-generator" },
-    { title: " کوتاه کننده رایگان", href: "/free-url-shortener" },
     { title: "حریم خصوصی و قوانین", href: "/terms" },
     { title: "API", href: "/url-shortener" },
     { title: "FAQ", href: "/faq" },
@@ -77,18 +76,18 @@ const navLinks = [
     <>
       {/* 🏷️ SEO Meta */}
       <Head>
-        <title>کوتاه‌کننده لینک لِس (L1s) | سریع، امن و حرفه‌ای</title>
+        <title>کوتاه‌کننده لینک لِس | سریع، امن و حرفه‌ای</title>
         <meta
           name="description"
           content="L1s (لِس) یک سرویس کوتاه‌کننده لینک سریع، امن و حرفه‌ای برای کوتاه کردن، مدیریت و ردیابی لینک‌ها است."
         />
         <meta name="robots" content="index, follow" />
-        <meta property="og:title" content="کوتاه‌کننده لینک لِس (L1s)" />
+        <meta property="og:title" content="کوتاه‌کننده لینک لِس" />
         <meta property="og:description" content="سرویس کوتاه‌کننده لینک سریع و امن" />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="a.l1s.ir" />
         <meta property="og:image" content="https://a.l1s.ir/images/l1s_preview.png" />
-        <meta name="twitter:title" content="کوتاه‌کننده لینک لِس (L1s)" />
+        <meta name="twitter:title" content="کوتاه‌کننده لینک لِس" />
         <meta name="twitter:description" content="سرویس کوتاه‌کننده لینک سریع و امن" />
         <meta name="twitter:image" content="https://a.l1s.ir/images/l1s_preview.png" />
         <meta name="twitter:card" content="summary_large_image" />
@@ -327,58 +326,6 @@ const navLinks = [
 
       {/* 🦶 Footer */}
         <Footer  enamadCode={enamadCode} />
-      {/*<Box*/}
-      {/*  component="footer"*/}
-      {/*  sx={{*/}
-      {/*    borderTop: "1px solid #e2e8f0",*/}
-      {/*    bgcolor: "#f9f9f9",*/}
-      {/*    py: 6,*/}
-      {/*    mt: 8,*/}
-      {/*  }}*/}
-      {/*>*/}
-      {/*  <Container maxWidth="lg">*/}
-      {/*    <Stack*/}
-      {/*      direction={{ xs: "column", sm: "row" }}*/}
-      {/*      spacing={4}*/}
-      {/*      justifyContent="space-between"*/}
-      {/*      alignItems={{ xs: "flex-start", sm: "center" }}*/}
-      {/*    >*/}
-      {/*      /!* Branding + Description *!/*/}
-      {/*      <Box sx={{ maxWidth: 350 }}>*/}
-      {/*        <Typography variant="h6" mb={1} style={{color: "ActiveText" }}>لِس (L1s)</Typography>*/}
-      {/*        <Typography variant="body2" sx={{ color: "#475569" }}>*/}
-      {/*          کوتاه‌کننده لینک سریع، امن و حرفه‌ای برای مدیریت، ردیابی و اشتراک‌گذاری لینک‌های شما. مناسب بازاریابی دیجیتال، شبکه‌های اجتماعی و کمپین‌های تبلیغاتی. قابلیت درآمدزایی اختیاری از لینک.*/}
-      {/*        </Typography>*/}
-
-      {/*        <Box sx={{ mt: 2 }} dangerouslySetInnerHTML={{ __html: enamadCode }} />*/}
-      {/*      </Box>*/}
-
-      {/*      /!* Navigation Links *!/*/}
-      {/*      <Stack direction="row" spacing={3} flexWrap="wrap" style={{ color: "ActiveText" }}>*/}
-      {/*        <MuiLink href="/home" underline="hover" color="inherit">خانه</MuiLink>*/}
-      {/*        <MuiLink href="/best-url-shortener" underline="hover" color="inherit">بهترین کوتاه کننده لینک</MuiLink>*/}
-      {/*        <MuiLink href="/short-url-generator" underline="hover" color="inherit">تولید کننده لینک کوتاه</MuiLink>*/}
-      {/*        <MuiLink href="/free-url-shortener" underline="hover" color="inherit">کوتاه کننده رایگان</MuiLink>*/}
-      {/*        <MuiLink href="/link-shortener" underline="hover" color="inherit">کوتاه کننده حرفه ای</MuiLink>*/}
-      {/*        <MuiLink href="/url-shortener" underline="hover" color="inherit">API</MuiLink>*/}
-      {/*        <MuiLink href="/faq" underline="hover" color="inherit">FAQ</MuiLink>*/}
-      {/*        <MuiLink href="/bio-link" underline="hover" color="inherit">bio link</MuiLink>*/}
-      {/*      </Stack>*/}
-
-      {/*      /!* Social & Contact *!/*/}
-      {/*      <Stack direction="row" spacing={2} alignItems="center" mt={{ xs: 3, sm: 0 }}>*/}
-      {/*        <IconButton component="a" href="https://t.me/l1s_link_shortener" target="_blank" color="primary"><FaTelegramPlane /></IconButton>*/}
-      {/*        <IconButton component="a" href="https://www.instagram.com/lis.link_shortener" target="_blank" color="primary"><FaInstagram /></IconButton>*/}
-      {/*        <IconButton component="a" href="#" target="_blank" color="primary"><FaFacebookF /></IconButton>*/}
-      {/*        <IconButton component="a" href="#" target="_blank" color="primary"><FaLinkedin /></IconButton>*/}
-      {/*      </Stack>*/}
-      {/*    </Stack>*/}
-
-      {/*    <Typography variant="body2" sx={{ color: "#475569", textAlign: "center", mt: 6 }}>*/}
-      {/*      © {new Date().getFullYear()} کوتاه‌کننده لینک لِس (L1s) — ساخته‌شده با 💜 | طراحی، پشتیبانی و تبلیغات: <a href="tel:" style={{ color: "#6b21a8", textDecoration: "none" }}></a>*/}
-      {/*    </Typography>*/}
-      {/*  </Container>*/}
-      {/*</Box>*/}
     </>
   );
 }

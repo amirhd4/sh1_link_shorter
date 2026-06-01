@@ -136,7 +136,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
              <IconButton
     component={Link}
-    href="https://eitaa.com/amirhd4"
+    href="https://eitaa.com/poshtiban1i"
     target="_blank"
     rel="noopener noreferrer"
     aria-label="ایتا"

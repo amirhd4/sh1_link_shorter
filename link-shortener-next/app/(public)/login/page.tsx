@@ -2,7 +2,7 @@ import { LoginForm } from "@/components/auth/LoginForm";
 import {Metadata} from "next";
 
 export const metadata: Metadata = {
-  title: "ورود به حساب کاربری | لِس (l1s)",
+  title: "ورود به حساب کاربری | لِس",
   description: "وارد حساب کاربری خود شوید و لینک‌های کوتاه خود را مدیریت کنید.",
   alternates: { canonical: "https://a.l1s.ir/login" },
 };

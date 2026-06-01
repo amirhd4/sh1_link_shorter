@@ -11,6 +11,8 @@ import { Megaphone } from "lucide-react";
 import VastVideoPlayer from "@/components/video-ads/vast";
 import VideoAdPlayer from "@/components/video-ads/vast";
 import Link from "next/link";
+import { AutoAwesome } from "@mui/icons-material";
+import BioLink from "@mui/icons-material/Pages";
 
 
 const normalizeDomainId = (domainId: string | undefined): number | undefined => {
@@ -134,16 +136,189 @@ export default function AdRedirectClient({ ad }: { ad: Ad }) {
           style={{ width: '100%' }}
         >
           <Grid container justifyContent="center">
-            <Grid size={{xs: 12, sm: 10, md: 8, lg: 6}}>
+            <Grid size={{xs: 12, sm: 10, md: 8, lg: 9}}>
               <Paper sx={{ p: { xs: 2, sm: 3, md: 4 }, borderRadius: 4, textAlign: "center", width: "100%" }}>
                 <Typography variant="h5" sx={{ mb: 2, fontWeight: "bold" }}>
 
                   <Megaphone className="w-6 h-6 text-blue-500" />
                 </Typography>
 
-                 <Box sx={{ width: '100%', borderRadius: 2, overflow: 'hidden', maxHeight: '60vh', mb: 3 }}>
+                 <Box sx={{ width: '100%', borderRadius: 2, mb: 3 }}>
+
+                     <Paper
+                      elevation={0}
+                      sx={{
+                        p: 3,
+                        mb: 4,
+                        borderRadius: 4,
+                        border: '2px dashed #9c27b0', // حاشیه خط‌چین برای جلب توجه
+                        backgroundColor: '#faf5ff', // رنگ پس‌زمینه بسیار ملایم بنفش
+                        display: 'flex',
+                        flexDirection: { xs: 'column', md: 'row' },
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: 2,
+                        textAlign: { xs: 'center', md: 'left' }
+                      }}
+                    >
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        {/* آیکون جایگزین عکس */}
+                        <Box sx={{
+                            backgroundColor: '#9c27b0',
+                            color: 'white',
+                            p: 2,
+                            borderRadius: '50%',
+                            display: 'flex'
+                        }}>
+                          <AutoAwesome fontSize="large" />
+                        </Box>
+
+                        <Box>
+                          <Typography variant="h6" sx={{ color: '#4a148c', fontWeight: '800', mb: 0.5 }}>
+                            جلسات مجازی با کیفیت فوق‌العاده
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: '#6a1b9a', maxWidth: 500 }}>
+                            بدون محدودیت، در محیطی امن و حرفه‌ای با قابلیت چت زنده و تماس صوتی/تصویری هم‌تیمی‌های خود را ملاقات کنید.
+                          </Typography>
+                        </Box>
+                      </Box>
+
+                      <Button
+                        component="a"
+                        href="https://goftgokon.ir"
+                        target="_blank"
+                        variant="contained"
+                        size="large"
+                        sx={{
+                          backgroundColor: 'darkmagenta',
+                          fontWeight: 'bold',
+                          px: 2,
+                          py: 1.5,
+                          borderRadius: '10px',
+                          '&:hover': { backgroundColor: '#4a004a' },
+                        }}
+                      >
+                        همین حالا شروع کنید
+                      </Button>
+                    </Paper>
+
+                     <Paper
+                      elevation={0}
+                      sx={{
+                        p: { xs: 2, md: 3 },
+                        mb: 3,
+                        borderRadius: 4,
+                        border: "1px solid",
+                        borderColor: "divider",
+                        overflow: "hidden",
+                        background:
+                          "linear-gradient(135deg, rgba(156,39,176,0.05), rgba(33,150,243,0.05))",
+                      }}
+                    >
+                      <Grid
+                        container
+                        spacing={3}
+                        alignItems="center"
+                      >
+                        {/* تصویر */}
+                        <Grid size={{ xs: 12, md: 4 }}>
+                          <Box
+                            component="img"
+                            src="/images/tutorial_l1s-bio.png"
+                            alt="Bio Page"
+                            sx={{
+                              width: "100%",
+                              height: {
+                                xs: 300,
+                                sm: 240,
+                                md: 160,
+                              },
+                              objectFit: "contain",
+                              display: "block",
+                              mx: "auto",
+                            }}
+                          />
+                        </Grid>
+
+                        {/* محتوا */}
+                        <Grid size={{ xs: 12, md: 8 }}>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 2,
+                              mb: 2,
+                            }}
+                          >
+                            <Box
+                              sx={{
+                                width: 60,
+                                height: 60,
+                                borderRadius: "16px",
+                                bgcolor: "secondary.main",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                color: "white",
+                                flexShrink: 0,
+                              }}
+                            >
+                              <BioLink sx={{ fontSize: 34 }} />
+                            </Box>
+
+                            <Box>
+                              <Typography
+                                variant="h5"
+                                fontWeight={800}
+                              >
+                                لینک در بیو
+                              </Typography>
+
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                              >
+                                تمام لینک‌های مهم خود را در یک صفحه حرفه‌ای و زیبا جمع‌آوری کنید.
+                              </Typography>
+                            </Box>
+                          </Box>
+
+                          <Typography
+                            variant="body1"
+                            sx={{
+                              mb: 3,
+                              lineHeight: 2,
+                              color: "text.secondary",
+                            }}
+                          >
+                            مناسب اینستاگرام، تلگرام، یوتیوب و سایر شبکه‌های اجتماعی.
+                            یک لینک بسازید و همه مخاطبانتان را به تمام صفحات خود هدایت کنید.
+                          </Typography>
+
+                          <Button
+                            component={Link}
+                            href="/bio-pages"
+                            variant="contained"
+                            target="_blank"
+                            color="secondary"
+                            size="large"
+                            sx={{
+                              borderRadius: 3,
+                              px: 4,
+                              py: 1.5,
+                              fontWeight: 700,
+                            }}
+                          >
+                            🚀 ساخت لینک در بیو
+                          </Button>
+                        </Grid>
+                      </Grid>
+                    </Paper>
+
+
+
                     {/*<div id="pos-article-display-117812"></div>*/}
-                    <div className="yn-bnr" id="ynpos-18054"></div>
+                    {/*<div className="yn-bnr" id="ynpos-18054"></div>*/}
                     {/* <VideoAdPlayer*/}
                     {/*    vastUrl="https://vfetch.yektanet.com/api/v1/load/f1d9af70-00d8-4988-b9d0-1b88c75c8424"*/}
                     {/*  />*/}

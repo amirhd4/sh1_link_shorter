@@ -234,10 +234,12 @@ export type LinkListPage = {
   next_cursor: Cursor | null;
 };
 import { useMemo } from 'react';
-import { SearchIcon } from "lucide-react";
+import {Link, SearchIcon } from "lucide-react";
 import {InitialPasswordCard} from "@/components/client-dashboard/SecretPasswordCard";
 import SupportSection from "@/components/support/SupportSection";
 import FloatingSupportButton from "@/components/support/FloatingSupportButton";
+import { VideoCall } from "@mui/icons-material";
+import BioLink from "@mui/icons-material/Pages";
 
 export default function LinksDashboard() {
     const navigate = useRouter();
@@ -662,8 +664,72 @@ export default function LinksDashboard() {
                 <Paper sx={{p: {xs: 1, sm: 2}, borderRadius: 3}} elevation={3}>
                     {renderContent()}
                 </Paper>
+                <Paper sx={{ p: 2,
+                        mt: 3,
+                        mb: 3,
+                        borderRadius: 3,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        flexWrap: 'wrap',
+                        gap: 2,
+                         }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <BioLink sx={{ fontSize: 40 }} color={"primary"} />
+                        <Box>
+                            <Typography variant="h6" fontWeight="bold">لینک در بیو</Typography>
+                            <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                                همه لینک های خود را در یک لینک جایگذاری کنید!
+                            </Typography>
+                        </Box>
+                    </Box>
+                    <Button
+                        variant="contained"
+                        color="secondary"
+                        target={"_blank"}
+                        href="/bio-pages"
+                        sx={{ fontWeight: 'bold', px: 3 }}
+                    >
+                        امتحان کن
+                    </Button>
+                </Paper>
+                <Paper
+                    elevation={0}
+                    sx={{
+                        p: 2,
+                        mb: 3,
+                        borderRadius: 3,
+                        background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)',
+                        color: 'white',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        flexWrap: 'wrap',
+                        gap: 2,
+                        border: '1px solid rgba(255,255,255,0.2)'
+                    }}
+                >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <VideoCall sx={{ fontSize: 40 }} />
+                        <Box>
+                            <Typography variant="h6" fontWeight="bold">تجربه جلسه آنلاین حرفه‌ای!</Typography>
+                            <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                                در اتاق جلسات ما با قابلیت چت و تماس صوتی/تصویری با کیفیت، ارتباط برقرار کنید.
+                            </Typography>
+                        </Box>
+                    </Box>
+                    <Button
+                        variant="contained"
+                        color="secondary"
+                        target={"_blank"}
+                        href="https://goftgokon.ir"
+                        sx={{ fontWeight: 'bold', px: 3 }}
+                    >
+                        ورود به اتاق جلسه
+                    </Button>
+                </Paper>
             </Container>
-            <div className="yn-bnr" id="ynpos-18058"></div>
+            {/*<div className="yn-bnr" id="ynpos-18058"></div>*/}
 
             <CreateLinkForm isOpen={isCreateModalOpen} onClose={() => setCreateModalOpen(false)}/>
             <EditLinkForm isOpen={!!editTarget} onClose={() => setEditTarget(null)} link={editTarget}/>

@@ -100,9 +100,9 @@ export default function Footer({ enamadCode }: { enamadCode: string }) {
     }}
   >
     <Link href="/">خانه</Link>
-    <Link href="/best-url-shortener">بهترین کوتاه کننده لینک</Link>
+    <Link href="/tutorial">آموزش استفاده</Link>
     <Link href="/short-url-generator">ساخت لینک کوتاه</Link>
-    <Link href="/free-url-shortener">کوتاه کننده لینک رایگان</Link>
+    <Link href="/short-url-generator">کوتاه کننده لینک رایگان</Link>
     <Link href="/terms">حریم خصوصی و قوانین</Link>
     <Link href="/url-shortener">API کوتاه کننده لینک</Link>
     <Link href="/bio-link">ساخت Bio Link</Link>
@@ -191,7 +191,7 @@ export default function Footer({ enamadCode }: { enamadCode: string }) {
 
     <IconButton
       component={Link}
-      href="https://eitaa.com/amirhd4"
+      href="https://eitaa.com/poshtiban1i"
       target="_blank"
       rel="noopener noreferrer"
       aria-label="ایتا"
