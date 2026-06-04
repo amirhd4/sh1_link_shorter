@@ -14,7 +14,7 @@ from sqlalchemy.future import select
 from sqlalchemy import or_, update
 from google_auth_oauthlib.flow import Flow
 from google.oauth2 import id_token
-from datetime import date, timedelta, datetime
+from datetime import date, timedelta, datetime, timezone
 import random
 import phonenumbers
 import logging
@@ -82,7 +82,8 @@ def generate_secure_random_password(length: int = 16) -> str:
 def set_client_cookie(access_token: str, refresh_token: str, role: str):
     response = JSONResponse(content={"success": True})
 
-    # ست کردن اکسس توکن (کوتاه‌مدت)
+    cookie_domain = None if settings.DEBUG else url_set_cookie
+
     response.set_cookie(
         key="access_token",
         value=access_token,
@@ -91,10 +92,9 @@ def set_client_cookie(access_token: str, refresh_token: str, role: str):
         secure=not settings.DEBUG,
         path="/",
         max_age=60 * 15,  # ۱۵ دقیقه
-        domain=url_set_cookie
+        domain=cookie_domain  # 👈 اصلاح شد
     )
 
-    # ست کردن رفرش توکن (بلندمدت)
     response.set_cookie(
         key="refresh_token",
         value=refresh_token,
@@ -103,7 +103,7 @@ def set_client_cookie(access_token: str, refresh_token: str, role: str):
         secure=not settings.DEBUG,
         path="/",
         max_age=60 * 60 * 24 * 37,
-        domain=url_set_cookie
+        domain=cookie_domain  # 👈 از این متغیر متناسب با محیط استفاده کنید
     )
 
     response.set_cookie(
@@ -164,7 +164,7 @@ async def refresh_session(request: Request, refresh_token: Optional[str] = Cooki
             models.UserRefreshToken.token_id == token_id,  # اضافه شدن این خط برای امنیت JTI
             models.UserRefreshToken.hashed_token == hashed_curr,
             models.UserRefreshToken.is_revoked == False,
-            models.UserRefreshToken.expires_at > datetime.utcnow()
+            models.UserRefreshToken.expires_at > datetime.now()
         )
     )
     db_token = result.scalar_one_or_none()
@@ -586,7 +586,7 @@ async def confirm_user_secret(
         return {"success": True}
 
     secret.is_viewed = True
-    secret.viewed_at = datetime.utcnow()
+    secret.viewed_at = datetime.now(timezone.utc)
     secret.encrypted_value = None
 
     await db.commit()

@@ -9,19 +9,21 @@ import { Box, CircularProgress } from "@mui/material";
 export default function AppInitializer({ children }: { children: React.ReactNode }) {
   const { setUser, setIsLoading, isLoading } = useUserStore();
 
-  // همیشه query فعال است، چون توکن HttpOnly به سرور فرستاده می‌شود
+  // اگر قبلا خطای احراز هویت رخ داده، اصلاً درخواست جدیدی نساز تا صفحه ریدایرکت شود
+  const hasAuthFailed = typeof window !== "undefined" && sessionStorage.getItem("auth_failed") === "true";
+
   const { isLoading: queryLoading, isSuccess, isError, data } = useQuery({
     queryKey: ["me"],
     queryFn: authService.getMe,
     retry: false,
     refetchOnWindowFocus: false,
-
+    enabled: !hasAuthFailed, // 👈 اگر خطا خورده بودیم، دیگر درخواست me اجرا نخواهد شد
   });
 
   useEffect(() => {
-    if (queryLoading) return; // هنوز loading است
-
+    // پاک کردن پرچم در صورت لاگین موفق یا بالا آمدن تمیز صفحه لاگین
     if (isSuccess && data) {
+      sessionStorage.removeItem("auth_failed");
       setUser(data);
     }
 
@@ -29,7 +31,9 @@ export default function AppInitializer({ children }: { children: React.ReactNode
       setUser(null);
     }
 
-    setIsLoading(false);
+    if (!queryLoading) {
+      setIsLoading(false);
+    }
   }, [queryLoading, isSuccess, isError, data, setUser, setIsLoading]);
 
   if (isLoading || queryLoading) {

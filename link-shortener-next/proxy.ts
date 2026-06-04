@@ -1,11 +1,10 @@
-// middleware.ts یا proxy.ts
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export default async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  let accessToken = req.cookies.get("access_token")?.value;
+  const accessToken = req.cookies.get("access_token")?.value;
   const refreshToken = req.cookies.get("refresh_token")?.value;
   const role = req.cookies.get("role")?.value;
 
@@ -18,63 +17,33 @@ export default async function middleware(req: NextRequest) {
     "/links",
     "/domains",
   ];
-
   const authPages = ["/login", "/register", "/login-otp", "/register-otp"];
   const isProtected = protectedPaths.some((p) => pathname.startsWith(p));
 
-  // ----------------------------------------------------
-  // مکانیزم تمدید خودکار توکن اگر اکسس منقضی شده ولی رفرش توکن باقیست
-  // ----------------------------------------------------
-  if (!accessToken && refreshToken && isProtected) {
-    try {
-      // آدرس بک‌اند را بر اساس کانفیگ خودتان تنظیم کنید
-      const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000"; 
-      
-      const refreshResponse = await fetch(`${backendUrl}/auth/refresh`, {
-        method: "POST",
-        headers: {
-          "Cookie": `refresh_token=${refreshToken}`,
-        },
-      });
-
-      if (refreshResponse.ok) {
-        // دریافت کوکی‌های جدید ست شده توسط بک‌اند
-        const setCookieHeader = refreshResponse.headers.get("set-cookie");
-        
-        if (setCookieHeader) {
-          const res = NextResponse.next();
-          // انتقال کوکی‌های جدید دریافت شده از بک‌اند به ریسپانس میدل‌ور به مرورگر
-          res.headers.set("set-cookie", setCookieHeader);
-          return res;
-        }
-      }
-    } catch (error) {
-      console.error("Failed to silently auto-refresh token in middleware", error);
-    }
-  }
-
-  // -----------------------
-  // ۱) اگر کماکان لاگین نیست → هدایت به مسیر عمومی
-  // -----------------------
-  if (!accessToken && !refreshToken) {
-    if (isProtected) {
-      return NextResponse.redirect(new URL("/home", req.url));
+  // 1️⃣ اگر کاربر لاگین است و می‌خواهد به صفحات auth برود -> هدایت پیش‌فرض به پنل‌ها
+  if (authPages.includes(pathname)) {
+    if (accessToken || refreshToken) {
+      return role === "admin"
+        ? NextResponse.redirect(new URL("/dashboard", req.url))
+        : NextResponse.redirect(new URL("/dashboard", req.url));
     }
     return NextResponse.next();
   }
 
-  // -----------------------
-  // ۲) بررسی دسترسی بر اساس نقش‌ها
-  // -----------------------
-  if (pathname.startsWith("/admin") && role !== "admin") {
-    return NextResponse.redirect(new URL("/dashboard", req.url));
-  }
+  // 2️⃣ مدیریت مسیرهای محافظت شده
+  if (isProtected) {
+    // الف) اگر هیچ توکنی وجود ندارد -> هدایت به صفحه لاگین
+    if (!accessToken && !refreshToken) {
+      const loginUrl = new URL("/login", req.url);
+      loginUrl.searchParams.set("expired", "true");
+      return NextResponse.redirect(loginUrl);
+    }
 
-  // لاگین‌شده وارد صفحات لاگین/ثبت‌نام نشود
-  if (authPages.includes(pathname)) {
-    return role === "admin"
-      ? NextResponse.redirect(new URL("/admin/dashboard", req.url))
-      : NextResponse.redirect(new URL("/dashboard", req.url));
+    // ب) فقط جلوی کاربر عادی را برای ورود به /admin می‌گیریم
+    // 💡 ادمین اجازه دارد وارد /admin شود و همچنین به /dashboard دسترسی دستی داشته باشد
+    if (pathname.startsWith("/admin") && role !== "admin") {
+      return NextResponse.redirect(new URL("/dashboard", req.url));
+    }
   }
 
   return NextResponse.next();

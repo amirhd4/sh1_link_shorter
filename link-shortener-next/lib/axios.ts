@@ -1,21 +1,26 @@
 import axios from "axios";
 import config from "@/config";
 
-export const apiClient = axios.create({
+const apiClient = axios.create({
   baseURL: config.apiBaseUrl,
-  withCredentials: true, // بسیار حیاتی برای ارسال و دریافت کوکی‌های HttpOnly
+  withCredentials: true,
 });
 
-// پرچم برای جلوگیری از درخواست‌های رفرش همزمان
+// 1️⃣ یک نمونه جداگانه بدون اینترسپتور برای عملیات حساس رفرش توکن
+const refreshClient = axios.create({
+  baseURL: config.apiBaseUrl,
+  withCredentials: true,
+});
+
 let isRefreshing = false;
 let failedQueue: any[] = [];
 
-const processQueue = (error: any, token: string | null = null) => {
+const processQueue = (error: any) => {
   failedQueue.forEach((prom) => {
-    if (token) {
-      prom.resolve();
-    } else {
+    if (error) {
       prom.reject(error);
+    } else {
+      prom.resolve();
     }
   });
   failedQueue = [];
@@ -26,64 +31,55 @@ apiClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // اگر خطایی از سمت سرور دریافت نشد یا اینترنت قطع بود، مستقیما رد شو
     if (!error.response) {
       return Promise.reject(error);
     }
 
     const status = error.response.status;
-    const requestUrl = originalRequest.url || "";
+    const url = originalRequest.url || "";
 
-    // ۱. بررسی حیاتی: اگر خود درخواست رفرش یا توکن با ۴۰1 یا هر خطایی مواجه شد، هرگز نباید دوباره رفرش کند!
+    // 2️⃣ کنترل سخت‌گیرانه مسیرهای احراز هویت: اگر این درخواست‌ها 401 دادند، مستقیم ریدایرکت به لاگین
     if (
-      requestUrl.endsWith("/auth/refresh") ||
-      requestUrl.endsWith("/auth/token") ||
-      requestUrl.endsWith("/auth/verify-otp-login") ||
-      requestUrl.endsWith("/auth/register-otp")
+      url.includes("/auth/refresh") ||
+      url.includes("/auth/verify-otp-login") ||
+      url.includes("/auth/token")
     ) {
-      // اگر رفرش توکن نامعتبر یا منقضی شده بود، کلاینت را به لاگین هدایت کن
-      if (requestUrl.endsWith("/auth/refresh") && status === 401) {
-        if (typeof window !== "undefined") {
-          window.location.href = "/login";
-        }
+      if (typeof window !== "undefined") {
+        window.location.replace("/login?expired=true");
       }
       return Promise.reject(error);
     }
 
-    // ۲. پردازش خطای 401 برای بقیه درخواست‌ها
+    // هندل خطای 401 برای بقیه کامپوننت‌ها (مثل /me)
     if (status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
 
-      // اگر در حال حاضر یک درخواست رفرش در جریان است، بقیه درخواست‌ها را در صف نگه دار
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
         })
-          .then(() => {
-            originalRequest._retry = true; // جلوگیری از لوپ برای درخواست‌های صف
-            return apiClient(originalRequest);
-          })
+          .then(() => apiClient(originalRequest))
           .catch((err) => Promise.reject(err));
       }
 
-      originalRequest._retry = true;
       isRefreshing = true;
 
       try {
-        // ارسال درخواست به بک‌اِند برای تمدید کوکی‌ها
-        await apiClient.post("/auth/refresh");
+        // 3️⃣ استفاده از کلاینت امن و ایزوله شده برای رفرش
+        await refreshClient.post("/auth/refresh", {});
 
         isRefreshing = false;
-        processQueue(null, "success");
+        processQueue(null);
 
-        // تکرار درخواست اولیه که با شکست مواجه شده بود
         return apiClient(originalRequest);
       } catch (refreshError) {
         isRefreshing = false;
-        processQueue(refreshError, null);
+        processQueue(refreshError);
 
-        // اگر فرآیند رفرش به هر دلیلی با شکست مواجه شد، سشن کاملاً منقضی شده است
+        // 4️⃣ قبل از ریدایرکت، یک پرچم موقت در sessionStorage می‌گذاریم تا جلوی درخواست‌های موازی بعدی گرفته شود
         if (typeof window !== "undefined") {
-          window.location.href = "/login";
+          sessionStorage.setItem("auth_failed", "true");
+          window.location.replace("/login?expired=true");
         }
         return Promise.reject(refreshError);
       }
