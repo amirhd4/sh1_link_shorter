@@ -67,6 +67,8 @@ class User(Base):
         passive_deletes=True,
     )
 
+    refresh_tokens = relationship("UserRefreshToken", back_populates="user", cascade="all, delete-orphan")
+
     def generate_api_key(self):
         self.api_key = "sk_" + token_urlsafe(32)
 
@@ -500,3 +502,17 @@ class IncomingSMS(Base):
     # درصورتی که پیامک به یک کاربر سیستم شما مرتبط باشد
     user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     user = relationship("User")
+
+
+class UserRefreshToken(Base):
+    __tablename__ = "user_refresh_tokens"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    token_id = Column(String(255), unique=True, index=True, nullable=False)
+    hashed_token = Column(String(255), unique=True, index=True, nullable=False)
+    expires_at = Column(DateTime, nullable=False)
+    is_revoked = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.now())
+
+    user = relationship("User", back_populates="refresh_tokens")

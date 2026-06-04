@@ -1,7 +1,9 @@
+import secrets
+
 from fastapi import Depends, HTTPException, status, Cookie
 
 from datetime import datetime, timedelta, timezone
-from typing import Optional
+from typing import Optional, Tuple
 from passlib.context import CryptContext
 from jose import JWTError, jwt
 from pydantic import BaseModel
@@ -38,16 +40,48 @@ def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
 
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+def hash_refresh_token(token: str) -> str:
+    return hashlib.sha256(token.encode()).hexdigest()
+
+
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
     else:
+        # کاهش زمان اکسپایر اکسس توکن به ۱۵ دقیقه برای امنیت بالاتر
         expire = datetime.now(timezone.utc) + timedelta(minutes=settings.access_token_expire_minutes)
-    to_encode.update({"exp": expire})
-    # Use values from settings
+
+    to_encode.update({"exp": expire, "type": "access"})
     encoded_jwt = jwt.encode(to_encode, settings.secret_key, algorithm=settings.algorithm)
     return encoded_jwt
+
+
+def create_refresh_token(data: dict) -> Tuple[str, str, datetime]:
+    """
+    تولید یک رفرش توکن امن همراه با شناسه منحصر به فرد JTI
+    """
+    token_id = secrets.token_hex(16)
+    expires_delta = timedelta(days=37)
+
+    # استفاده از utcnow بدون مشخص کردن explicit تایم‌زون برای دیتابیس
+    now = datetime.now()
+    expire = now + expires_delta
+
+    to_encode = data.copy()
+    # برای ساختار امضای JWT از لایبرری jose، باید زمان اکسپایری را به صورت کماکان همراه با تایم‌زون تنظیم کنیم
+    # چون پایتون زمان یونیکس خام از آن می‌خواهد:
+    expire_jwt = datetime.now(timezone.utc) + expires_delta
+
+    to_encode.update({
+        "exp": expire_jwt,
+        "jti": token_id,
+        "type": "refresh"
+    })
+
+    encoded_jwt = jwt.encode(to_encode, settings.secret_key, algorithm=settings.algorithm)
+
+    return encoded_jwt, token_id, expire
 
 
 # oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
@@ -55,43 +89,35 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 class TokenData(BaseModel):
     identifier: Optional[str] = None
 
+
 async def get_current_user(access_token: str = Cookie(None), db: AsyncSession = Depends(get_db)) -> models.User:
     if not access_token:
-        raise HTTPException(status_code=401)
-    else:
-        token = access_token
-
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
+        raise HTTPException(status_code=401, detail="Access token missing")
 
     try:
-        payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
+        payload = jwt.decode(access_token, settings.secret_key, algorithms=[settings.algorithm])
+
+        # کنترل نوع توکن
+        if payload.get("type") != "access":
+            raise HTTPException(status_code=401, detail="Invalid token type")
+
         identifier: str = payload.get("sub")
         if not identifier:
-            raise credentials_exception
-        token_data = TokenData(identifier=identifier)
-    except JWTError:
-        raise credentials_exception
+            raise HTTPException(status_code=401, detail="Could not validate credentials")
+    except JWTError as e:
+        # اگر توکن منقضی شده باشد خطای اختصاصی متناسب میدهیم تا کلاینت متوجه شود باید رفرش کند
+        if "Signature has expired" in str(e):
+            raise HTTPException(status_code=401, detail="Token expired")
+        raise HTTPException(status_code=401, detail="Could not validate credentials")
 
-    # پیدا کردن کاربر با شماره
     result = await db.execute(
         select(models.User)
         .options(selectinload(models.User.plan))
-        .where(
-            # or_(
-            #     models.User.email == token_data.identifier,
-                models.User.phone_number == token_data.identifier
-            # )
-        )
+        .where(models.User.phone_number == identifier)
     )
     user = result.scalar_one_or_none()
     if not user:
-        raise credentials_exception
-
-    _ = user.id
+        raise HTTPException(status_code=401, detail="User not found")
 
     return user
 
@@ -112,7 +138,6 @@ async def get_user_by_api_key(
     if not api_key:
         raise HTTPException(status_code=401, detail="API key missing")
 
-    user = await db.scalar(select(models.User).where(models.User.api_key == api_key))
     user = await db.scalar(
         select(models.User)
         .options(selectinload(models.User.plan))

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from datetime import datetime
+from datetime import datetime, timezone
 import httpx
 
 from ..database import get_db
@@ -23,8 +23,8 @@ def parse_received_time(ts):
         if isinstance(ts, int):
             return datetime.fromtimestamp(ts)
         return datetime.fromisoformat(ts)
-    except:
-        return datetime.utcnow()
+    except e:
+        return datetime.now(timezone.utc)
 
 
 @router.post("/sync")
