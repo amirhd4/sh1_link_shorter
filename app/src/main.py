@@ -79,7 +79,7 @@ UPLOAD_DIR = Path(__file__).parent / "../uploads"
 
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 origins = [
-    settings.frontend_url,
+    "https://a.l1s.ir",
 ]
 
 app.add_middleware(
