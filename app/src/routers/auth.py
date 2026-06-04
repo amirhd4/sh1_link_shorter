@@ -139,7 +139,8 @@ class VerifyOtpRequest(schemas.BaseModel):
 
 
 @router.post("/refresh")
-async def refresh_session(request: Request, refresh_token: Optional[str] = Cookie(None), db: AsyncSession = Depends(get_db)):
+async def refresh_session(request: Request, refresh_token: Optional[str] = Cookie(None),
+                          db: AsyncSession = Depends(get_db)):
     if not refresh_token:
         raise HTTPException(status_code=401, detail="Refresh token missing")
 
@@ -149,16 +150,18 @@ async def refresh_session(request: Request, refresh_token: Optional[str] = Cooki
             raise HTTPException(status_code=401, detail="Invalid token type")
 
         identifier: str = payload.get("sub")
-        token_id: str = payload.get("jti")
+        token_id: str = payload.get("jti")  # شناسه منحصر به فرد توکن
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid refresh token")
 
-
     hashed_curr = security.hash_refresh_token(refresh_token)
+
+    # اصلاح شرط: حتماً باید token_id دریافتی با دیتابیس مطابقت داشته باشد
     result = await db.execute(
         select(models.UserRefreshToken)
         .options(selectinload(models.UserRefreshToken.user))
         .where(
+            models.UserRefreshToken.token_id == token_id,  # اضافه شدن این خط برای امنیت JTI
             models.UserRefreshToken.hashed_token == hashed_curr,
             models.UserRefreshToken.is_revoked == False,
             models.UserRefreshToken.expires_at > datetime.utcnow()
@@ -170,15 +173,11 @@ async def refresh_session(request: Request, refresh_token: Optional[str] = Cooki
         raise HTTPException(status_code=401, detail="Refresh token revoked or expired")
 
     user = db_token.user
-
-    # مکانیزم امنیتی تکمیلی (حذف/ابطال رفرش توکن قبلی برای جلوگیری از Replay Attack)
     db_token.is_revoked = True
 
-    # تولید توکن‌های جدید
     new_access_token = security.create_access_token(data={"sub": user.phone_number})
     new_refresh_token_str, new_token_id, new_expires_at = security.create_refresh_token(data={"sub": user.phone_number})
 
-    # ذخیره رفرش توکن جدید
     new_db_token = models.UserRefreshToken(
         user_id=user.id,
         token_id=new_token_id,
