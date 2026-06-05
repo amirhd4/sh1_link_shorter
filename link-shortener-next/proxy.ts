@@ -22,13 +22,11 @@ export default async function middleware(req: NextRequest) {
 
   // 1️⃣ اگر کاربر لاگین است و می‌خواهد به صفحات auth برود -> هدایت پیش‌فرض به پنل‌ها
   if (authPages.includes(pathname)) {
-    if (accessToken || refreshToken) {
-      return role === "admin"
-        ? NextResponse.redirect(new URL("/dashboard", req.url))
-        : NextResponse.redirect(new URL("/dashboard", req.url));
+      const hasExpiredParam = req.nextUrl.searchParams.get("expired") === "true";
+      if ((accessToken || refreshToken) && !hasExpiredParam) {
+        return NextResponse.redirect(new URL("/dashboard", req.url));
+      }
     }
-    return NextResponse.next();
-  }
 
   // 2️⃣ مدیریت مسیرهای محافظت شده
   if (isProtected) {

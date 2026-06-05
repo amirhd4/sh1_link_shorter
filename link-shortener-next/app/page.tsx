@@ -1,4 +1,3 @@
-// app/page.tsx (یا فایل کامپوننت سروری که فرستادید)
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 
@@ -8,16 +7,15 @@ export default async function Page() {
   const refreshToken = cookieStore.get("refresh_token")?.value;
   const role = cookieStore.get("role")?.value;
 
-  // اگر هیچ‌کدام از توکن‌ها نبودند، کاربر قطعاً لاگین نیست
+  // ۱. اگر هیچ توکنی نیست، مستقیم به صفحه‌ای برو که نیاز به احراز هویت ندارد (مثلا /login یا /home)
   if (!accessToken && !refreshToken) {
-    redirect("/home");
+    redirect("/login");
   }
 
-  // اگر اکسس توکن نبود ولی رفرش توکن بود، اجازه بدهید صفحه لود شود 
-  // تا فرانت‌اِند (Axios Interceptor که بالا نوشتیم) یا Middleware کار رفرش را انجام دهد.
-  // در غیر این صورت بر اساس نقش ریدایرکت کن:
+  // ۲. اگر توکن وجود دارد، بر اساس نقش کاربر او را به مسیر اصلی هدایت کن
+  // میدلور (Middleware) بقیه مسیرها مثل بررسی انقضا را کنترل خواهد کرد.
   if (role === "admin") {
-    redirect("/admin/dashboard");
+    redirect("/admin/dashboard"); // یا هر مسیری که ادمین باید برود
   } else {
     redirect("/dashboard");
   }

@@ -25,22 +25,9 @@ async def lifespan(app: FastAPI):
     app.state.redis = redis.from_url("redis://cache", encoding="utf-8", decode_responses=True)
     scheduler.start()
 
-    # SMTP
-    # app.state.smtp = SMTP(
-    #     hostname=settings.smtp_host,
-    #     port=settings.smtp_port,
-    #     tls_context=ssl.create_default_context()
-    # )
-
-
-    # await app.state.smtp.connect()
-
-    # if settings.smtp_user:
-    #     await app.state.smtp.login(settings.smtp_user, settings.smtp_pass)
-        
-    async with engine.begin() as conn:
-        # await conn.run_sync(Base.metadata.create_all)
-        pass
+    # async with engine.begin() as conn:
+    #     # await conn.run_sync(Base.metadata.create_all)
+    #     pass
 
     async with async_session_factory() as session:
         free_plan_result = await session.execute(select(Plan).where(Plan.name == "Free"))
@@ -79,7 +66,7 @@ UPLOAD_DIR = Path(__file__).parent / "../uploads"
 
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 origins = [
-    "https://a.l1s.ir",
+    settings.frontend_url
 ]
 
 app.add_middleware(

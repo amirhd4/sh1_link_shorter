@@ -79,9 +79,8 @@ def generate_secure_random_password(length: int = 16) -> str:
     return "".join(password_list)
 
 
-def set_client_cookie(access_token: str, refresh_token: str, role: str):
-    response = JSONResponse(content={"success": True})
-
+def set_client_cookie(response: JSONResponse, access_token: str, refresh_token: str, role: str):
+    # تعیین دامین کوکی؛ اگر در دباگ باشیم دامین نباید ست شود تا روی localhost کار کند
     cookie_domain = None if settings.DEBUG else url_set_cookie
 
     response.set_cookie(
@@ -92,7 +91,7 @@ def set_client_cookie(access_token: str, refresh_token: str, role: str):
         secure=not settings.DEBUG,
         path="/",
         max_age=60 * 15,  # ۱۵ دقیقه
-        domain=cookie_domain  # 👈 اصلاح شد
+        domain=cookie_domain
     )
 
     response.set_cookie(
@@ -102,18 +101,19 @@ def set_client_cookie(access_token: str, refresh_token: str, role: str):
         samesite="lax",
         secure=not settings.DEBUG,
         path="/",
-        max_age=60 * 60 * 24 * 37,
-        domain=cookie_domain  # 👈 از این متغیر متناسب با محیط استفاده کنید
+        max_age=60 * 60 * 24 * 37, # ۳۷ روز
+        domain=cookie_domain
     )
 
     response.set_cookie(
         key="role",
         value=role,
+        httponly=False, # فرانت‌اند برای کامپوننت‌ها نیاز دارد این را بخواند (مثل میدلور)
         samesite="lax",
         secure=not settings.DEBUG,
         path="/",
         max_age=60 * 60 * 24 * 37,
-        domain=url_set_cookie
+        domain=cookie_domain  # 👈 دامین این هم اصلاح شد تا با بقیه همخوانی داشته باشد
     )
 
     return response
@@ -139,7 +139,7 @@ class VerifyOtpRequest(schemas.BaseModel):
 
 
 @router.post("/refresh")
-async def refresh_session(request: Request, refresh_token: Optional[str] = Cookie(None),
+async def refresh_session(request: Request, response: JSONResponse, refresh_token: Optional[str] = Cookie(None),
                           db: AsyncSession = Depends(get_db)):
     if not refresh_token:
         raise HTTPException(status_code=401, detail="Refresh token missing")
@@ -187,34 +187,51 @@ async def refresh_session(request: Request, refresh_token: Optional[str] = Cooki
     db.add(new_db_token)
     await db.commit()
 
-    return set_client_cookie(new_access_token, new_refresh_token_str, user.role)
+    # return set_client_cookie(new_access_token, new_refresh_token_str, user.role)
+
+    set_client_cookie(response, new_access_token, new_refresh_token_str, user.role)
+    return {"success": True}
 
 
-@router.post("/token", response_model=schemas.Token)
+@router.post("/token")
 @limiter.limit("10/minute")
-async def login_for_access_token(request: Request, form_data: OAuth2PasswordRequestForm = Depends(),
-                                 captcha_token: str = Form(...), db: AsyncSession = Depends(get_db)):
+async def login_for_access_token(
+    request: Request,
+    response: JSONResponse,
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    captcha_token: str = Form(...),
+    db: AsyncSession = Depends(get_db)
+):
     if settings.CAPTCHA:
         await verify_turnstile(request, captcha_token)
 
+    # ۱. نرمال‌سازی و بررسی شماره تلفن
     phone_e164, phone_local = normalize_phone_variants(form_data.username)
     if not phone_e164:
         raise HTTPException(status_code=400, detail="شماره موبایل نامعتبر")
 
+    # ۲. پیدا کردن کاربر در دیتابیس
     execution_result = await db.execute(
         select(models.User).where(models.User.phone_number.in_([phone_e164, phone_local]))
     )
     user = execution_result.scalar_one_or_none()
 
-    if not user or not security.verify_password(form_data.password, user.hashed_password):
-        raise HTTPException(status_code=401, detail="Incorrect username or password")
+    # ۳. بررسی صحت رمز عبور (اگر کاربر وجود نداشت یا رمز غلط بود ارور یکسان می‌دهیم)
+    is_password_correct = await run_in_threadpool(
+        security.verify_password, form_data.password, user.hashed_password
+    )
+    if not user or not is_password_correct:
+        raise HTTPException(status_code=401, detail="شماره موبایل یا رمز عبور اشتباه است")
 
+    # ۴. بررسی فعال بودن حساب
     if not user.is_verified or not user.is_active:
-        raise HTTPException(status_code=403, detail="Account inactive or unverified")
+        raise HTTPException(status_code=403, detail="حساب کاربری شما فعال یا تایید نشده است")
 
+    # ۵. تولید توکن‌ها
     access_token = security.create_access_token(data={"sub": user.phone_number})
     refresh_token_str, token_id, expires_at = security.create_refresh_token(data={"sub": user.phone_number})
 
+    # ۶. ذخیره رفرش توکن در دیتابیس
     db_refresh_token = models.UserRefreshToken(
         user_id=user.id,
         token_id=token_id,
@@ -224,7 +241,15 @@ async def login_for_access_token(request: Request, form_data: OAuth2PasswordRequ
     db.add(db_refresh_token)
     await db.commit()
 
-    return set_client_cookie(access_token, refresh_token_str, user.role)
+    # ۷. ست کردن کوکی‌ها روی شیء response اصلی FastAPI
+    set_client_cookie(response, access_token, refresh_token_str, user.role)
+
+    # ۸. بازگرداندن دیتای متناسب با فرمت استاندارد OAuth2
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "role": user.role
+    }
 
 
 @router.post("/logout")
@@ -309,10 +334,10 @@ async def store_otp(phone: str, code: str, request: Request, expire_seconds: int
 
 
 async def verify_otp_from_store(phone: str, code: str, request: Request) -> bool:
-    """بررسی OTP"""
     saved_code = await request.app.state.redis.get(f"otp:{phone}")
+    if not saved_code: # اگر منقضی شده بود یا وجود نداشت
+        return False
     return saved_code == code
-
 
 
 class PhoneRequestCaptcha(PhoneRequest):
@@ -393,7 +418,7 @@ class VerifyOtpRequestCaptcha(VerifyOtpRequest):
 
 @router.post("/verify-otp-login")
 @limiter.limit("10/minute")
-async def verify_otp_login(request: Request, payload: VerifyOtpRequestCaptcha, db: AsyncSession = Depends(get_db)):
+async def verify_otp_login(request: Request, response: JSONResponse, payload: VerifyOtpRequestCaptcha, db: AsyncSession = Depends(get_db)):
     """
     تایید OTP برای ورود.
     """
@@ -433,7 +458,9 @@ async def verify_otp_login(request: Request, payload: VerifyOtpRequestCaptcha, d
     db.add(db_refresh_token)
     await db.commit()
 
-    return set_client_cookie(access_token, refresh_token_str, user.role)
+    # return set_client_cookie(access_token, refresh_token_str, user.role)
+    set_client_cookie(response, access_token, refresh_token_str, user.role)
+    return {"success": True}
 
 
 class RegisterOtpRequestCaptcha(RegisterOtpRequest):
@@ -442,7 +469,7 @@ class RegisterOtpRequestCaptcha(RegisterOtpRequest):
 
 @router.post("/register-otp", status_code=status.HTTP_201_CREATED)
 @limiter.limit("10/minute")
-async def register_with_otp(request: Request, payload: RegisterOtpRequestCaptcha, db: AsyncSession = Depends(get_db)):
+async def register_with_otp(request: Request, response: JSONResponse, payload: RegisterOtpRequestCaptcha, db: AsyncSession = Depends(get_db)):
     """
     ثبت‌نام با OTP.
     """
@@ -517,7 +544,8 @@ async def register_with_otp(request: Request, payload: RegisterOtpRequestCaptcha
     db.add(db_refresh_token)
     await db.commit()
 
-    return set_client_cookie(access_token, refresh_token_str, new_user.role)
+    set_client_cookie(response, access_token, refresh_token_str, new_user.role)
+    return {"success": True}
 
 
 @router.post("/generate-api-key")

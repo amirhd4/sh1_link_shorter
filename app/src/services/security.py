@@ -71,10 +71,10 @@ def create_refresh_token(data: dict) -> Tuple[str, str, datetime]:
     to_encode = data.copy()
     # برای ساختار امضای JWT از لایبرری jose، باید زمان اکسپایری را به صورت کماکان همراه با تایم‌زون تنظیم کنیم
     # چون پایتون زمان یونیکس خام از آن می‌خواهد:
-    expire_jwt = datetime.now(timezone.utc) + expires_delta
+    # expire_jwt = datetime.now(timezone.utc) + expires_delta
 
     to_encode.update({
-        "exp": expire_jwt,
+        "exp": expire,
         "jti": token_id,
         "type": "refresh"
     })
