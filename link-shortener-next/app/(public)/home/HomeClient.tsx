@@ -37,6 +37,7 @@ import {
 import { motion } from "framer-motion";
 
 import HomeLinkShortener from "@/components/home/HomeLinkShortener";
+import config from "@/config";
 
 /* ------------------------------------------------ */
 /* DATA */
@@ -755,10 +756,10 @@ const HomeClient = () => {
                     fontFamily: "monospace",
                   }}
                 >
-{`curl -X POST https://l1s.ir/api/v1/shorten \\
-  -H "Api-Key: sk_xxxxxxxxx" \\
-  -H "Content-Type: application/json" \\
-  -d '{ "long_url": "https://example.com" }'`}
+                {`curl -X POST ${config.backendBaseUrl}/v1/shorten \\
+                  -H "Api-Key: sk_xxxxxxxxx" \\
+                  -H "Content-Type: application/json" \\
+                  -d '{ "long_url": "https://example.com" }'`}
                 </Box>
               </Paper>
             </Grid>

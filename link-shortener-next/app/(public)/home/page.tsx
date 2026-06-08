@@ -2,15 +2,16 @@ import { Container, Typography, Box } from "@mui/material";
 import HomeClient from "./HomeClient";
 import {Metadata} from "next";
 import React from "react";
+import config from "@/config";
 
 export const metadata: Metadata = {
   title: "لس | کوتاه‌کننده لینک سریع، امن و قابل درآمدزایی",
   description: "لِس سرویس کوتاه‌کننده لینک با داشبورد پیشرفته، دامنه اختصاصی، تنظیم UTM، آمار تفصیلی (شهر، کشور، Referrer، fingerprint) و قابلیت کسب درآمد — بدون تبلیغات یا ریدایرکت اجباری.",
-  alternates: { canonical: "https://l1s.ir/" },
+  alternates: { canonical: `${config.backendBaseUrlOrigin}` },
   openGraph: {
     title: "لِس | کوتاه‌کننده لینک سریع، امن و قابل درآمدزایی",
     description: "داشبورد حرفه‌ای، API سریع، دامنه اختصاصی، تنظیم UTM و آمار کامل برای بازاریابان و توسعه‌دهندگان.",
-    url: "https://l1s.ir/",
+    url: `${config.backendBaseUrlOrigin}`,
     type: "website",
   },
   twitter: {
@@ -70,7 +71,7 @@ export default function Page() {
             "@context": "https://schema.org",
             "@type": "SoftwareApplication",
             name: "لِس",
-            url: "https://l1s.ir/",
+            url: `${config.backendBaseUrlOrigin}`,
             description: "لِس سرویس کوتاه‌کننده لینک با داشبورد پیشرفته، API امن، دامنه اختصاصی، تنظیم UTM، آمار تفصیلی و امکانات کسب درآمد.",
             applicationCategory: "DeveloperTool",
             operatingSystem: "Web",
@@ -78,14 +79,14 @@ export default function Page() {
               "@type": "Offer",
               price: 0,
               priceCurrency: "IRR",
-              url: "https://a.l1s.ir/register",
+              url: `${config.frontBaseUrl}/register`,
             },
             potentialAction: [
               { "@type": "Action", name: "ShortenURL" }
             ],
             breadcrumb: {
               "@type": "BreadcrumbList",
-              itemListElement: [{ "@type": "ListItem", position: 1, name: "خانه", item: "https://l1s.ir/" }],
+              itemListElement: [{ "@type": "ListItem", position: 1, name: "خانه", item: `${config.frontBaseUrl}` }],
             },
             mainEntity: faqItems.map(f => ({
               "@type": "Question",

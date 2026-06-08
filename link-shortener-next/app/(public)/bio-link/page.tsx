@@ -2,12 +2,13 @@ import React from "react";
 import { Container, Typography, Box, List, ListItem } from "@mui/material";
 import {Metadata} from "next";
 import Image from "next/image";
+import config from "@/config";
 
 export const metadata: Metadata = {
   title: "بیو لینک | لینک بیو حرفه‌ای و بهینه شده | لِس",
   description: "ویژگی بیو لینک لِس به شما این امکان را می‌دهد که تمامی لینک‌های خود را در یک صفحه واحد جمع‌آوری کرده و به راحتی به اشتراک بگذارید. برای افزایش تعامل و کارایی در شبکه‌های اجتماعی و تبلیغات.",
   keywords: "بیو لینک, لینک بیو, لینک در بیو, صفحه بیو, لینک برای اینستاگرام, لینک برای توییتر, لینک در پروفایل, بیو لینک لِس",
-  alternates: { canonical: "https://a.l1s.ir/bio-link" },
+  alternates: { canonical: `${config.frontBaseUrl}/bio-link` },
 };
 
 const faqs = [
@@ -39,7 +40,7 @@ const BioLinkPage: React.FC = () => {
       {/* Breadcrumb */}
       <Box mb={4}>
         <Typography variant="h6" color="textSecondary">
-          <a href="https://a.l1s.ir/home" style={{ textDecoration: "none" }}>خانه</a> &gt; <a href="https://a.l1s.ir/bio-link" style={{ textDecoration: "none" }}>بیو لینک</a>
+          <a href={`${config.frontBaseUrl}/home`} style={{ textDecoration: "none" }}>خانه</a> &gt; <a href={`${config.frontBaseUrl}/bio-link`} style={{ textDecoration: "none" }}>بیو لینک</a>
         </Typography>
       </Box>
 
@@ -105,10 +106,10 @@ const BioLinkPage: React.FC = () => {
         <Typography variant="h4" mb={3}>لینک‌های مرتبط</Typography>
         <Box display="flex" flexWrap="wrap" gap={2}>
           {[
-            { href: "https://a.l1s.ir/home", title: "صفحه اصلی" },
-            { href: "https://a.l1s.ir/bio-link", title: "بیو لینک" },
-            { href: "https://a.l1s.ir/url-shortener", title: "کوتاه کننده لینک" },
-            { href: "https://a.l1s.ir/short-url-generator", title: "تولید کننده لینک کوتاه" },
+            { href: `${config.frontBaseUrl}/home`, title: "صفحه اصلی" },
+            { href: `${config.frontBaseUrl}/bio-link`, title: "بیو لینک" },
+            { href: `${config.frontBaseUrl}/url-shortener`, title: "کوتاه کننده لینک" },
+            { href: `${config.frontBaseUrl}/short-url-generator`, title: "تولید کننده لینک کوتاه" },
           ].map((link, idx) => (
             <Box
               key={idx}

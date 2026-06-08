@@ -2,13 +2,14 @@ import React from "react";
 import { Container, Typography, Box, List, ListItem } from "@mui/material";
 import {Metadata} from "next";
 import Image from "next/image";
+import config from "@/config";
 
 export const metadata: Metadata = {
   title: "کوتاه‌کننده لینک حرفه‌ای و امن | لِس",
   description:
     "کوتاه‌کننده لینک لِس سریع، امن و بدون تبلیغات است. لینک‌های بلند خود را کوتاه کنید و با امکانات پیشرفته ردیابی، کسب درآمد و مدیریت آسان استفاده کنید.",
   keywords: "کوتاه کننده لینک, کوتاه کردن لینک, ردیابی لینک, لینک کوتاه حرفه ای, لینک محافظت شده, لِس",
-  alternates: { canonical: "https://a.l1s.ir/link-shortener" },
+  alternates: { canonical: `${config.frontBaseUrl}/link-shortener` },
 };
 
 const faqItems = [
@@ -51,7 +52,7 @@ const LinkShortenerPage: React.FC = () => {
         {/* Breadcrumb */}
       <Box mb={4}>
         <Typography variant="h6" color="textSecondary">
-          <a href="https://a.l1s.ir/home" style={{ textDecoration: "none" }}>خانه</a> &gt; <a href="https://a.l1s.ir/link-shortener" style={{ textDecoration: "none" }}>کوتاه کننده لینک حرفه ای</a>
+          <a href={`${config.frontBaseUrl}/home`} style={{ textDecoration: "none" }}>خانه</a> &gt; <a href={`${config.frontBaseUrl}/link-shortener`} style={{ textDecoration: "none" }}>کوتاه کننده لینک حرفه ای</a>
         </Typography>
       </Box>
  <Box mb={4} display="flex" justifyContent="center">
@@ -103,10 +104,10 @@ const LinkShortenerPage: React.FC = () => {
   <Typography variant="h4" mb={3}>لینک‌های مرتبط و مفید</Typography>
   <Box display="flex" flexWrap="wrap" gap={2}>
     {[
-      { href: "https://a.l1s.ir/home", title: "صفحه اصلی" },
-      { href: "https://a.l1s.ir/short-url-generator", title: "تولید کننده لینک کوتاه" },
-      { href: "https://a.l1s.ir/free-url-shortener", title: "کوتاه کننده لینک رایگان" },
-      { href: "https://a.l1s.ir/url-shortener", title: "کوتاه کننده لینک با API" },
+      { href: `${config.frontBaseUrl}/home`, title: "صفحه اصلی" },
+      { href: `${config.frontBaseUrl}/short-url-generator`, title: "تولید کننده لینک کوتاه" },
+      { href: `${config.frontBaseUrl}/free-url-shortener`, title: "کوتاه کننده لینک رایگان" },
+      { href: `${config.frontBaseUrl}/url-shortener`, title: "کوتاه کننده لینک با API" },
     ].map((link, idx) => (
       <Box
         key={idx}

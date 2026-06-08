@@ -1,6 +1,7 @@
 import React from "react";
 
 const SupportSection = () => {
+  //     TODO: Change paymentLink to your support payment link
   const paymentLink = "https://pa.l1s.ir/link/767642";
 
   return (

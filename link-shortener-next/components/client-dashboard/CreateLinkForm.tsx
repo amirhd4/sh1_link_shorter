@@ -25,6 +25,7 @@ import type { DomainResponse, URLCreate, URLResponse } from '@/types/api';
 import CloseIcon from '@mui/icons-material/Close';
 import LinkIcon from '@mui/icons-material/Link';
 import {useState} from "react";
+import config from "@/config";
 
 // 🧠 Schema با اعتبارسنجی کد دلخواه
 const createLinkSchema = z.object({
@@ -174,10 +175,10 @@ export function CreateLinkForm({ isOpen, onClose }: CreateLinkFormProps) {
   const previewDomain =
     selectedDomain?.name && selectedDomain.name !== "(دامنه پیش‌فرض)"
       ? selectedDomain.name
-      : "l1s.ir";
+      : `${new URL(config.backendBaseUrlOrigin).hostname}`;
   const previewLink = customAlias
     ? `https://${previewDomain}/${customAlias}`
-    : `https://${previewDomain}/abc123`;
+    : `https://${previewDomain}/randomCode`;
 
   return (
     <Modal open={isOpen} onClose={handleClose}>

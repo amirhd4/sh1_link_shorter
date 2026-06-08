@@ -4,7 +4,11 @@ const config = {
   backendBaseUrlOrigin: process.env.NEXT_PUBLIC_BACKEND_BASE_URL_ORIGIN || "http://localhost:8000",
   frontBaseUrl: process.env.NEXT_PUBLIC_FRONT_BASE_URL_ORIGIN || "http://localhost:3000",
   debug: process.env.NEXT_PUBLIC_DEBUG === "true" || false,
-  captcha: process.env.NEXT_PUBLIC_CAPTCHA === "true" || false
+  captcha: process.env.NEXT_PUBLIC_CAPTCHA === "true" || false,
+  eitaaSupport: process.env.NEXT_PUBLIC_EITAA_SUPPORT,
+  rubikaSupport: process.env.NEXT_PUBLIC_RUBICA_SUPPORT,
+  instagramPage: process.env.NEXT_PUBLIC_INSTAGRAM_PAGE,
+  telegramChannel: process.env.NEXT_PUBLIC_TELEGRAM_PAGE,
 };
 
 export default config;

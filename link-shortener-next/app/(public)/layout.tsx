@@ -32,6 +32,7 @@ import FaTelegramPlane from '@mui/icons-material/Telegram';
 import FaLinkedin from '@mui/icons-material/LinkedIn';
 import MenuIcon from "@mui/icons-material/Menu";
 import Footer from "@/components/public-layout/footer";
+import config from "@/config";
 
 
 interface PublicLayoutProps {
@@ -85,13 +86,13 @@ const navLinks = [
         <meta property="og:title" content="کوتاه‌کننده لینک لِس" />
         <meta property="og:description" content="سرویس کوتاه‌کننده لینک سریع و امن" />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="a.l1s.ir" />
-        <meta property="og:image" content="https://a.l1s.ir/images/l1s_preview.png" />
+        <meta property="og:url" content={`${config.frontBaseUrl}`} />
+        <meta property="og:image" content={`${config.frontBaseUrl}/images/l1s_preview.png`} />
         <meta name="twitter:title" content="کوتاه‌کننده لینک لِس" />
         <meta name="twitter:description" content="سرویس کوتاه‌کننده لینک سریع و امن" />
-        <meta name="twitter:image" content="https://a.l1s.ir/images/l1s_preview.png" />
+        <meta name="twitter:image" content={`${config.frontBaseUrl}/images/l1s_preview.png`} />
         <meta name="twitter:card" content="summary_large_image" />
-        <link rel="canonical" href="https://l1s.ir" />
+        <link rel="canonical" href={`${config.backendBaseUrlOrigin}`} />
       </Head>
 
       <CssBaseline />

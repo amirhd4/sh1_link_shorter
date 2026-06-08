@@ -3,6 +3,7 @@ import { Container, Typography, Box, List, ListItem, Button, Stack } from "@mui/
 import Link from "next/link";
 import {Metadata} from "next";
 import Image from "next/image";
+import config from "@/config";
 
 export const metadata: Metadata = {
   title: "API کوتاه‌کننده لینک | لس",
@@ -10,7 +11,7 @@ export const metadata: Metadata = {
     "با API امن لس لینک کوتاه بسازید. پشتیبانی از دامنه اختصاصی، ردیابی UTM، No-Ads و لینک محافظت‌شده. مناسب توسعه‌دهندگان و برنامه‌نویسان ایرانی.",
   keywords:
     "API کوتاه‌کننده لینک, کوتاه کردن لینک با API, لینک کوتاه برنامه نویسی, URL shortener API, لینک کوتاه امن",
-  alternates: { canonical: "https://a.l1s.ir/url-shortener" },
+  alternates: { canonical: `${config.frontBaseUrl}/url-shortener` },
 };
 
 const faqItems = [
@@ -36,15 +37,15 @@ const faqItems = [
 const examples = [
   {
     label: "لینک ساده",
-    code: `curl -X POST "https://l1s.ir/api/v1/shorten" \\\n  -H "Api-Key: sk_your_api_key_here" \\\n  -H "Content-Type: application/json" \\\n  -d "{\\"long_url\\":\\"https://example.com\\"}"`,
+    code: `curl -X POST ${config.backendBaseUrl}/v1/shorten \\\n  -H "Api-Key: sk_your_api_key_here" \\\n  -H "Content-Type: application/json" \\\n  -d "{\\"long_url\\":\\"https://example.com\\"}"`,
     response: `{
   "long_url": "https://example.com",
-  "short_url": "https://l1s.ir/Ab12Xy"
+  "short_url": ${config.backendBaseUrlOrigin}/Ab12Xy
 }`,
   },
   {
     label: "دامنه اختصاصی + UTM",
-    code: `curl -X POST "https://l1s.ir/api/v1/shorten" \\\n  -H "Api-Key: sk_your_api_key_here" \\\n  -H "Content-Type: application/json" \\\n  -d "{\\"long_url\\":\\"https://example.com/project\\",\\"domain_id\\":42,\\"utm_source\\":\\"twitter\\",\\"utm_medium\\":\\"social\\",\\"utm_campaign\\":\\"launch\\"}"`,
+    code: `curl -X POST "${config.backendBaseUrl}/v1/shorten" \\\n  -H "Api-Key: sk_your_api_key_here" \\\n  -H "Content-Type: application/json" \\\n  -d "{\\"long_url\\":\\"https://example.com/project\\",\\"domain_id\\":42,\\"utm_source\\":\\"twitter\\",\\"utm_medium\\":\\"social\\",\\"utm_campaign\\":\\"launch\\"}"`,
     response: `{
   "long_url": "https://example.com/project",
   "short_url": "https://customdomain.com/Xy12Ab"
@@ -52,18 +53,18 @@ const examples = [
   },
   {
     label: "لینک محافظت‌شده با رمز 🔒",
-    code: `curl -X POST "https://l1s.ir/api/v1/shorten" \\\n  -H "Api-Key: sk_your_api_key_here" \\\n  -H "Content-Type: application/json" \\\n  -d "{\\"long_url\\":\\"https://example.com/secret\\",\\"password\\":\\"mypassword123\\"}"`,
+    code: `curl -X POST "${config.backendBaseUrl}/v1/shorten" \\\n  -H "Api-Key: sk_your_api_key_here" \\\n  -H "Content-Type: application/json" \\\n  -d "{\\"long_url\\":\\"https://example.com/secret\\",\\"password\\":\\"mypassword123\\"}"`,
     response: `{
   "long_url": "https://example.com/secret",
-  "short_url": "https://l1s.ir/SeCrEt1"
+  "short_url": "${config.backendBaseUrlOrigin}/SeCrEt1"
 }`,
   },
   {
     label: "لینک با تبلیغات و No-Ads",
-    code: `curl -X POST "https://l1s.ir/api/v1/shorten" \\\n  -H "Api-Key: sk_your_api_key_here" \\\n  -H "Content-Type: application/json" \\\n  -d "{\\"long_url\\":\\"https://example.com/offer\\",\\"show_ads\\":false}"`,
+    code: `curl -X POST "${config.backendBaseUrl}/v1/shorten" \\\n  -H "Api-Key: sk_your_api_key_here" \\\n  -H "Content-Type: application/json" \\\n  -d "{\\"long_url\\":\\"https://example.com/offer\\",\\"show_ads\\":false}"`,
     response: `{
   "long_url": "https://example.com/offer",
-  "short_url": "https://l1s.ir/Xy12NoAds"
+  "short_url": "${config.backendBaseUrlOrigin}/Xy12NoAds"
 }`,
   },
 ];
@@ -90,7 +91,7 @@ const ApiUrlShortenerPage: React.FC = () => {
 {/* Breadcrumb */}
       <Box mb={4}>
         <Typography variant="h6" color="textSecondary">
-          <a href="https://a.l1s.ir/home" style={{ textDecoration: "none" }}>خانه</a> &gt; <a href="https://a.l1s.ir/url-shortener" style={{ textDecoration: "none" }}>API کوتاه‌کننده لینک</a>
+          <a href={`${config.frontBaseUrl}/home`} style={{ textDecoration: "none" }}>خانه</a> &gt; <a href={`${config.frontBaseUrl}/url-shortener`} style={{ textDecoration: "none" }}>API کوتاه‌کننده لینک</a>
         </Typography>
       </Box>
       <Typography component="h1" variant="h3" mb={3}>
@@ -166,7 +167,7 @@ const ApiUrlShortenerPage: React.FC = () => {
       <Box my={4}>
         <Typography variant="h5" mb={2}>نمونه کد استفاده از API</Typography>
         <Typography component="pre" sx={{ background: "#f5f5f5", p: 2, borderRadius: 1, overflowX: "auto" }}>
-{`POST https://api.l1s.ir/v1/shorten
+{`POST ${config.backendBaseUrl}/v1/shorten
 Headers:
   Authorization: Bearer YOUR_API_KEY
 Body:
@@ -212,11 +213,11 @@ Body:
   <Typography variant="h4" mb={3}>لینک‌های مرتبط و مفید</Typography>
   <Box display="flex" flexWrap="wrap" gap={2}>
     {[
-      { href: "https://a.l1s.ir/home", title: "صفحه اصلی" },
-      { href: "https://a.l1s.ir/short-url-generator", title: "تولید کننده لینک کوتاه" },
-      { href: "https://a.l1s.ir/short-url-generator", title: "کوتاه کننده لینک رایگان" },
-      { href: "https://a.l1s.ir/terms", title: "حریم خصوصی و قوانین" },
-      { href: "https://a.l1s.ir/tutorial", title: "آموزش کوتاه کننده لینک لِس" },
+      { href: `${config.frontBaseUrl}/home`, title: "صفحه اصلی" },
+      { href: `${config.frontBaseUrl}/short-url-generator`, title: "تولید کننده لینک کوتاه" },
+      { href: `${config.frontBaseUrl}/short-url-generator`, title: "کوتاه کننده لینک رایگان" },
+      { href: `${config.frontBaseUrl}/terms`, title: "حریم خصوصی و قوانین" },
+      { href: `${config.frontBaseUrl}/tutorial`, title: "آموزش کوتاه کننده لینک لِس" },
     ].map((link, idx) => (
       <Box
         key={idx}

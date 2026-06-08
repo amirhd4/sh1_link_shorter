@@ -12,6 +12,7 @@ import CodeIcon from "@mui/icons-material/Code";
 import LanguageIcon from "@mui/icons-material/Language";
 import { apiService } from "@/services/apiService";
 import { useUserStore } from "@/store/userStore";
+import config from "@/config";
 
 // ---------------------------------------------------------------------------
 // CodeBlock
@@ -128,7 +129,7 @@ export default function ApiPage() {
   };
 
   // API examples
-  const baseUrl = "https://l1s.ir/api/v1/shorten";
+  const baseUrl = `${config.backendBaseUrl}/v1/shorten`;
   const authHeader = apiKey ? `Api-Key: ${apiKey}` : `Api-Key: YOUR_API_KEY`;
 
   const exampleSimple = { long_url: "https://example.com" };

@@ -2,12 +2,13 @@ import React from "react";
 import { Container, Typography, Box, List, ListItem, ListItemText } from "@mui/material";
 import {Metadata} from "next";
 import Image from "next/image";
+import config from "@/config";
 
 export const metadata: Metadata = {
   title: "سوالات متداول | لِس",
   description: "سوالات متداول کاربران لس  درباره کوتاه‌کننده لینک، امنیت، API، دامنه اختصاصی و نحوه استفاده از سرویس.",
   keywords: "FAQ, سوالات متداول, کوتاه کننده لینک, لینک کوتاه, سرویس لس, لِس , API لینک کوتاه, دامنه اختصاصی",
-  alternates: { canonical: "https://a.l1s.ir/faq" },
+  alternates: { canonical: `${config.frontBaseUrl}/faq` },
 };
 
 const faqs = [
@@ -49,7 +50,7 @@ const FaqPage: React.FC = () => {
         {/* Breadcrumb */}
       <Box mb={4}>
         <Typography variant="h6" color="textSecondary">
-          <a href="https://a.l1s.ir/home" style={{ textDecoration: "none" }}>خانه</a> &gt; <a href="https://a.l1s.ir/faq" style={{ textDecoration: "none" }}>سوالات متداول</a>
+          <a href={`${config.frontBaseUrl}/home`} style={{ textDecoration: "none" }}>خانه</a> &gt; <a href={`${config.frontBaseUrl}/faq`} style={{ textDecoration: "none" }}>سوالات متداول</a>
         </Typography>
       </Box>
  <Box mb={4} display="flex" justifyContent="center">
@@ -74,17 +75,17 @@ const FaqPage: React.FC = () => {
         {(() => {
           switch(index) {
             case 0: // کوتاه‌کننده لینک چیست؟
-              return <>کوتاه‌کننده لینک ابزاری آنلاین است که لینک‌های بلند و پیچیده را به لینک کوتاه، ساده و قابل اشتراک‌گذاری تبدیل می‌کند. برای تجربه عملی، می‌توانید از <a href="https://a.l1s.ir/short-url-generator" title="تولید کننده لینک کوتاه">تولید کننده لینک کوتاه لس</a> استفاده کنید.</>;
+              return <>کوتاه‌کننده لینک ابزاری آنلاین است که لینک‌های بلند و پیچیده را به لینک کوتاه، ساده و قابل اشتراک‌گذاری تبدیل می‌کند. برای تجربه عملی، می‌توانید از <a href={`${config.frontBaseUrl}/short-url-generator`} title="تولید کننده لینک کوتاه">تولید کننده لینک کوتاه لس</a> استفاده کنید.</>;
             case 1: // مزایای کوتاه کردن لینک چیست؟
-              return <>آموزش استفاده از سامانه کوتاه کننده لینک لِس + به همراه آموزش تصویری <a href="https://a.l1s.ir/tutorial" title="آموزش کوتاه کننده لینک لِس">آموزش کوتاه‌کننده لینک لِس</a> را ببینید.</>;
+              return <>آموزش استفاده از سامانه کوتاه کننده لینک لِس + به همراه آموزش تصویری <a href={`${config.frontBaseUrl}/tutorial`} title="آموزش کوتاه کننده لینک لِس">آموزش کوتاه‌کننده لینک لِس</a> را ببینید.</>;
             case 2: // رایگان بودن سرویس
-              return <>بله، سرویس کوتاه‌کننده لینک لس رایگان است و بدون تبلیغات مزاحم می‌توانید لینک کوتاه بسازید. همچنین می‌توانید از <a href="https://a.l1s.ir/short-url-generator" title="کوتاه کننده لینک رایگان">کوتاه‌کننده لینک رایگان</a> استفاده کنید.</>;
+              return <>بله، سرویس کوتاه‌کننده لینک لس رایگان است و بدون تبلیغات مزاحم می‌توانید لینک کوتاه بسازید. همچنین می‌توانید از <a href={`${config.frontBaseUrl}/short-url-generator`} title="کوتاه کننده لینک رایگان">کوتاه‌کننده لینک رایگان</a> استفاده کنید.</>;
             case 3: // دامنه اختصاصی
-              return <>بله، لس امکان استفاده از دامنه اختصاصی برای برندینگ لینک‌ها را فراهم کرده است. اطلاعات بیشتر در <a href="https://a.l1s.ir/url-shortener" title="API کوتاه‌کننده لینک">API کوتاه‌کننده لینک</a> موجود است.</>;
+              return <>بله، لس امکان استفاده از دامنه اختصاصی برای برندینگ لینک‌ها را فراهم کرده است. اطلاعات بیشتر در <a href={`${config.frontBaseUrl}/url-shortener`} title="API کوتاه‌کننده لینک">API کوتاه‌کننده لینک</a> موجود است.</>;
             case 4: // ردیابی لینک‌ها
-              return <>با ورود به داشبورد لِس می‌توانید تعداد کلیک‌ها، تاریخ و زمان، و منابع کلیک‌ها را مشاهده کنید. همچنین می‌توانید از <a href="https://a.l1s.ir/url-shortener" title="کوتاه کننده لینک با API">کوتاه‌کننده لینک با API</a> برای ردیابی حرفه‌ای استفاده کنید.</>;
+              return <>با ورود به داشبورد لِس می‌توانید تعداد کلیک‌ها، تاریخ و زمان، و منابع کلیک‌ها را مشاهده کنید. همچنین می‌توانید از <a href={`${config.frontBaseUrl}/url-shortener`} title="کوتاه کننده لینک با API">کوتاه‌کننده لینک با API</a> برای ردیابی حرفه‌ای استفاده کنید.</>;
             case 5: // API
-              return <>بله، API کوتاه‌کننده لینک لس با امکانات دامنه اختصاصی، ردیابی UTM و لینک محافظت‌شده ارائه می‌شود. صفحه <a href="https://a.l1s.ir/url-shortener" title="API کوتاه‌کننده لینک">API کوتاه‌کننده لینک</a> را ببینید.</>;
+              return <>بله، API کوتاه‌کننده لینک لس با امکانات دامنه اختصاصی، ردیابی UTM و لینک محافظت‌شده ارائه می‌شود. صفحه <a href={`${config.frontBaseUrl}/url-shortener`} title="API کوتاه‌کننده لینک">API کوتاه‌کننده لینک</a> را ببینید.</>;
             default:
               return faq.answer;
           }
@@ -120,13 +121,13 @@ const FaqPage: React.FC = () => {
   <Typography variant="h4" mb={3}>صفحات مرتبط</Typography>
   <Box display="flex" flexWrap="wrap" gap={2}>
     {[
-      { href: "https://a.l1s.ir/home", title: "صفحه اصلی" },
-      { href: "https://a.l1s.ir/short-url-generator", title: "تولید کننده لینک کوتاه" },
-      { href: "https://a.l1s.ir/short-url-generator", title: "کوتاه کننده لینک رایگان" },
-      { href: "https://a.l1s.ir/terms", title: "حریم خصوصی و قوانین" },
-      { href: "https://a.l1s.ir/url-shortener", title: "کوتاه کننده لینک با API" },
-      { href: "https://a.l1s.ir/tutorial", title: "آموزش کوتاه کننده لینک لِس" },
-      { href: "https://a.l1s.ir/bio-link", title: "بیو لینک (لینک در بیو)" },
+      { href: `${config.frontBaseUrl}/home`, title: "صفحه اصلی" },
+      { href: `${config.frontBaseUrl}/short-url-generator`, title: "تولید کننده لینک کوتاه" },
+      { href: `${config.frontBaseUrl}/short-url-generator`, title: "کوتاه کننده لینک رایگان" },
+      { href: `${config.frontBaseUrl}/terms`, title: "حریم خصوصی و قوانین" },
+      { href: `${config.frontBaseUrl}/url-shortener`, title: "کوتاه کننده لینک با API" },
+      { href: `${config.frontBaseUrl}/tutorial`, title: "آموزش کوتاه کننده لینک لِس" },
+      { href: `${config.frontBaseUrl}/bio-link`, title: "بیو لینک (لینک در بیو)" },
 
     ].map((link, idx) => (
       <Box

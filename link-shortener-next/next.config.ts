@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import config from "@/config";
 
 const nextConfig: NextConfig = {
   /* config options here */
@@ -12,7 +13,7 @@ const nextConfig: NextConfig = {
       },
         {
         protocol: 'https',
-        hostname: 'a.l1s.ir',
+        hostname: `${new URL(config.frontBaseUrl).hostname}`,
         port: '443',
         pathname: '/api/uploads/avatars/**',
       },

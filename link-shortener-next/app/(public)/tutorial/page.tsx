@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Container, Typography, Box, List, ListItem, Divider } from "@mui/material";
 import { Metadata } from "next";
+import config from "@/config";
 
 export const metadata: Metadata = {
   title: "آموزش ثبت‌نام، ورود، ساخت لینک و مشاهده آمار | لس",
@@ -11,13 +12,13 @@ export const metadata: Metadata = {
   keywords:
     "آموزش لس, ثبت نام در لس, ورود به لس, ساخت لینک کوتاه, آموزش کوتاه کننده لینک, تنظیم UTM, مشاهده آمار لینک, ویرایش لینک, اشتراک لس, لینک کوتاه حرفه ای",
   alternates: {
-    canonical: "https://a.l1s.ir/tutorial",
+    canonical: `${config.frontBaseUrl}/tutorial`,
   },
   openGraph: {
     title: "آموزش ثبت‌نام، ورود، ساخت لینک و مشاهده آمار | لس",
     description:
       "راهنمای کامل استفاده از لس برای ثبت‌نام، ورود، خرید اشتراک، ساخت لینک، تنظیم UTM و بررسی آمار لینک‌ها.",
-    url: "https://a.l1s.ir/tutorial",
+    url: `${config.frontBaseUrl}/tutorial`,
     type: "article",
     images: [
       {
@@ -138,13 +139,13 @@ const breadcrumbSchema = {
       "@type": "ListItem",
       position: 1,
       name: "خانه",
-      item: "https://a.l1s.ir/home",
+      item: `${config.frontBaseUrl}/home`,
     },
     {
       "@type": "ListItem",
       position: 2,
       name: "آموزش کار با لس",
-      item: "https://a.l1s.ir/tutorial",
+      item: `${config.frontBaseUrl}/tutorial`,
     },
   ],
 };
@@ -168,7 +169,7 @@ const LinkShortenerGuidePage: React.FC = () => {
       {/* Breadcrumb */}
       <Box mb={4}>
         <Typography variant="body2" color="text.secondary">
-          <Link href="https://a.l1s.ir/home" style={{ textDecoration: "none" }}>
+          <Link href={`${config.frontBaseUrl}/home`} style={{ textDecoration: "none" }}>
             خانه
           </Link>{" "}
           {" > "} آموزش کار با لس
@@ -218,14 +219,14 @@ const LinkShortenerGuidePage: React.FC = () => {
         <List>
           <ListItem sx={{ display: "list-item" }}>
             صفحه ثبت‌نام:{" "}
-            <a href="https://a.l1s.ir/register" target="_blank" rel="noopener noreferrer">
-              https://a.l1s.ir/register
+            <a href={`${config.frontBaseUrl}/register`} target="_blank" rel="noopener noreferrer">
+              {`${config.frontBaseUrl}`}/register
             </a>
           </ListItem>
           <ListItem sx={{ display: "list-item" }}>
             صفحه ورود:{" "}
-            <a href="https://a.l1s.ir/login" target="_blank" rel="noopener noreferrer">
-              https://a.l1s.ir/login
+            <a href={`${config.frontBaseUrl}/login`} target="_blank" rel="noopener noreferrer">
+              {`${config.frontBaseUrl}`}/login
             </a>
           </ListItem>
         </List>
@@ -714,11 +715,11 @@ const LinkShortenerGuidePage: React.FC = () => {
         </Typography>
         <Box display="flex" flexWrap="wrap" gap={2}>
           {[
-            { href: "https://a.l1s.ir/home", title: "صفحه اصلی" },
-            { href: "https://a.l1s.ir/faq", title: "سوالات متداول" },
-            { href: "https://a.l1s.ir/terms", title: "قوانین و حریم خصوصی" },
-            { href: "https://a.l1s.ir/register", title: "ثبت‌نام در لس" },
-            { href: "https://a.l1s.ir/login", title: "ورود به حساب کاربری" },
+            { href: `${config.frontBaseUrl}/home`, title: "صفحه اصلی" },
+            { href: `${config.frontBaseUrl}/faq`, title: "سوالات متداول" },
+            { href: `${config.frontBaseUrl}/terms`, title: "قوانین و حریم خصوصی" },
+            { href: `${config.frontBaseUrl}/register`, title: "ثبت‌نام در لس" },
+            { href: `${config.frontBaseUrl}/login`, title: "ورود به حساب کاربری" },
           ].map((link, idx) => (
             <Box
               key={idx}

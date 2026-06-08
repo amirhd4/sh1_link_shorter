@@ -16,6 +16,7 @@ import Ticket from "@mui/icons-material/AirplaneTicket";
 import BioLink from "@mui/icons-material/Pages";
 import Image from "next/image";
 import {Sms, SmsFailed } from "@mui/icons-material";
+import config from "@/config";
 
 const drawerWidth = 260;
 
@@ -113,9 +114,6 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           <Typography variant="body2" sx={{ color: '#6b21a8', fontWeight: 600 }}>
             پشتیبانی
           </Typography>
-          {/*<Typography sx={{ display: 'block', fontSize: 13, color: '#6b21a8' }}>*/}
-          {/*  support@l1s.ir*/}
-          {/*</Typography>*/}
           <Typography sx={{ display: 'block', fontSize: 13, color: '#6b21a8' }}>
 
              <IconButton
@@ -135,20 +133,20 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     </IconButton>
 
              <IconButton
-    component={Link}
-    href="https://eitaa.com/poshtiban1i"
-    target="_blank"
-    rel="noopener noreferrer"
-    aria-label="ایتا"
-    sx={{ p: 1 }}
-  >
-    <Image
-      src="/social/eitaa.png"
-      alt="ایتا"
-      width={28}
-      height={28}
-    />
-  </IconButton>
+                component={Link}
+                href={`https://eitaa.com/${config.eitaaSupport}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="ایتا"
+                sx={{ p: 1 }}
+              >
+                <Image
+                  src="/social/eitaa.png"
+                  alt="ایتا"
+                  width={28}
+                  height={28}
+                />
+              </IconButton>
           </Typography>
         </Box>
       </Box>

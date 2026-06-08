@@ -15,6 +15,7 @@ import {
 import { ExpandMore, MonetizationOn, Link, Security, Insights, TouchApp, Code } from "@mui/icons-material";
 import Image from "next/image";
 import { Metadata } from "next";
+import config from "@/config";
 
 export const metadata: Metadata = {
   title: "تولیدکننده لینک کوتاه و سیستم درآمدزایی | لس",
@@ -22,7 +23,7 @@ export const metadata: Metadata = {
     "با ابزار پیشرفته تولیدکننده لینک کوتاه لس، لینک‌های خود را به راحتی کوتاه کنید. امکان کسب درآمد از کلیک‌ها، ساخت بیو لینک، اتصال API و مشاهده آمار دقیق جغرافیایی.",
   keywords:
     "تولید لینک کوتاه, کوتاه کننده لینک آنلاین, لینک کوتاه سریع, لینک کوتاه امن, ابزار لینک کوتاه, کسب درآمد از لینک, بیو لینک اختصاصی, API کوتاه کننده لینک",
-  alternates: { canonical: "https://a.l1s.ir/short-url-generator" },
+  alternates: { canonical: `${config.frontBaseUrl}/short-url-generator` },
 };
 
 const faqItems = [
@@ -67,7 +68,7 @@ const ShortUrlGeneratorPage: React.FC = () => {
         {/* Breadcrumb شیک و سازگار با تم تیره */}
         <Box mb={4}>
           <Typography variant="body2" sx={{ color: "#94a3b8", display: "flex", gap: 1, alignItems: "center" }}>
-            <a href="https://a.l1s.ir/home" style={{ color: "#c084fc", textDecoration: "none" }}>خانه</a>
+            <a href={`${config.frontBaseUrl}/home`} style={{ color: "#c084fc", textDecoration: "none" }}>خانه</a>
             <span>&gt;</span>
             <span style={{ color: "#94a3b8" }}>تولید کننده لینک کوتاه</span>
           </Typography>
@@ -263,12 +264,12 @@ const ShortUrlGeneratorPage: React.FC = () => {
           </Typography>
           <Grid container spacing={2}>
             {[
-              { href: "https://a.l1s.ir/home", title: "صفحه اصلی پلتفرم" },
-              { href: "https://a.l1s.ir/terms", title: "قوانین و حریم خصوصی" },
-              { href: "https://a.l1s.ir/url-shortener", title: "کوتاه کننده لینک با API برای برنامه‌نویسان" },
-              { href: "https://a.l1s.ir/short-url-generator", title: "کوتاه کننده لینک رایگان و سریع" },
-              { href: "https://a.l1s.ir/tutorial", title: "آموزش جامع کوتاه کردن لینک" },
-              { href: "https://a.l1s.ir/faq", title: "مرکز سوالات متداول کاربران" },
+              { href: `${config.frontBaseUrl}/home`, title: "صفحه اصلی پلتفرم" },
+              { href: `${config.frontBaseUrl}/terms`, title: "قوانین و حریم خصوصی" },
+              { href: `${config.frontBaseUrl}/url-shortener`, title: "کوتاه کننده لینک با API برای برنامه‌نویسان" },
+              { href: `${config.frontBaseUrl}/short-url-generator`, title: "کوتاه کننده لینک رایگان و سریع" },
+              { href: `${config.frontBaseUrl}/tutorial`, title: "آموزش جامع کوتاه کردن لینک" },
+              { href: `${config.frontBaseUrl}/faq`, title: "مرکز سوالات متداول کاربران" },
             ].map((link, idx) => (
               <Grid size={{ xs: 12, sm: 6, md: 4}} key={idx}>
                 <Box

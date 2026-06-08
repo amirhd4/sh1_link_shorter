@@ -1,14 +1,15 @@
 import React from "react";
 import { Container, Typography, Box, List, ListItem } from "@mui/material";
 import { Metadata } from "next";
+import config from "@/config";
 
 export const metadata: Metadata = {
   title: "قوانین و مقررات و حریم خصوصی | لِس",
   description:
-    "مطالعه کامل قوانین و مقررات، شرایط استفاده و سیاست حفظ حریم خصوصی سرویس کوتاه‌کننده لینک و لینک در بیو لِس (L1S.ir).",
+    `مطالعه کامل قوانین و مقررات، شرایط استفاده و سیاست حفظ حریم خصوصی سرویس کوتاه‌کننده لینک و لینک در بیو لِس (${config.backendBaseUrlOrigin}).`,
   keywords:
     "قوانین کوتاه کننده لینک, حریم خصوصی, شرایط استفاده, قوانین لینک کوتاه, مقررات لِس",
-  alternates: { canonical: "https://a.l1s.ir/terms" },
+  alternates: { canonical: `${config.frontBaseUrl}/terms` },
 };
 
 const faqItems = [
@@ -56,7 +57,7 @@ const TermsPage: React.FC = () => {
       {/* Breadcrumb */}
       <Box mb={4}>
         <Typography variant="h6" color="textSecondary">
-          <a href="https://a.l1s.ir/home" style={{ textDecoration: "none" }}>
+          <a href={`${config.frontBaseUrl}/home`} style={{ textDecoration: "none" }}>
             خانه
           </a>{" "}
           &gt; قوانین و مقررات
@@ -64,7 +65,7 @@ const TermsPage: React.FC = () => {
       </Box>
 
       <Typography variant="h3" mb={3}>
-        قوانین و مقررات استفاده از سرویس لِس (L1S.ir)
+          {`قوانین و مقررات استفاده از سرویس لِس (${config.backendBaseUrlOrigin})`}
       </Typography>
 
       <Typography mb={3}>

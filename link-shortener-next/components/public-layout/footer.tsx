@@ -12,6 +12,7 @@ import FaTelegramPlane from "@mui/icons-material/Telegram";
 import FaInstagram from '@mui/icons-material/Instagram';
 // import {BsMessenger} from "react-icons/bs";
 import Image from "next/image"
+import config from "@/config";
 
 
 export default function Footer({ enamadCode }: { enamadCode: string }) {
@@ -27,18 +28,18 @@ export default function Footer({ enamadCode }: { enamadCode: string }) {
             "@context": "https://schema.org",
             "@type": "Organization",
             name: "لِس",
-            url: "https://l1s.ir",
-            logo: "https://a.l1s.ir/favicon.png",
+            url: `${config.backendBaseUrlOrigin}`,
+            logo: `${config.frontBaseUrl}/favicon.png`,
             sameAs: [
-              "https://t.me/l1s_link_shortener",
-              "https://www.instagram.com/lis.link_shortener"
+              `https://t.me/${config.telegramChannel}`,
+              `https://www.instagram.com/${config.instagramPage}`
             ],
             contactPoint: {
               "@type": "ContactPoint",
               contactType: "customer support",
               areaServed: "IR",
               availableLanguage: "Persian",
-              url: "https://eitaa.com/poshtiban1i"
+              url: `https://eitaa.com/${config.eitaaSupport}`
             }
           })
         }}
@@ -132,7 +133,7 @@ export default function Footer({ enamadCode }: { enamadCode: string }) {
   >
     <IconButton
       component="a"
-      href="https://t.me/l1s_link_shortener"
+      href={`https://t.me/${config.telegramChannel}`}
       target="_blank"
       rel="noopener noreferrer"
       aria-label="تلگرام لِس"
@@ -143,7 +144,7 @@ export default function Footer({ enamadCode }: { enamadCode: string }) {
 
     <IconButton
       component="a"
-      href="https://www.instagram.com/lis.link_shortener"
+      href={`https://www.instagram.com/${config.instagramPage}`}
       target="_blank"
       rel="noopener noreferrer"
       aria-label="اینستاگرام لِس"
@@ -180,7 +181,7 @@ export default function Footer({ enamadCode }: { enamadCode: string }) {
 
     <IconButton
       component={Link}
-      href="https://rubika.ir/poshtiiban1i"
+      href={`https://rubika.ir/${config.rubikaSupport}`}
       target="_blank"
       rel="noopener noreferrer"
       aria-label="روبیکا"
@@ -191,24 +192,13 @@ export default function Footer({ enamadCode }: { enamadCode: string }) {
 
     <IconButton
       component={Link}
-      href="https://eitaa.com/poshtiban1i"
+      href={`https://eitaa.com/${config.eitaaSupport}`}
       target="_blank"
       rel="noopener noreferrer"
       aria-label="ایتا"
       sx={{ p: 0 }}
     >
       <Image src="/social/eitaa.png" alt="ایتا" width={28} height={28} />
-    </IconButton>
-
-    <IconButton
-      component={Link}
-      href="@poshtiiban1i"
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="بله"
-      sx={{ p: 0 }}
-    >
-      <Image src="/social/bale.png" alt="بله" width={28} height={28} />
     </IconButton>
   </Stack>
 </address>
@@ -219,7 +209,7 @@ export default function Footer({ enamadCode }: { enamadCode: string }) {
             variant="body2"
             sx={{ color: "#64748b", textAlign: "center", mt: 8 }}
           >
-            © {new Date().getFullYear()} L1s.ir (لِس) — تمامی حقوق محفوظ است.
+            © {new Date().getFullYear()} {config.backendBaseUrlOrigin} (لِس) — تمامی حقوق محفوظ است.
           </Typography>
         </Container>
       </Box>

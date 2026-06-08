@@ -3,6 +3,7 @@ import type {Metadata, Viewport} from 'next'
 import Script from 'next/script'
 import ClientProviders from './providers'
 import localFont from 'next/font/local'
+import config from "@/config";
 
 const vazirmatn = localFont({
   src: [
@@ -41,7 +42,7 @@ export const metadata: Metadata = {
     ],
     apple: '/apple-icon.png',
   },
-  metadataBase: new URL('https://l1s.ir'),
+  metadataBase: new URL(`${config.backendBaseUrlOrigin}`),
   alternates: {
     canonical: '/',
   },
@@ -65,13 +66,13 @@ export default function RootLayout({
               '@context': 'https://schema.org',
               '@type': 'WebSite',
               name: 'لِس',
-              url: 'https://l1s.ir/',
+              url: config.backendBaseUrlOrigin,
               description:
                 'سرویس کوتاه‌کننده لینک سریع، امن و حرفه‌ای',
               potentialAction: {
                 '@type': 'SearchAction',
                 target:
-                  'https://a.l1s.ir/?q={search_term_string}',
+                  `${config.frontBaseUrl}/?q={search_term_string}`,
                 'query-input':
                   'required name=search_term_string',
               },
@@ -89,22 +90,23 @@ export default function RootLayout({
               '@context': 'https://schema.org',
               '@type': 'Organization',
               name: 'لِس',
-              url: 'https://l1s.ir',
-              logo: 'https://a.l1s.ir/favicon.png',
+              url: `${config.frontBaseUrl}`,
+              logo: `${config.frontBaseUrl}/favicon.png`,
+              id: "",
               contactPoint: {
               "@type": "ContactPoint",
               contactType: "customer support",
               areaServed: "IR",
               availableLanguage: "Persian",
-              url: "https://eitaa.com/poshtiban1i"
+              url: `https://eitaa.com/${config.eitaaSupport}`
             }
             }),
           }}
         />
-
-         <Script>
-        {`
-            !function(e,t,n){e.yektanetAnalyticsObject=n,e[n]=e[n]||function(){e[n].q.push(arguments)},e[n].q=e[n].q||[];var a=t.getElementsByTagName("head")[0],r=new Date,c="https://cdn.yektanet.com/superscript/AkupQcgU/native-l1s.ir-46076/yn_pub.js?v="+r.getFullYear().toString()+"0"+r.getMonth()+"0"+r.getDate()+"0"+r.getHours(),s=t.createElement("link");s.rel="preload",s.as="script",s.href=c,a.appendChild(s);var l=t.createElement("script");l.async=!0,l.src=c,a.appendChild(l)}(window,document,"yektanet");
+      <Script id="yektanet-analytics">
+         {/* TODO: Put your yektanet script */}
+         {`
+            
         `}
       </Script>
 
