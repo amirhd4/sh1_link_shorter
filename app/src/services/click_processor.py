@@ -90,7 +90,7 @@ async def process_record(db: AsyncSession, rds: redis.Redis, msg_id: str, msg: d
 
         # Geo lookup
         country = region = city = None
-        if raw_ip:
+        if raw_ip and geo_reader is not None:
             try:
                 rec = geo_reader.city(raw_ip)
                 country = rec.country.iso_code
@@ -149,11 +149,25 @@ async def consumer_loop():
             await asyncio.sleep(1)
 
 
+
 async def main():
     global geo_reader
-    geo_reader = Reader(settings.geoip_db_path)
+
+    try:
+        geo_reader = Reader(settings.geoip_db_path)
+        logger.info("GeoIP database loaded successfully")
+
+    except Exception as e:
+        geo_reader = None
+        logger.warning(
+            "GeoIP database unavailable. "
+            "Country and city detection disabled: %s",
+            e
+        )
+
     try:
         await consumer_loop()
+
     finally:
         if geo_reader:
             geo_reader.close()

@@ -1,0 +1,35 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+
+# Install dependencies
+COPY requirements.txt /app/requirements.txt
+
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir -r requirements.txt \
+    && pip install --no-cache-dir gunicorn uvicorn
+
+# Create non-root user
+RUN addgroup --system appgroup \
+    && adduser --system --ingroup appgroup appuser
+
+# Copy application source
+COPY --chown=appuser:appgroup ./src /app/src
+
+# Copy Alembic files
+COPY --chown=appuser:appgroup ./alembic /app/alembic
+COPY --chown=appuser:appgroup ./alembic.ini /app/alembic.ini
+
+# Upload directory (ephemeral on Render Free)
+RUN mkdir -p /app/uploads/avatars \
+    && chown -R appuser:appgroup /app/uploads
+
+USER appuser
+
+EXPOSE 10000
+
+# Run migrations, click processor and FastAPI
+CMD ["sh", "-c", "alembic upgrade head && (python -m src.services.click_processor &) && exec gunicorn -k uvicorn.workers.UvicornWorker src.main:app --bind 0.0.0.0:${PORT:-10000} --workers 1 --log-level info"]
