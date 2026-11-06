@@ -123,31 +123,78 @@ async def process_record(db: AsyncSession, rds: redis.Redis, msg_id: str, msg: d
 
 
 async def consumer_loop():
-    rds = redis.Redis.from_url(settings.redis_url, decode_responses=False)
-    assert isinstance(rds, redis.Redis)  # async Redis
-    
-    # Create group if not exists
-    try:
-        await rds.xgroup_create(REDIS_STREAM, GROUP, id="$", mkstream=True)
-    except redis_exceptions.ResponseError as e:
-        pass
+    rds = redis.Redis.from_url(
+        settings.redis_url,
+        decode_responses=False,
+        socket_connect_timeout=5,
+        socket_timeout=15,
+        health_check_interval=30,
+        retry_on_timeout=True,
+    )
+
+    retry_delay = 2
 
     while True:
         try:
-            resp = await rds.xreadgroup(GROUP, CONSUMER, {REDIS_STREAM: ">"}, count=10, block=5000)
-            if not resp:
-                await asyncio.sleep(0.1)
-                continue
+            await rds.ping()
 
-            for _, messages in resp:
-                for msg_id, msg in messages:
-                    async with async_session() as db:
-                        await process_record(db, rds, msg_id.decode(), msg)
+            try:
+                await rds.xgroup_create(
+                    REDIS_STREAM,
+                    GROUP,
+                    id="$",
+                    mkstream=True
+                )
+            except redis_exceptions.ResponseError as e:
+                if "BUSYGROUP" not in str(e):
+                    raise
 
-        except Exception as e:
-            logger.exception("Consumer loop failed: %s", str(e))
-            await asyncio.sleep(1)
+            logger.info("Redis connected; consumer is running")
 
+            while True:
+                resp = await rds.xreadgroup(
+                    GROUP,
+                    CONSUMER,
+                    {REDIS_STREAM: ">"},
+                    count=10,
+                    block=5000
+                )
+
+                if not resp:
+                    continue
+
+                for _, messages in resp:
+                    for msg_id, msg in messages:
+                        async with async_session() as db:
+                            await process_record(
+                                db,
+                                rds,
+                                msg_id.decode(),
+                                msg
+                            )
+
+        except asyncio.CancelledError:
+            raise
+
+        except (
+            redis_exceptions.TimeoutError,
+            redis_exceptions.ConnectionError
+        ):
+            logger.exception(
+                "Redis unavailable. Reconnecting in %s seconds",
+                retry_delay
+            )
+
+            await asyncio.sleep(retry_delay)
+            retry_delay = min(retry_delay * 2, 30)
+
+        except Exception:
+            logger.exception("Consumer loop failed")
+            await asyncio.sleep(retry_delay)
+            retry_delay = min(retry_delay * 2, 30)
+
+        else:
+            retry_delay = 2
 
 
 async def main():
