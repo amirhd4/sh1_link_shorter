@@ -29,10 +29,15 @@ from src.config import settings
 target_metadata = Base.metadata
 
 # --- Set DB URL dynamically ---
-if settings.database_url_sync:
-    config.set_main_option("sqlalchemy.url", settings.database_url_sync)
-else:
-    raise ValueError("DATABASE_URL_SYNC is not set in environment or .env file.")
+database_url = settings.database_url_sync
+
+if not database_url:
+    raise ValueError("DATABASE_URL is not configured.")
+
+config.set_main_option(
+    "sqlalchemy.url",
+    database_url.replace("%", "%%")
+)
 
 
 def run_migrations_offline() -> None:
