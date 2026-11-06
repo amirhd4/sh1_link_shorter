@@ -90,12 +90,13 @@ services:
       - key: GEOIP_DB_PATH
         value: /app/GeoLite2-City.mmdb
 
-  # Redis compatible Key Value
+    # Redis compatible Key Value
   - type: keyvalue
     name: shortener-redis
     region: frankfurt
     plan: free
     maxmemoryPolicy: noeviction
+    ipAllowList: []
 
 databases:
   - name: shortener-db
