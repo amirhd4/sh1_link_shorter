@@ -6,6 +6,11 @@ const apiClient = axios.create({
   withCredentials: true,
 });
 
+apiClient.interceptors.request.use((request) => {
+  console.log("REQUEST URL:", request.baseURL + request.url);
+  return request;
+});
+
 // 1️⃣ یک نمونه جداگانه بدون اینترسپتور برای عملیات حساس رفرش توکن
 const refreshClient = axios.create({
   baseURL: config.apiBaseUrl,
