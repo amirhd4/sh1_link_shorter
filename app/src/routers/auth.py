@@ -138,7 +138,7 @@ class VerifyOtpRequest(schemas.BaseModel):
 
 
 @router.post("/refresh")
-async def refresh_session(request: Request, response: JSONResponse, refresh_token: Optional[str] = Cookie(None),
+async def refresh_session(request: Request, response: Response, refresh_token: Optional[str] = Cookie(None),
                           db: AsyncSession = Depends(get_db)):
     if not refresh_token:
         raise HTTPException(status_code=401, detail="Refresh token missing")
@@ -196,7 +196,7 @@ async def refresh_session(request: Request, response: JSONResponse, refresh_toke
 @limiter.limit("10/minute")
 async def login_for_access_token(
     request: Request,
-    response: JSONResponse,
+    response: Response,
     form_data: OAuth2PasswordRequestForm = Depends(),
     captcha_token: str = Form(...),
     db: AsyncSession = Depends(get_db)
@@ -252,23 +252,25 @@ async def login_for_access_token(
 
 
 @router.post("/logout")
-async def logout(refresh_token: Optional[str] = Cookie(None), db: AsyncSession = Depends(get_db)):
+async def logout(
+    refresh_token: Optional[str] = Cookie(None),
+    db: AsyncSession = Depends(get_db)
+):
     if refresh_token:
-        try:
-            hashed_token = security.hash_refresh_token(refresh_token)
-            await db.execute(
-                update(models.UserRefreshToken)
-                .where(models.UserRefreshToken.hashed_token == hashed_token)
-                .values(is_revoked=True)
-            )
-            await db.commit()
-        except Exception:
-            pass
+        hashed_token = security.hash_refresh_token(refresh_token)
+        await db.execute(
+            update(models.UserRefreshToken)
+            .where(models.UserRefreshToken.hashed_token == hashed_token)
+            .values(is_revoked=True)
+        )
+        await db.commit()
 
     response = JSONResponse({"success": True})
-    response.delete_cookie(key="access_token", path="/", domain=url_set_cookie)
-    response.delete_cookie(key="refresh_token", path="/", domain=url_set_cookie)
-    response.delete_cookie(key="role", path="/", domain=url_set_cookie)
+
+    response.delete_cookie("access_token", path="/")
+    response.delete_cookie("refresh_token", path="/")
+    response.delete_cookie("role", path="/")
+
     return response
 
 
@@ -417,7 +419,7 @@ class VerifyOtpRequestCaptcha(VerifyOtpRequest):
 
 @router.post("/verify-otp-login")
 @limiter.limit("10/minute")
-async def verify_otp_login(request: Request, response: JSONResponse, payload: VerifyOtpRequestCaptcha, db: AsyncSession = Depends(get_db)):
+async def verify_otp_login(request: Request, response: Response, payload: VerifyOtpRequestCaptcha, db: AsyncSession = Depends(get_db)):
     """
     تایید OTP برای ورود.
     """
@@ -468,7 +470,7 @@ class RegisterOtpRequestCaptcha(RegisterOtpRequest):
 
 @router.post("/register-otp", status_code=status.HTTP_201_CREATED)
 @limiter.limit("10/minute")
-async def register_with_otp(request: Request, response: JSONResponse, payload: RegisterOtpRequestCaptcha, db: AsyncSession = Depends(get_db)):
+async def register_with_otp(request: Request, response: Response, payload: RegisterOtpRequestCaptcha, db: AsyncSession = Depends(get_db)):
     """
     ثبت‌نام با OTP.
     """
