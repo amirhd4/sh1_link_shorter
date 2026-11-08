@@ -79,41 +79,40 @@ def generate_secure_random_password(length: int = 16) -> str:
     return "".join(password_list)
 
 
-def set_client_cookie(response: JSONResponse, access_token: str, refresh_token: str, role: str):
-    # تعیین دامین کوکی؛ اگر در دباگ باشیم دامین نباید ست شود تا روی localhost کار کند
-    cookie_domain = None if settings.DEBUG else url_set_cookie
+def set_client_cookie(
+    response: Response,
+    access_token: str,
+    refresh_token: str,
+    role: str
+):
+    cookie_settings = {
+        "httponly": True,
+        "secure": not settings.DEBUG,
+        "samesite": "lax" if settings.DEBUG else "none",
+        "path": "/",
+        # max_age را برای هر کوکی جداگانه تنظیم می‌کنیم
+    }
 
     response.set_cookie(
         key="access_token",
         value=access_token,
-        httponly=True,
-        samesite="lax",
-        secure=not settings.DEBUG,
-        path="/",
-        max_age=60 * 15,  # ۱۵ دقیقه
-        domain=cookie_domain
+        max_age=60 * 15,
+        **cookie_settings
     )
 
     response.set_cookie(
         key="refresh_token",
         value=refresh_token,
-        httponly=True,
-        samesite="lax",
-        secure=not settings.DEBUG,
-        path="/",
-        max_age=60 * 60 * 24 * 37, # ۳۷ روز
-        domain=cookie_domain
+        max_age=60 * 60 * 24 * 37,
+        **cookie_settings
     )
 
     response.set_cookie(
         key="role",
         value=role,
-        httponly=False, # فرانت‌اند برای کامپوننت‌ها نیاز دارد این را بخواند (مثل میدلور)
-        samesite="lax",
-        secure=not settings.DEBUG,
-        path="/",
+        httponly=False,
         max_age=60 * 60 * 24 * 37,
-        domain=cookie_domain  # 👈 دامین این هم اصلاح شد تا با بقیه همخوانی داشته باشد
+        **{k: v for k, v in cookie_settings.items() if k != "httponly"}
     )
 
     return response
