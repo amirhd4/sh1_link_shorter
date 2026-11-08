@@ -215,12 +215,23 @@ async def login_for_access_token(
     )
     user = execution_result.scalar_one_or_none()
 
-    # ۳. بررسی صحت رمز عبور (اگر کاربر وجود نداشت یا رمز غلط بود ارور یکسان می‌دهیم)
+    if not user:
+        raise HTTPException(
+            status_code=401,
+            detail="شماره موبایل یا رمز عبور اشتباه است"
+        )
+
     is_password_correct = await run_in_threadpool(
-        security.verify_password, form_data.password, user.hashed_password
+        security.verify_password,
+        form_data.password,
+        user.hashed_password
     )
-    if not user or not is_password_correct:
-        raise HTTPException(status_code=401, detail="شماره موبایل یا رمز عبور اشتباه است")
+
+    if not is_password_correct:
+        raise HTTPException(
+            status_code=401,
+            detail="شماره موبایل یا رمز عبور اشتباه است"
+        )
 
     # ۴. بررسی فعال بودن حساب
     if not user.is_verified or not user.is_active:
