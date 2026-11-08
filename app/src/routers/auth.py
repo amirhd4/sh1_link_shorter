@@ -5,6 +5,8 @@ from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.responses import RedirectResponse
 
 from fastapi.concurrency import run_in_threadpool
+from fastapi.responses import JSONResponse
+from fastapi import Response
 
 from jose import JWTError, jwt
 import secrets
@@ -23,6 +25,7 @@ from google.auth.transport.requests import Request as google_request
 import string
 import secrets
 import random
+from urllib.parse import urlparse
 
 from ..models import UserSecretType
 from ..schemas import RegisterOtpRequest
@@ -34,10 +37,7 @@ from ..database import get_db
 from ..services import security
 from ..services.turnstile import verify_turnstile
 from ..rate_limiter import limiter
-# from ..services import email_service
 from ..schemas import ResetPasswordRequest, ChangePasswordRequest
-from fastapi.responses import JSONResponse
-from urllib.parse import urlparse
 
 from ..services.utils import normalize_phone, normalize_phone_variants
 
