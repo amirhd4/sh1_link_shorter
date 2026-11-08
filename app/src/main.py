@@ -22,7 +22,11 @@ from .scheduler import scheduler
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    app.state.redis = redis.from_url("redis://cache", encoding="utf-8", decode_responses=True)
+    app.state.redis = redis.from_url(
+        settings.redis_url,
+        encoding="utf-8",
+        decode_responses=True
+    )
     scheduler.start()
 
     # async with engine.begin() as conn:

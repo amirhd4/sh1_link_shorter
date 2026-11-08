@@ -51,7 +51,6 @@ async def process_event(session: AsyncSession, event_data: dict):
             return
 
         if link_id_str and owner_id_str:
-            # ✅ مسیر بهینه
             await ads_service.process_ad_skip_and_reward_view(
                 session=session,
                 link_id=int(link_id_str),
@@ -60,7 +59,6 @@ async def process_event(session: AsyncSession, event_data: dict):
                 user_agent=user_agent
             )
         else:
-            # ⚠️ مسیر قدیمی (Fallback)
             short_code = event_data.get("short_code")
             domain_id_str = event_data.get("domain_id") or event_data.get("domain_id_str")  # پشتیبانی از هر دو کلید
 
