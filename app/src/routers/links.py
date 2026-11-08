@@ -3,7 +3,7 @@ import json
 import re
 from urllib.parse import urlparse
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status, Query
 from fastapi.responses import RedirectResponse, JSONResponse
 from fastapi.responses import StreamingResponse
 
@@ -204,7 +204,7 @@ async def create_short_url(
 @limiter.limit("60/minute")
 async def get_user_links(
     request: Request,
-    limit: int = 20,
+    limit: int = Query(default=20, ge=1, le=100),
     cursor_created_at: datetime | None = None,
     cursor_id: int | None = None,
     current_user: models.User = Depends(security.get_current_user),
