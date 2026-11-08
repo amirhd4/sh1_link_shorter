@@ -332,10 +332,25 @@ async def update_link(
     if link_update.long_url:
         db_link.long_url = str(link_update.long_url)
 
+    allowed_fields = {
+        "long_url",
+        "show_ads",
+        "utm_source",
+        "utm_medium",
+        "utm_campaign",
+        "utm_term",
+        "utm_content",
+    }
+
     update_data = link_update.model_dump(exclude_unset=True)
+
     for key, value in update_data.items():
-        if hasattr(db_link, key) and value is not None:
-            setattr(db_link, key, str(value) if key == "long_url" else value)
+        if key in allowed_fields and value is not None:
+            setattr(db_link, key, value)
+
+    if link_update.password:
+        db_link.set_password(link_update.password)
+
     if link_update.password:
         db_link.set_password(link_update.password)
     await db.commit()
